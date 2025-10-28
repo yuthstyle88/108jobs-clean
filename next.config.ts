@@ -98,8 +98,6 @@ const nextConfig: NextConfig = {
                 permanent: false,
                 missing: [
                     {type: 'cookie', key: 'jwt'},
-                    {type: 'cookie', key: 'access_token'},
-                    {type: 'cookie', key: 'token'},
                     {type: 'header', key: 'authorization'},
                 ],
             },
