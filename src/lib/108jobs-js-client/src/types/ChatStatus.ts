@@ -1,0 +1,1 @@
+export type ChatStatus = "pending" | "sending" | "retrying" | "sent" | "failed";
