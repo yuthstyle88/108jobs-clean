@@ -1,0 +1,8 @@
+<svg fill='none' height='420' viewBox='0 0 981 420' width='981' xmlns='http://www.w3.org/2000/svg'
+>
+    <linearGradient id='a' gradientUnits='userSpaceOnUse' x1='495' x2='495' y1='0' y2='402'>
+        <stop offset='0' stop-color='#d0e1fb'/>
+        <stop offset='1' stop-color='#fff' stop-opacity='0'/>
+    </linearGradient>
+    <ellipse cx='495' cy='495.035' fill='url(#a)' rx='495' ry='495.035'/>
+</svg>

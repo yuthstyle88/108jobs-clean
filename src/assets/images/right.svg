@@ -1,0 +1,28 @@
+<svg fill='none' height='438' viewBox='0 0 234 438' width='234' xmlns='http://www.w3.org/2000/svg'
+>
+    <linearGradient id='a' gradientUnits='userSpaceOnUse' x1='138.552' x2='36.5181' y1='86.6279' y2='91.6278'>
+        <stop offset='0' stop-color='#11a24b' stop-opacity='0'/>
+        <stop offset='1' stop-color='#13a34b'/>
+    </linearGradient>
+    <linearGradient id='b' gradientUnits='userSpaceOnUse' x1='14' x2='13.4732' y1='183.689' y2='219.681'>
+        <stop offset='0' stop-color='#e9b10c'/>
+        <stop offset='1' stop-color='#e9b10c' stop-opacity='0'/>
+    </linearGradient>
+    <linearGradient id='c' gradientUnits='userSpaceOnUse' x1='100' x2='222' y1='186' y2='484'>
+        <stop offset='0' stop-color='#5f99ed'/>
+        <stop offset='1' stop-color='#5f99ed' stop-opacity='0'/>
+    </linearGradient>
+    <clipPath id='d'>
+        <path d='m0 0h234v438h-234z'/>
+    </clipPath>
+    <g clip-path='url(#d)'>
+        <rect fill='url(#a)' height='73' rx='36.5'
+              transform='matrix(.9382155 -.34605156 .34605156 .9382155 -16.034172 20.716895)' width='73' x='50'
+              y='55.2617'/>
+        <rect fill='url(#b)' height='28' rx='14'
+              transform='matrix(.9382155 -.34605156 .34605156 .9382155 -63.565865 11.349134)' width='28' y='183.689'/>
+        <path clip-rule='evenodd'
+              d='m78.4086 300.531c.0135.015.027.031.0405.046 1.0518 1.204 2.1534 2.38 3.3047 3.527l.0872.087c.0942.094.1886.187.2833.28.0148.014.0295.029.0443.043l-.0017.002 121.5181 121.063.004-.005c.188.194.377.385.569.576 19.943 19.869 53.915 19.418 75.877-1.007 19.781-18.398 23.073-46.724 8.959-66.687l-80.532-145.163c-3.099-5.747-7.084-11.138-11.963-15.999-28.799-28.691-77.854-28.04-109.5679 1.455-30.4295 28.301-33.8369 72.873-8.6225 101.782zm145.8604 105.609c8.055 8.024 24.579 9.476 36.567-1.673 10.335-9.613 10.364-22.285 5.118-29.706l-.889-1.257-81.36-146.656-.079-.147c-1.795-3.328-4.123-6.492-7.037-9.396-16.911-16.847-48.519-18.099-70.258 2.119-21.2848 19.796-20.7826 48.505-4.575 64.661l.008.008.052.052c.001.001.003.002.004.004.064.063.129.128.196.193l21 20.584-.175.165 81.643 81.338.339-.311 19.206 19.779c.078.08.158.161.24.243z'
+              fill='url(#c)' fill-rule='evenodd'/>
+    </g>
+</svg>

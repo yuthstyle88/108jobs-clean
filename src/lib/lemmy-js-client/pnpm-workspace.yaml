@@ -1,0 +1,3 @@
+onlyBuiltDependencies:
+  - modules-js
+  - protobufjs

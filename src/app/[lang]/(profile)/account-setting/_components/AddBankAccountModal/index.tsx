@@ -1,0 +1,198 @@
+"use client";
+
+import * as z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useEffect } from "react";
+import Modal from "@/components/ui/Modal";
+import { Bank } from "lemmy-js-client";
+import { CustomInput } from "@/components/ui/InputField";
+import { useTranslation } from "react-i18next";
+
+// Zod schema with dynamic account number validation
+const getSchema = (bankList: Bank[], t: (key: string) => string) =>
+    z.object({
+        bankId: z.string().min(1, t("sellerBankAccount.errorBankRequired")),
+        accountNumber: z.string().min(6, t("sellerBankAccount.errorAccountNumberMin")),
+        accountName: z.string().min(1, t("sellerBankAccount.errorAccountNameRequired")),
+    }).refine(
+        (data) => {
+            const { bankId, accountNumber } = data;
+            if (!bankId) return true; // No bank selected, skip account number validation
+
+            const selectedBank = bankList.find((b) => b.id.toString() === bankId);
+            const accountNum = accountNumber.replace(/\s/g, "");
+
+            if (selectedBank?.countryId === "VN") {
+                return /^[0-9A-Za-z]{9,15}$/.test(accountNum);
+            } else if (selectedBank?.countryId === "TH") {
+                return /^\d{10}$/.test(accountNum);
+            }
+            return true;
+        },
+        {
+            message: t("sellerBankAccount.errorInvalidAccountNumber"),
+            path: ["accountNumber"],
+        }
+    );
+
+export type BankAccountFormValues = z.infer<ReturnType<typeof getSchema>>;
+
+interface BankAccountModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (data: BankAccountFormValues & { id?: string }) => void;
+    initialData?: BankAccountFormValues & { id?: string } | null;
+    bankList?: Bank[];
+}
+
+const BankAccountModal: React.FC<BankAccountModalProps> = ({
+                                                               isOpen,
+                                                               onClose,
+                                                               onSubmit,
+                                                               initialData,
+                                                               bankList = [],
+                                                           }) => {
+    const { t } = useTranslation();
+
+    const {
+        setValue,
+        watch,
+        handleSubmit,
+        reset,
+        formState: { errors },
+        trigger,
+    } = useForm<BankAccountFormValues>({
+        resolver: zodResolver(getSchema(bankList, t)),
+        defaultValues: {
+            bankId: "",
+            accountNumber: "",
+            accountName: "",
+        },
+    });
+
+    // Watch form values
+    const formValues = watch();
+    const { bankId, accountNumber, accountName } = formValues;
+
+    // Trigger re-validation of accountNumber when bankId changes
+    useEffect(() => {
+        if (bankId) {
+            trigger("accountNumber");
+        }
+    }, [bankId, trigger]);
+
+    // Reset form when modal opens or initialData changes
+    useEffect(() => {
+        if (isOpen) {
+            reset(initialData || { bankId: "", accountNumber: "", accountName: "" });
+        }
+    }, [initialData, isOpen, reset]);
+
+    const onSubmitForm = (data: BankAccountFormValues) => {
+        console.log("Form submitted with data:", data); // Debug
+        onSubmit({ ...data, id: initialData?.id });
+        onClose();
+    };
+
+    const selectedBank = bankList.find((bank) => bank.id.toString() === bankId);
+
+    return (
+        <Modal
+            isOpen={isOpen}
+            onClose={() => {
+                console.log("Current form values before close:", formValues); // Debug
+                onClose();
+            }}
+            title={
+                initialData
+                    ? t("sellerBankAccount.buttonEditBank")
+                    : t("sellerBankAccount.buttonAddBank")
+            }
+        >
+            <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4 text-text-primary">
+                <div>
+                    <label className="block text-sm font-medium mb-1">
+                        {t("sellerBankAccount.bankNameLabel")}
+                    </label>
+                    <select
+                        value={bankId}
+                        onChange={(e) => {
+                            setValue("bankId", e.target.value, { shouldValidate: true });
+                            console.log("bankId changed:", e.target.value); // Debug
+                        }}
+                        className="w-full border rounded-md px-3 py-2 text-text-primary"
+                        aria-describedby={errors.bankId ? "bankId-error" : undefined}
+                    >
+                        <option value="">{t("sellerBankAccount.bankNamePlaceholder")}</option>
+                        {bankList.map((bank) => (
+                            <option key={String(bank.id)} value={String(bank.id)}>
+                                {bank.name} {bank.bankCode && `(${bank.bankCode})`}
+                            </option>
+                        ))}
+                    </select>
+                    {errors.bankId && (
+                        <p id="bankId-error" className="text-red-500 text-sm mt-1">
+                            {errors.bankId.message}
+                        </p>
+                    )}
+                </div>
+
+                <div>
+                    <CustomInput
+                        tag="input"
+                        type="text"
+                        name={"accountNumber"}
+                        value={accountNumber}
+                        onChange={(e) => {
+                            setValue("accountNumber", e.target.value, { shouldValidate: true });
+                            console.log("accountNumber changed:", e.target.value); // Debug
+                        }}
+                        label={t("sellerBankAccount.bankAccountNumberLabel")}
+                        placeholder={t("sellerBankAccount.bankAccountNumberPlaceholder")}
+                        error={errors.accountNumber?.message}
+                        required
+                        aria-describedby={errors.accountNumber ? "accountNumber-error" : undefined}
+                    />
+                    {selectedBank && (
+                        <p className="text-xs text-gray-600 mt-1">
+                            {selectedBank.countryId === "VN"
+                                ? t("profileInfo.accountNumberHelperVN", "9-15 digits or letters")
+                                : selectedBank.countryId === "TH"
+                                    ? t("profileInfo.accountNumberHelperTH", "Exactly 10 digits")
+                                    : ""}
+                        </p>
+                    )}
+                </div>
+
+                <div>
+                    <CustomInput
+                        tag="input"
+                        type="text"
+                        name={"accountName"}
+                        value={accountName}
+                        onChange={(e) => {
+                            setValue("accountName", e.target.value, {shouldValidate: true});
+                            console.log("accountName changed:", e.target.value); // Debug
+                        }}
+                        label={t("sellerBankAccount.bankAccountName")}
+                        placeholder="John Smith"
+                        error={errors.accountName?.message}
+                        required
+                        aria-describedby={errors.accountName ? "accountName-error" : undefined}                   />
+                </div>
+
+                <div className="flex justify-end pt-2">
+                    <button
+                        type="submit"
+                        className="px-4 py-2 bg-primary text-white rounded-md hover:bg-[#063a68]"
+                    >
+                        {t("global.buttonSave") || "Save"}
+                    </button>
+                </div>
+            </form>
+        </Modal>
+    );
+};
+
+export default BankAccountModal;

@@ -1,0 +1,54 @@
+"use client";
+
+import Modal from "@/components/ui/Modal";
+import {CircleAlert} from "lucide-react";
+
+interface ConfirmVerifyFreelancerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  handleConfirmChange: () => void;
+}
+
+const ConfirmVerifyFreelancer: React.FC<ConfirmVerifyFreelancerProps> = ({
+  isOpen,
+  onClose,
+  handleConfirmChange,
+}) => {
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      className="max-w-md p-0 w-full"
+      closeOnOutsideClick={false}
+    >
+      <section className="px-[12px] w-full flex flex-col gap-8 justify-center items-center">
+        <CircleAlert className="w-[65px] h-[65px] text-blue-500"/>
+        <article>
+          <h1 className="text-[18px] font-medium text-text-primary text-center">
+            Cannot submit proposal <br/> No approved services yet
+          </h1>
+          <p className="text-[14px] font-sans text-text-secondary text-center pt-3">
+            You need be approve by admin or at least 1 approved service Please
+            check your service status
+          </p>
+        </article>
+      </section>
+      <div className="flex flex-row gap-2 justify-end items-end pt-8 w-full">
+        <button
+          onClick={onClose}
+          className="px-6 py-3 cursor-pointer w-fit text-gray-600 font-normal hover:text-gray-700 transition duration-300"
+        >
+          Close
+        </button>
+        <button
+          onClick={handleConfirmChange}
+          className="px-10 py-3 cursor-pointer w-fit bg-blue-500 text-white font-normal rounded-md shadow hover:bg-primary transition duration-300"
+        >
+          Check Your Services
+        </button>
+      </div>
+    </Modal>
+  );
+};
+
+export default ConfirmVerifyFreelancer;
