@@ -3,12 +3,13 @@ import Header from "@/components/Header";
 import SpHeader from "@/containers/SpHeader";
 import {generateLocalizedMetadata} from "@/lib/metadata";
 import {ReactNode} from "react";
+import {Metadata} from "next";
 
 interface PromotionLayoutProps {
   children: ReactNode;
 }
 
-export async function generateMetadata() {
+export async function generateMetadata(): Promise<Metadata> {
   return generateLocalizedMetadata("promotion");
 }
 

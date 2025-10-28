@@ -1,7 +1,8 @@
 import PopularSubCat from "@/components/PopularSubcat";
 import {generateLocalizedMetadata} from "@/lib/metadata";
+import {Metadata} from "next";
 
-export async function generateMetadata() {
+export async function generateMetadata(): Promise<Metadata> {
   return generateLocalizedMetadata("catalog");
 }
 
