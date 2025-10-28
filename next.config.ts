@@ -28,9 +28,9 @@ const nextConfig: NextConfig = {
         // Note: lucide-react, react-icons, and Radix UI packages are generally ESM-friendly.
         // We rely on their tree-shaking and direct subpath imports in code.
     },
-    experimental: {
-        turbopackFileSystemCacheForDev: true,
-    },
+    // experimental: {
+    //     turbopackFileSystemCacheForDev: true,
+    // },
     compiler: {
         // Trim console.* in production bundles but keep error/warn
         removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,

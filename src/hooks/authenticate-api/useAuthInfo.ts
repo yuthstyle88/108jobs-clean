@@ -2,7 +2,7 @@ import {getIsoData} from "@/hooks/useIsoData";
 
 export function useAuthInfo() {
   const auth = getIsoData();
-  const isLoggedIn = auth?.myUserInfo?.localUserView.localUser.id !== null;
+  const isLoggedIn = !!auth?.myUserInfo;
   const lang = auth?.myUserInfo?.localUserView.localUser.interfaceLanguage;
 
   return {
