@@ -1,14 +1,15 @@
-import {UserService} from "@/services";
+import {getIsoData} from "@/hooks/useIsoData";
 
 export function useAuthInfo() {
-  const auth = UserService.Instance;
-  const isLoggedIn = auth.isLoggedIn;
+  const auth = getIsoData();
+  const isLoggedIn = auth?.myUserInfo?.localUserView.localUser.id !== null;
+  const lang = auth?.myUserInfo?.localUserView.localUser.interfaceLanguage;
 
   return {
     isLoggedIn,
     // In single-user mode, every logged-in user can act as both
     isEmployer: isLoggedIn,
     isFreelancer: isLoggedIn,
-    lang: auth.getLanguage,
+    lang
   };
 }

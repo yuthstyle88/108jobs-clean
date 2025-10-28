@@ -10,6 +10,7 @@ import {useScrollHandler} from "./hooks/useScrollHandler";
 
 const Header = ({ type, forceShowSearch = false }: { type: string; forceShowSearch?: boolean }) => {
     const { isLoggedIn } = useAuthInfo();
+    console.log("isLoggedIn", isLoggedIn);
     const { t } = useTranslation();
     const { scrollY, showSearch } = useScrollHandler(forceShowSearch);
     const bg = scrollY > 0 ? "bg-primary" : type === "transparent" ? "bg-transparent" : "bg-primary";

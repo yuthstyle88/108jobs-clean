@@ -9,10 +9,10 @@ interface ClientOnlyRoleSectionProps {
 const ClientOnlyRoleSection = ({globalLanguageData}: ClientOnlyRoleSectionProps) => {
   const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => {
-      setIsClient(true);
-    },
-    []);
+    useEffect(() => {
+        const id = setTimeout(() => setIsClient(true), 0);
+        return () => clearTimeout(id);
+    }, []);
 
   if (!isClient) {
     // Return empty div during server-side rendering

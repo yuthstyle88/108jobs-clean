@@ -158,8 +158,4 @@ export function setLangCookie(newLang: string)  {
         document.cookie = `${LANGUAGE_COOKIE}=${newLang}; path=/`;
         invalidateClientLanguageCache();
     }
-    if (isBrowser()) {
-        const target = buildLangRedirectTarget(newLang, window.location.href);
-        if (target) window.location.assign(target);
-    }
 }

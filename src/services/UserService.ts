@@ -63,7 +63,7 @@ export class UserService {
             }
             // 1) Client-side cookie (kept for immediate client state)
             setAuthJWTCookie(res.jwt);
-            this.#setAuthInfo();
+            this.#setAuthInfo(res.jwt);
             this.#hydrateReadLastMap();
 
             // 2) Server-side cookie (so Next.js middleware sees it on the very next request)
@@ -150,31 +150,14 @@ export class UserService {
         }
     }
 
-    #setAuthInfo() {
-        const cookies: Record<string, string> = (document?.cookie || "")
-            .split(/;\s*/)
-            .filter(Boolean)
-            .reduce((acc: Record<string, string>, pair: string) => {
-                const eq = pair.indexOf("=");
-                if (eq === -1) return acc;
-                const k = decodeURIComponent(pair.slice(0, eq).trim());
-                const v = decodeURIComponent(pair.slice(eq + 1));
-                acc[k] = v;
-                return acc;
-            }, {});
-        const auth = cookies[authCookieName];
-        if (!auth) {
-            this.authInfo = undefined;
-            this.currentLanguage = "en";
-            return;
-        }
+    #setAuthInfo(jwt?: string) {
         try {
-            const claims = jwtDecode<Claims>(auth);
-            this.authInfo = { auth, claims };
+            const claims = jwtDecode<Claims>(jwt ?? "");
+            this.authInfo = { auth: jwt, claims };
             this.currentLanguage = claims?.lang;
             this.acceptedTerms = Boolean(claims?.acceptedTerms);
         } catch {
-            this.authInfo = { auth } as AuthInfo;
+            this.authInfo = { jwt } as AuthInfo;
             this.currentLanguage = this.currentLanguage || 'th';
             this.acceptedTerms = false;
         }

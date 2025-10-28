@@ -77,7 +77,7 @@ export const ChangePassword = ({token}: ChangePasswordProps) => {
   /* -------- render --------------------------------------------- */
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-      <p className="text-text-primary text-sm font-sans">
+      <p className="text-text-primary text-gray-500 text-sm font-sans">
         {t("authen.newPasswordRequirements")}
       </p>
 
