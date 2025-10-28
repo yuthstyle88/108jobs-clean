@@ -36,7 +36,14 @@ const SpHeader = ({
     const unreadCount = useTotalUnread();
 
     useEffect(() => {
-        setIsMounted(true);
+      let alive = true;
+      const t = setTimeout(() => {
+        if (alive) setIsMounted(true);
+      }, 0);
+      return () => {
+        alive = false;
+        clearTimeout(t);
+      };
     }, []);
 
     if (!isMounted || (!isLoggedIn && pathname !== `/${lang}/login`)) return null;

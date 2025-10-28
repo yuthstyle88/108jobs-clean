@@ -9,7 +9,13 @@ export const useTranslation = () => {
   // ซิงค์ภาษาใน i18next กับ Context
   useEffect(() => {
     if (i18n && typeof i18n.changeLanguage === "function" && i18n.language !== lang) {
-      i18n.changeLanguage(lang); // เปลี่ยนภาษาของ i18next ให้ตรงกับ Context
+      (async () => {
+        try {
+          await i18n.changeLanguage(lang);
+        } catch (err) {
+          console.warn('[useTranslation] Failed to change language', err);
+        }
+      })();
     }
   }, [lang, i18n]);
 

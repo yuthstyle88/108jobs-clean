@@ -67,13 +67,21 @@ export function useProvinces() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<unknown>(null);
     useEffect(() => {
-        let alive = true;
-        setLoading(true);
-        getJSON<Province[]>("/thai-geo/provinces.json")
-            .then((p) => alive && setData(p))
-            .catch((e) => alive && setError(e))
-            .finally(() => alive && setLoading(false));
-        return () => { alive = false; };
+      let alive = true;
+      (async () => {
+        try {
+          setLoading(true);
+          const p = await getJSON<Province[]>("/thai-geo/provinces.json");
+          if (alive) setData(p);
+        } catch (e) {
+          if (alive) setError(e);
+        } finally {
+          if (alive) setLoading(false);
+        }
+      })();
+      return () => {
+        alive = false;
+      };
     }, []);
 
     const options: Option[] = useMemo(
@@ -95,22 +103,26 @@ export function useDistricts(provinceCode?: string) {
     const [error, setError] = useState<unknown>(null);
 
     useEffect(() => {
-        let alive = true;
-        setData([]);
-        if (!provinceCode) return;
-        setLoading(true);
-        getJSON<District[]>("/thai-geo/districts.json")
-            .then((all) => {
-                if (!alive) return;
-                const filtered = all.filter(d => {
-                  const pcode = provinceCodeAny(d) ?? String(districtCodeAny(d) ?? "").slice(0, 2);
-                  return norm(pcode) === norm(provinceCode);
-                });
-                setData(filtered);
-            })
-            .catch((e) => alive && setError(e))
-            .finally(() => alive && setLoading(false));
-        return () => { alive = false; };
+      let alive = true;
+      setData([]);
+      if (!provinceCode) return () => { alive = false; };
+      (async () => {
+        try {
+          setLoading(true);
+          const all = await getJSON<District[]>("/thai-geo/districts.json");
+          if (!alive) return;
+          const filtered = all.filter(d => {
+            const pcode = provinceCodeAny(d) ?? String(districtCodeAny(d) ?? "").slice(0, 2);
+            return norm(pcode) === norm(provinceCode);
+          });
+          if (alive) setData(filtered);
+        } catch (e) {
+          if (alive) setError(e);
+        } finally {
+          if (alive) setLoading(false);
+        }
+      })();
+      return () => { alive = false; };
     }, [provinceCode]);
 
     const options: Option[] = useMemo(
@@ -132,22 +144,26 @@ export function useSubdistricts(districtCode?: string) {
     const [error, setError] = useState<unknown>(null);
 
     useEffect(() => {
-        let alive = true;
-        setData([]);
-        if (!districtCode) return;
-        setLoading(true);
-        getJSON<Subdistrict[]>("/thai-geo/subdistricts.json")
-            .then((all) => {
-                if (!alive) return;
-                const filtered = all.filter(s => {
-                  const dcode = districtCodeAny(s) ?? String(subdistrictCodeAny(s) ?? "").slice(0, 4);
-                  return norm(dcode) === norm(districtCode);
-                });
-                setData(filtered);
-            })
-            .catch((e) => alive && setError(e))
-            .finally(() => alive && setLoading(false));
-        return () => { alive = false; };
+      let alive = true;
+      setData([]);
+      if (!districtCode) return () => { alive = false; };
+      (async () => {
+        try {
+          setLoading(true);
+          const all = await getJSON<Subdistrict[]>("/thai-geo/subdistricts.json");
+          if (!alive) return;
+          const filtered = all.filter(s => {
+            const dcode = districtCodeAny(s) ?? String(subdistrictCodeAny(s) ?? "").slice(0, 4);
+            return norm(dcode) === norm(districtCode);
+          });
+          if (alive) setData(filtered);
+        } catch (e) {
+          if (alive) setError(e);
+        } finally {
+          if (alive) setLoading(false);
+        }
+      })();
+      return () => { alive = false; };
     }, [districtCode]);
 
     const options: Option[] = useMemo(
