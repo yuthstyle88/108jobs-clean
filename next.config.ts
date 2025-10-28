@@ -11,7 +11,8 @@ const nextConfig: NextConfig = {
     reactStrictMode: true,
     poweredByHeader: false,
     compress: true,
-
+    // ✅ อนุญาต origin staging สำหรับ dev
+    allowedDevOrigins: ["staging.108jobs.com"],
     // Reduce client bundle size and improve runtime perf
 
     // Prefer modern optimizations
