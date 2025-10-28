@@ -14,9 +14,7 @@ import GlobalError from "@/components/GlobalError";
 import GlobalLoader from "@/components/Common/Loading/Loading";
 import {getCookies} from "@/utils/getCookies";
 import { UserServiceProvider } from "@/contexts/UserServiceContext";
-import {cookies} from "next/headers";
-import {LANGUAGE_COOKIE} from "@/constants/language";
-// Optimize font loading with display swap and preload
+
 const kanit = Kanit({
     subsets: ["latin", "vietnamese", "thai"],
     weight: ["400", "500", "600"],
