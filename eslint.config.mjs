@@ -12,7 +12,15 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Ignore vendored library code from root lint to avoid noise.
+    "src/lib/lemmy-js-client/**",
   ]),
+  {
+    rules: {
+      // Surface explicit any usages as warnings to guide cleanup.
+      "@typescript-eslint/no-explicit-any": "warn",
+    },
+  },
 ]);
 
 export default eslintConfig;
