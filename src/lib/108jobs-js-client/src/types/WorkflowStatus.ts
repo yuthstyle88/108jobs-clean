@@ -1,1 +1,0 @@
-export type WorkflowStatus = "WaitForFreelancerQuotation" | "QuotationPendingReview" | "OrderApproved" |"InProgress" | "PendingEmployerReview" | "Completed" | "Cancelled";
