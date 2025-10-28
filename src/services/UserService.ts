@@ -3,7 +3,6 @@ import {jwtDecode} from "jwt-decode";
 import {LoginResponse, MyUserInfo} from "lemmy-js-client";
 import {HttpService} from "./index";
 import {toast} from "sonner";
-import {authCookieName} from "@/utils/config";
 import {VALID_LANGUAGES} from "@/constants/language";
 
 export interface Claims {
@@ -84,6 +83,19 @@ export class UserService {
             if (!VALID_LANGUAGES.includes(this.currentLanguage)) return;
             setLangCookie(this.currentLanguage);
         }
+    }
+
+    public async setToken(jwt: string): Promise<void> {
+      if (!jwt) return;
+      try {
+        // Set client cookie
+        setAuthJWTCookie(jwt);
+        // Update auth info
+        this.#setAuthInfo(jwt);
+
+      } catch (e) {
+        console.warn('[UserService.setToken] Failed to set token', e);
+      }
     }
 
     public async logout() {

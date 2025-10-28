@@ -3,6 +3,7 @@ import {NextRequest} from "next/server";
 import {SUPPORTED} from "@/utils/localeHref";
 import {LANGUAGE_COOKIE} from "@/constants/language";
 import {SupportedLang} from "@/lib/metadata";
+import {JWT} from "@/utils/config";
 
 type Lang = typeof SUPPORTED[number];
 
@@ -30,10 +31,9 @@ export function resolveLanguage(args: { req: NextRequest; cookieLang?: string; j
     return normalizeLang(browserLng || cookieLng || jwtLng || pathLng);
 }
 
-export async function getCurrentLanguage(): Promise<SupportedLang> {
+export async function getCookies(): Promise<[SupportedLang | null, string | null]> {
     const cookieStore = await cookies();
-    const lang = cookieStore.get(LANGUAGE_COOKIE)?.value;
-    return (SUPPORTED as readonly string[]).includes(lang ?? '')
-      ? (lang as SupportedLang)
-      : "th";
+    const langCookie = (cookieStore.get(LANGUAGE_COOKIE)?.value as SupportedLang) ?? null;
+    const tokenCookie = cookieStore.get(JWT)?.value ?? null;
+    return [langCookie, tokenCookie];
 }

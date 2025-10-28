@@ -12,7 +12,10 @@ import {AnnouncementProvider} from "@/contexts/AnnouncementContext";
 import AccessibleAnnouncements from "@/components/AccessibleAnnouncements";
 import GlobalError from "@/components/GlobalError";
 import GlobalLoader from "@/components/Common/Loading/Loading";
-import {getCurrentLanguage} from "@/utils/getCurrentLanguage";
+import {getCookies} from "@/utils/getCookies";
+import { UserServiceProvider } from "@/contexts/UserServiceContext";
+import {cookies} from "next/headers";
+import {LANGUAGE_COOKIE} from "@/constants/language";
 // Optimize font loading with display swap and preload
 const kanit = Kanit({
     subsets: ["latin", "vietnamese", "thai"],
@@ -33,10 +36,9 @@ export default async function RootLayout({
 }>) {
     const { lang } = await params;
     const isoData = await isoDataInitializer();
-    const cookieLang = await getCurrentLanguage();
-
+    const [langCookie, tokenCookie] = await getCookies();
     const userLang = isoData?.myUserInfo?.localUserView?.localUser?.interfaceLanguage as string | undefined;
-    const initialLang = cookieLang || lang || userLang;
+    const initialLang = langCookie || lang || userLang;
     return (
         <html lang={initialLang} suppressHydrationWarning>
         <head>
@@ -52,19 +54,23 @@ export default async function RootLayout({
             }}
         />
         <LanguageProvider initialLang={initialLang!}>
-            <GlobalErrorProvider>
-                <GlobalLoaderProvider>
-                    <AnnouncementProvider>
-                        <ClientSWRProvider>
-                            <Toaster richColors closeButton position="bottom-right"/>
-                            <AccessibleAnnouncements/>
-                            <GlobalError/>
-                            <GlobalLoader/>
-                            {children}
-                        </ClientSWRProvider>
-                    </AnnouncementProvider>
-                </GlobalLoaderProvider>
-            </GlobalErrorProvider>
+            <UserServiceProvider
+                token={tokenCookie ?? ""}
+            >
+                <GlobalErrorProvider>
+                    <GlobalLoaderProvider>
+                        <AnnouncementProvider>
+                            <ClientSWRProvider>
+                                <Toaster richColors closeButton position="bottom-right"/>
+                                <AccessibleAnnouncements/>
+                                <GlobalError/>
+                                <GlobalLoader/>
+                                {children}
+                            </ClientSWRProvider>
+                        </AnnouncementProvider>
+                    </GlobalLoaderProvider>
+                </GlobalErrorProvider>
+            </UserServiceProvider>
         </LanguageProvider>
         </body>
         </html>

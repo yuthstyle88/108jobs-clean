@@ -1,0 +1,55 @@
+"use client";
+import React, { createContext, useContext, useEffect, useMemo } from "react";
+import { UserService } from "@/services/UserService";
+
+// Instance type for the singleton user service
+type UserClient = UserService;
+
+interface UserServiceContextType {
+  user: UserClient;
+}
+
+const UserServiceContext = createContext<UserServiceContextType | undefined>(
+  undefined
+);
+
+interface UserServiceProviderProps {
+  children: React.ReactNode;
+  token?: string;
+}
+
+export function UserServiceProvider({ children, token }: UserServiceProviderProps) {
+  // Use the singleton instance
+  const user = UserService.Instance;
+
+  useEffect(() => {
+    (async () => {
+      try {
+        // If your UserService has a way to seed token, do it here (optional)
+        // e.g., user.setToken?.(token as string);
+        if (token && typeof (user as any).setToken === "function") {
+          await (user as any).setToken(token);
+        }
+      } catch (e) {
+        // no-op: token seeding is optional
+      }
+    })();
+  }, [token, user]);
+
+  const value = useMemo<UserServiceContextType>(() => ({ user }), [user]);
+
+  return (
+    <UserServiceContext.Provider value={value}>
+      {children}
+    </UserServiceContext.Provider>
+  );
+}
+
+// Hook สำหรับใช้งานใน component อื่น ๆ
+export function useUserService(): UserClient {
+  const ctx = useContext(UserServiceContext);
+  if (!ctx) {
+    throw new Error("useUserService must be used within UserServiceProvider");
+  }
+  return ctx.user;
+}

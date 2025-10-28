@@ -21,9 +21,11 @@ import {ChatLanguageProvider} from "@/contexts/ChatLanguage";
 import Link from "next/link";
 import NavBar from "@/components/Home/NavBar";
 import MobileSidebar from "@/components/MobileSidebar";
+import {useUserService} from "@/contexts/UserServiceContext";
 
 export default function Home() {
     const {t, i18n} = useTranslation();
+    useUserService();
     const [activeCatalogIndex, setActiveCatalogIndex] = useState<number>(0);
     const catalogData = useCommunities();
     const serviceCatalogs = buildCommunitiesTree(catalogData.communities) || [];

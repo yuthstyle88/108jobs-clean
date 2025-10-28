@@ -10,7 +10,6 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {REQUEST_STATE} from "@/services/HttpService";
 import LoadingCircle from "@/components/Common/Loading/LoadingCircle";
 import {RegisterDataProps} from "@/types/register-data";
-import {getCurrentLanguage} from "@/utils/getCurrentLanguage";
 import {getClientCurrentLanguage} from "@/utils/getClientCurrentLanguage";
 
 const MAX_RESENDS = 3;

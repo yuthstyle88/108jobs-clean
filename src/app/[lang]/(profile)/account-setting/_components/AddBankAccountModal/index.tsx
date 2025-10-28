@@ -90,7 +90,6 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
     }, [initialData, isOpen, reset]);
 
     const onSubmitForm = (data: BankAccountFormValues) => {
-        console.log("Form submitted with data:", data); // Debug
         onSubmit({ ...data, id: initialData?.id });
         onClose();
     };

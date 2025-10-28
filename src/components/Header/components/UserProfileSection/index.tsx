@@ -18,7 +18,6 @@ import React, { memo, useCallback, useState } from "react";
 
 const UserProfileSection = () => {
     const {wallet, person} = useMyUser();
-    console.log("dddd", wallet, person);
     const {isOpen, toggle, close} = useToggle();
     const {t} = useTranslation();
     const [showImprove, setShowImprove] = useState(false);

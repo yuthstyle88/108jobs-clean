@@ -24,7 +24,6 @@ export default function OAuthCallbackPage() {
   const {t} = useTranslation();
 
   useEffect(() => {
-      console.log("EEEE loginRes:",);
 
       async function handleOAuth() {
         try {
@@ -59,8 +58,6 @@ export default function OAuthCallbackPage() {
             redirectUri: localOAuthState.redirectUri,
             answer: localOAuthState.answer,
           });
-          console.log("loginRes:",
-            loginRes);
           if (loginRes.state === "success") {
 
             if (loginRes.data.jwt) {

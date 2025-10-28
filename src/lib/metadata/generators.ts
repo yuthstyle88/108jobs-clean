@@ -1,7 +1,7 @@
 import type {Metadata} from "next";
 import {seoTranslations, SupportedLang} from "./translations";
 import {getAppName} from "@/utils/appConfig";
-import {getCurrentLanguage} from "@/utils/getCurrentLanguage";
+import {getCookies} from "@/utils/getCookies";
 
 type PageContent = {title: string; description: string};
 type PageKey = {
@@ -14,8 +14,8 @@ export async function generateLocalizedMetadata(
   pageKeyOrContent: PageKey | PageContent,
   overrides?: Partial<Metadata>
 ): Promise<Metadata> {
-  const locale: SupportedLang = await getCurrentLanguage();
-  const t = seoTranslations[locale];
+  const [langCookie] = await getCookies();
+  const t = seoTranslations[langCookie as SupportedLang] || seoTranslations.th;
 
   const page =
     typeof pageKeyOrContent === "string"
