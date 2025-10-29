@@ -2195,6 +2195,9 @@ export const en = {
             bankInfoTitle: "Bank Information",
             bankNameLabel: "Bank Name",
             bankNamePlaceholder: "Select a bank",
+            setAsDefault: "Set as default",
+            edit: "Edit",
+            delete: "Delete",
             bankQrUploadNote:
                 "Please upload the QR code from your banking app that shows your name",
             bankQrUploadTitle:

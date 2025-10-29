@@ -2208,6 +2208,9 @@ export const vi = {
             bankInfoTitle: "Thông tin ngân hàng",
             bankNameLabel: "Tên ngân hàng",
             bankNamePlaceholder: "Chọn ngân hàng",
+            setAsDefault: "Đặt làm mặc định",
+            edit: "Chỉnh sửa",
+            delete: "Xóa",
             bankQrUploadNote:
                 "Vui lòng tải lên mã QR từ ứng dụng ngân hàng trực tuyến có hiển thị tên của bạn",
             bankQrUploadTitle:

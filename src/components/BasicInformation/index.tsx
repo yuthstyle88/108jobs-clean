@@ -204,24 +204,6 @@ export default function BasicInformation() {
                 </div>
             </form>
 
-            <div className="border border-border-primary rounded-lg bg-white p-6 flex flex-col gap-4 sm:gap-0 sm:flex-row justify-between">
-                <div className="text-sm sm:text-lg font-semibold text-gray-700">
-                    {t('profileInfo.sectionPassword')}
-                    <p className="text-xs sm:text-sm text-gray-600 font-normal">
-                        {t('profileInfo.passwordDescription')}
-                    </p>
-                </div>
-                <div className="self-end w-full sm:w-fit">
-                    <button
-                        onClick={openModal}
-                        className="w-full rounded-md bg-primary px-3 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm text-white hover:bg-[#063a68]"
-                    >
-                        {t('profileInfo.buttonSetPassword')}
-                    </button>
-                </div>
-            </div>
-
-            <PasswordChangeModal isOpen={isModalOpen} onClose={closeModal} />
             <ImageUploadModal
                 isOpen={isAvatarModalOpen}
                 onClose={closeAvatarImageModal}

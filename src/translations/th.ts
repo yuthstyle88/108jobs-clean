@@ -2155,6 +2155,9 @@ export const th = {
             bankInfoTitle: "ข้อมูลบัญชีธนาคาร",
             bankNameLabel: "ชื่อธนาคาร",
             bankNamePlaceholder: "เลือกธนาคาร",
+            setAsDefault: "ตั้งเป็นค่าเริ่มต้น",
+            edit: "แก้ไข",
+            delete: "ลบ",
             bankQrUploadNote: "โปรดอัปโหลด QR Code จากแอปธนาคารที่แสดงชื่อของคุณ",
             bankQrUploadTitle:
                 "อัปโหลดรูป QR Code ธนาคารของคุณ (ชื่อบัญชีต้องตรงกับบัตรประชาชน)",
