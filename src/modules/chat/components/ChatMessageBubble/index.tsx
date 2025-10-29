@@ -218,7 +218,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                                         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-14h-2v6H6v2h4v4h2v-4h4v-2h-4V6z"
                                     />
                                 </svg>
-                                <h4 className="text-base font-semibold text-gray-900 truncate">
+                                <h4 className="block basis-full text-base font-semibold text-gray-900 break-words">
                                     {parsed!.quote!.projectName}
                                 </h4>
                             </div>
