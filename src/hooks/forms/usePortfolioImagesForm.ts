@@ -148,7 +148,14 @@ export const usePortfolioImagesForm = ({
     const savePortfolioImages = useCallback(
         async (portfolioImages: PortfolioPic[], action: 'addImage' | 'updateImage' | 'deleteImage') => {
             try {
+                if (!person) return false;
+
                 const payload: SaveUserSettings = {
+                    workSamples: person.workSamples ?? [],
+                    displayName: person.displayName ?? '',
+                    bio: person.bio ?? '',
+                    skills: person.skills ?? '',
+                    contacts: person.contacts ?? '',
                     portfolioPics: portfolioImages.filter((item) => item.imageUrl && z.string().url().safeParse(item.imageUrl).success),
                 };
 
