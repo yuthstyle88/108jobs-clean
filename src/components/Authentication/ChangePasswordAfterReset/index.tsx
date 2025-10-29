@@ -10,6 +10,7 @@ import {useForm} from "react-hook-form";
 import * as z from "zod";
 import {useHttpPost} from "@/hooks/useHttpPost"; // ★ เพิ่ม
 import useNotification from "@/hooks/useNotification";
+import {REQUEST_STATE} from "@/services/HttpService";
 
 type ChangePasswordProps = {token: string};
 
@@ -63,12 +64,12 @@ export const ChangePasswordAfterReset = ({token}: ChangePasswordProps) => {
       passwordVerify: data.confirmPassword,
     });
 
-    if (res.state === "failed") {
+    if (res.state === REQUEST_STATE.FAILED) {
       setApiError(ERROR_CONSTANTS.CHANGE_PASSWORD_FAILED);
       return;
     }
 
-    if (res.state === "success") {
+    if (res.state === REQUEST_STATE.SUCCESS) {
       successMessage(null,
         null,
         notificationLanguage?.changePasswordSuccess);

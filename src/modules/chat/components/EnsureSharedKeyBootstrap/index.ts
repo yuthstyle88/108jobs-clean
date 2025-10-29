@@ -3,14 +3,15 @@ import {useMyUser} from "@/hooks/profile-api/useMyUser";
 import {useEffect} from "react";
 import {UserService} from "@/services";
 import {ensureIdentityKeyPair, ensureSharedKeyForLocalUser} from "@/modules/chat/utils/security/crypto";
-import {exchange} from "@/lib/api/auth";
+import {useHttpPost} from "@/hooks/useHttpPost";
+import {REQUEST_STATE} from "@/services/HttpService";
 
 let __e2eeInitInFlight = false;
 let __e2eeInitializedForUser: number | null = null;
 
 export const EnsureSharedKeyBootstrap: React.FC = () => {
     const { localUser } = useMyUser();
-
+    const { execute: exchangePublicKey } = useHttpPost('exchangePublicKey');
     useEffect(() => {
         let cancelled = false;
         (async () => {
@@ -26,7 +27,9 @@ export const EnsureSharedKeyBootstrap: React.FC = () => {
             __e2eeInitInFlight = true;
             try {
                 const { privateKey, publicKeyHex } = await ensureIdentityKeyPair();
-                const serverPublicKeyHex = await exchange(publicKeyHex);
+                const resp = await exchangePublicKey({publicKey: publicKeyHex});
+                if (resp.state !== REQUEST_STATE.SUCCESS) throw new Error('Failed to exchange public key');
+                const serverPublicKeyHex = resp.data.publicKey;
                 if (!cancelled) {
                     await ensureSharedKeyForLocalUser(uid, privateKey, serverPublicKeyHex);
                     __e2eeInitializedForUser = uid;

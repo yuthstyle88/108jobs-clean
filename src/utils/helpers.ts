@@ -1,4 +1,4 @@
-import {isSuccess, RequestState} from "@/services/HttpService";
+import {isSuccess, REQUEST_STATE, RequestState} from "@/services/HttpService";
 import {
     CommunityId,
     CommunityNodeView,
@@ -211,7 +211,7 @@ export function randomStr(
 }
 
 export function resourcesSettled(resources: RequestState<unknown>[]) {
-    return resources.every(r => r.state === "success" || r.state === "failed");
+    return resources.every(r => r.state === REQUEST_STATE.SUCCESS || r.state === REQUEST_STATE.FAILED);
 }
 
 export function validEmail(email: string) {

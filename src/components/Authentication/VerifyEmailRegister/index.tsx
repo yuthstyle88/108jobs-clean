@@ -7,6 +7,7 @@ import {HttpService,} from "@/services";
 import {useEffect, useRef, useState} from "react";
 import {t} from "@/utils/i18nHelper";
 import {LanguageFile} from "@/constants/language";
+import {REQUEST_STATE} from "@/services/HttpService";
 
 type VerifyEmailRegisterProps = {
   code: string;
@@ -29,7 +30,7 @@ export const VerifyEmailRegister = ({code}: VerifyEmailRegisterProps) => {
           console.log("verifyRes",
             verifyRes);
 
-          if (verifyRes.state === "failed") {
+          if (verifyRes.state === REQUEST_STATE.FAILED) {
             setApiError(ERROR_CONSTANTS.CHANGE_PASSWORD_FAILED);
             return;
           }

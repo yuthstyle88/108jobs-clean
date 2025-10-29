@@ -2,6 +2,7 @@
 
 import {useTranslation} from "react-i18next";
 import {useAnnouncements} from "@/contexts/AnnouncementContext";
+import {REQUEST_STATE} from "@/services/HttpService";
 
 type NotificationGroup = {
     success?: Record<string, string | undefined>;
@@ -68,14 +69,14 @@ function useNotification() {
         custom?: string
     ) => {
         if (custom) {
-            announce(custom, "success");
+            announce(custom, REQUEST_STATE.SUCCESS);
             return;
         }
 
         if (group && action) {
             const message = type[group]?.success?.[action];
             if (message) {
-                announce(message, "success");
+                announce(message, REQUEST_STATE.SUCCESS);
             } else {
                 console.warn(`Missing success message for ${group}.${action}`);
             }

@@ -10,7 +10,7 @@
  * @param incomingHeaders HTTP headers from the incoming request
  * @returns An IsoData object containing all necessary data for rendering, or null if an error occurred
  */
-import {FailedRequestState, RequestState, wrapClient} from "@/services/HttpService";
+import {FailedRequestState, REQUEST_STATE, RequestState, wrapClient} from "@/services/HttpService";
 import {isAuthPath} from "@/utils/app";
 import {getErrorPageData,  matchPath } from "@/utils/helpers";
 import {Match} from "@/utils/router";
@@ -158,7 +158,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
      * Process profile data and handle authentication errors
      */
     async function processUserData(tryUser: RequestState<MyUserInfo>): Promise<void> {
-        if (tryUser.state === "success") {
+        if (tryUser.state === REQUEST_STATE.SUCCESS) {
             myUserInfo = tryUser.data;
         }
     }
@@ -167,7 +167,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
      * Process communities data and handle fetch list errors
      */
     async function processCommunitiesData(tryCommunities: RequestState<ListCommunitiesResponse>): Promise<void> {
-        if (tryCommunities.state === "success") {
+        if (tryCommunities.state === REQUEST_STATE.SUCCESS) {
             communities = tryCommunities.data;
         }
     }
@@ -182,7 +182,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
         url: string,
         headers: Record<string, string>
     ): Promise<boolean> {
-        if (trySite.state === "success") {
+        if (trySite.state === REQUEST_STATE.SUCCESS) {
             siteRes = trySite.data;
 
             // Find the active route for the current URL
@@ -225,7 +225,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
                 }
             }
             return true;
-        } else if (trySite.state === "failed") {
+        } else if (trySite.state === REQUEST_STATE.FAILED) {
             logger.error(`Failed to fetch site data: ${trySite.err.message}`);
             errorPageData = getErrorPageData(new Error(trySite.err.message),
                 undefined);
@@ -240,7 +240,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
      */
     function hasRouteDataErrors(): boolean {
         const error = Object.values(routeData).find(
-            res => res.state === "failed" && res.err.message !== "couldnt_find_object",
+            res => res.state === REQUEST_STATE.FAILED && res.err.message !== "couldnt_find_object",
         ) as FailedRequestState | undefined;
 
         if (error) {

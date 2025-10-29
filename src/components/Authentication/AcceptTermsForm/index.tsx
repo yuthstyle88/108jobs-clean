@@ -4,7 +4,7 @@ import {CustomInput} from "@/components/ui/InputField";
 /* เพิ่ม hook */
 import {useHttpPost} from "@/hooks/useHttpPost";
 import {HttpService, UserService} from "@/services";
-import {isSuccess} from "@/services/HttpService"; // เพิ่ม import นี้
+import {isSuccess, REQUEST_STATE} from "@/services/HttpService"; // เพิ่ม import นี้
 import {RegisterOAuthFormData} from "@/types/formTypes/RegisterOAuth";
 import {zodResolver} from "@hookform/resolvers/zod";
 import Link from "next/link";
@@ -127,7 +127,7 @@ useEffect(() => {
         // fallback
         window.location.href = "/";
       }
-    } else if (res.state === "failed") {
+    } else if (res.state === REQUEST_STATE.FAILED) {
       setApiError(res.err.message ?? "Error: Accept form failed. Please try again later.");
     }
   };

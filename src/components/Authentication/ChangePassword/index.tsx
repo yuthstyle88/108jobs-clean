@@ -8,7 +8,8 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import * as z from "zod";
-import {useTranslation} from "react-i18next"; // ★ เพิ่ม
+import {useTranslation} from "react-i18next";
+import {REQUEST_STATE} from "@/services/HttpService"; // ★ เพิ่ม
 
 type ChangePasswordProps = {token: string};
 
@@ -61,12 +62,12 @@ export const ChangePassword = ({token}: ChangePasswordProps) => {
       passwordVerify: data.confirmPassword,
     });
 
-    if (res.state === "failed") {
+    if (res.state === REQUEST_STATE.FAILED) {
       setApiError(ERROR_CONSTANTS.CHANGE_PASSWORD_FAILED);
       return;
     }
 
-    if (res.state === "success") {
+    if (res.state === REQUEST_STATE.SUCCESS) {
       successMessage(null,
         null,
         t("authen.changePasswordSuccess"));

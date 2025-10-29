@@ -5,7 +5,7 @@ import {useEffect} from "react";
 import {toast} from "sonner"; // หรือไลบรารีที่คุณใช้สำหรับ toast notifications
 // Note: E2EE key exchange imports removed to prevent pairing on login
 import {UserService} from "@/services";
-import {HttpService} from "@/services/HttpService";
+import {HttpService, REQUEST_STATE} from "@/services/HttpService";
 import {useTranslation} from "react-i18next";
 import {LoginResponse} from "lemmy-js-client";
 
@@ -58,7 +58,7 @@ export default function OAuthCallbackPage() {
             redirectUri: localOAuthState.redirectUri,
             answer: localOAuthState.answer,
           });
-          if (loginRes.state === "success") {
+          if (loginRes.state === REQUEST_STATE.SUCCESS) {
 
             if (loginRes.data.jwt) {
               // Login สำเร็จ
@@ -75,7 +75,7 @@ export default function OAuthCallbackPage() {
               router.push("/login");
               return
             }
-          } else if (loginRes.state === "failed") {
+          } else if (loginRes.state === REQUEST_STATE.FAILED) {
             // จัดการกับข้อผิดพลาด
             let errRedirect = "/login";
 

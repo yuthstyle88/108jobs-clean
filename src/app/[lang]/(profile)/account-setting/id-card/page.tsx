@@ -12,6 +12,7 @@ import ErrorModal from "@/components/ui/ErrorModal";
 import {useHttpPost} from "@/hooks/useHttpPost";
 import {useMyUser} from "@/hooks/profile-api/useMyUser";
 import {useTranslation} from "react-i18next";
+import {REQUEST_STATE} from "@/services/HttpService";
 
 const IdCard = () => {
 
@@ -30,14 +31,14 @@ const IdCard = () => {
     previewUrl: frontPreview,
     handleSelectImage: handleSelectFront,
     setPreviewUrl: setSelectedFront,
-  } = useImagePreviewOnly(profileState === "success" ? (card as any)?.frontCard : undefined);
+  } = useImagePreviewOnly(profileState === REQUEST_STATE.SUCCESS ? (card as any)?.frontCard : undefined);
 
   const {
     file: backFile,
     previewUrl: backPreview,
     handleSelectImage: handleSelectBack,
     setPreviewUrl: setSelectedBack,
-  } = useImagePreviewOnly(profileState === "success" ? (card as any)?.backCard : undefined);
+  } = useImagePreviewOnly(profileState === REQUEST_STATE.SUCCESS ? (card as any)?.backCard : undefined);
 
   const {
     register,

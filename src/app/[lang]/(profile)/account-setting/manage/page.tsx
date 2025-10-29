@@ -6,6 +6,7 @@ import TotpModal from "@/components/Common/Modal/TotpModal";
 import {toast} from "react-toastify";
 import {HttpService, UserService} from "@/services";
 import PasswordChangeModal from "@/components/ChangePasswordModal";
+import {REQUEST_STATE} from "@/services/HttpService";
 
 export default function AccountManagePage() {
     const {t} = useTranslation();
@@ -28,7 +29,7 @@ export default function AccountManagePage() {
             setSecretUrl(undefined);
             try {
                 const res = await HttpService.client.generateTotpSecret();
-                if (res.state === "success") {
+                if (res.state === REQUEST_STATE.SUCCESS) {
                     setSecretUrl(res.data.totpSecretUrl);
                     setShowTotpModal(true);
                 }
@@ -48,7 +49,7 @@ export default function AccountManagePage() {
                 totpToken: code,
             });
 
-            if (res.state === "success") {
+            if (res.state === REQUEST_STATE.SUCCESS) {
                 setTotpEnabled(modalType === "generate");
                 setShowTotpModal(false);
                 toast(
@@ -59,7 +60,7 @@ export default function AccountManagePage() {
                 );
 
                 const siteRes = await HttpService.client.getSite();
-                if (siteRes.state === "success") {
+                if (siteRes.state === REQUEST_STATE.SUCCESS) {
                     UserService.Instance.myUserInfo!.localUserView.localUser.totp2faEnabled =
                         modalType === "generate";
                 }
