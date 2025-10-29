@@ -19,7 +19,7 @@ import Link from "next/link";
 import {usePathname} from "next/navigation";
 import {useEffect} from "react";
 import {UserService} from "@/services";
-import {useMyUser} from "@/hooks/profile-api/useMyUser";
+import {useMyUser} from "@/hooks/api/profile/useMyUser";
 
 interface SellerMenuProps {
   isOpen: boolean;

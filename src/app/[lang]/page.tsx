@@ -14,7 +14,7 @@ import SpAdsSlider from "@/containers/SpAdsSlider";
 import React, {useState} from "react";
 import {useTranslation} from "react-i18next";
 import {buildCommunitiesTree} from "@/utils/helpers";
-import {useCommunities} from "@/hooks/communites-api/useCommunities";
+import {useCommunities} from "@/hooks/api/communities/useCommunities";
 import {LandingImage} from "@/constants/images";
 import {ChatRoomsProvider} from "@/modules/chat/contexts/ChatRoomsContext";
 import {ChatLanguageProvider} from "@/contexts/ChatLanguage";

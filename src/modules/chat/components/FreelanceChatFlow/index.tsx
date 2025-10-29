@@ -18,7 +18,7 @@
 import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import ConfirmActionModal from '@/components/Common/Modal/ConfirmActionModal';
-import {useWorkflowStepper} from '@/hooks/useWorkflowMachine';
+import {useWorkflowStepper} from '@/hooks/utils/useWorkflowMachine';
 import FileUploadModal from '@/components/Common/Modal/FileUploadModal';
 import {UploadedFile} from '@/modules/chat/hooks/useFileUpload';
 import {WorkFlowAction, workflowActionsMap, WorkFlowStatus} from "@/modules/chat/types/workflow";

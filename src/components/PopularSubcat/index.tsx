@@ -1,12 +1,12 @@
 "use client";
 
 import {CategoriesImage} from "@/constants/images";
-import {useClickOutside} from "@/hooks/useClickOutside";
+import {useClickOutside} from "@/hooks/ui/useClickOutside";
 import Image from "next/image";
 import Link from "next/link";
 import {useState} from "react";
 import Loading from "../Common/Loading/Loading";
-import {useHttpGet} from "@/hooks/useHttpGet";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import ErrorState from "@/components/ErrorState";
 
 type Props = {

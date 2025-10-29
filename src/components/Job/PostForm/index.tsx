@@ -1,7 +1,7 @@
 'use client'
 import React, {useCallback, useEffect, useState} from "react";
 import {notFound, useRouter} from "next/navigation";
-import useNotification from "@/hooks/useNotification";
+import useNotification from "@/hooks/ui/useNotification";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {CreatePost, IntendedUse, JobType, PostId, PostView} from "lemmy-js-client";
@@ -12,9 +12,9 @@ import {useLanguage} from "@/contexts/LanguageContext";
 import {getCommunitiesAtLevel, toCamelCaseLastSegment} from "@/utils/helpers";
 import {useTranslation} from "react-i18next";
 import {REQUEST_STATE} from "@/services/HttpService";
-import {useMyUser} from "@/hooks/profile-api/useMyUser";
-import {useHttpPost} from "@/hooks/useHttpPost";
-import {useCommunities} from "@/hooks/communites-api/useCommunities";
+import {useMyUser} from "@/hooks/api/profile/useMyUser";
+import {useHttpPost} from "@/hooks/api/http/useHttpPost";
+import {useCommunities} from "@/hooks/api/communities/useCommunities";
 import {getNumericCode} from "@/utils/getClientCurrentLanguage";
 
 

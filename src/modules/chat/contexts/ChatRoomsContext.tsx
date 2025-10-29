@@ -3,9 +3,9 @@
 import React, {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from "react";
 import {ChatRoom as AppChatRoom} from "@/modules/chat/types/chat";
 import {HttpService, UserService} from "@/services";
-import {useHttpGet} from "@/hooks/useHttpGet";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import type {ListUserChatRoomsResponse} from "lemmy-js-client";
-import {useMyUser} from "@/hooks/profile-api/useMyUser";
+import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {REQUEST_STATE} from "@/services/HttpService";
 import {isBrowser} from "@/utils/browser";
 import {useUnreadStore} from "@/modules/chat/store/unreadStore";

@@ -1,7 +1,7 @@
 "use client";
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { UserService } from "@/services/UserService";
-import {getIsoData} from "@/hooks/useIsoData";
+import {getIsoData} from "@/hooks/data/useIsoData";
 import {useUserStore} from "@/store/useUserStore";
 
 // Instance type for the singleton user service

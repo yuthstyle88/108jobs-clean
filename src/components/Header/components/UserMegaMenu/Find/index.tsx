@@ -3,7 +3,7 @@ import {getNamespace} from "@/utils/i18nHelper";
 import {faArrowRight} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Link from "next/link";
-import {useHttpGet} from "@/hooks/useHttpGet";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 
 const Find = () => {
   const global = getNamespace(LanguageFile.GLOBAL);

@@ -1,16 +1,14 @@
 'use client';
 
 import ImageUploadModal from '@/components/Common/Modal/AvatarUploadModal';
-import PasswordChangeModal from '@/components/ChangePasswordModal';
 import { ProfileImage } from '@/constants/images';
-import { useMyUser } from '@/hooks/profile-api/useMyUser';
-import { useHttpPost } from '@/hooks/useHttpPost';
-import { useImagePicker } from '@/hooks/useImagePicker';
+import { useMyUser } from '@/hooks/api/profile/useMyUser';
+import { useHttpPost } from '@/hooks/api/http/useHttpPost';
 import Image from 'next/image';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useProfileForm } from '@/app/[lang]/(profile)/account-setting/hooks/useProfileForm';
+import { useProfileForm } from '@/hooks/forms/useProfileForm';
 import { CustomInput } from '@/components/ui/InputField';
+import {useImagePicker} from "@/hooks/ui/useImagePicker";
 
 export default function BasicInformation() {
     const { t } = useTranslation();
@@ -36,10 +34,6 @@ export default function BasicInformation() {
         onSubmit,
         validateField,
     } = useProfileForm(person ?? undefined, setSelectedAvatar, person?.portfolioPics, person?.workSamples);
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const openModal = () => setIsModalOpen(true);
-    const closeModal = () => setIsModalOpen(false);
 
     const updateField = <K extends keyof typeof form>(key: K, value: typeof form[K]) => {
         setForm((prev) => ({ ...prev, [key]: value }));

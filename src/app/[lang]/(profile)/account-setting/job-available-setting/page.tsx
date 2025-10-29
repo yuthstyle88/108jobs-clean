@@ -2,11 +2,11 @@
 
 import * as Switch from "@radix-ui/react-switch";
 import { useState } from "react";
-import useNotification from "@/hooks/useNotification";
 import {useTranslation} from "react-i18next";
-import {useHttpPost} from "@/hooks/useHttpPost";
 import {REQUEST_STATE} from "@/services/HttpService";
 import {useUserStore} from "@/store/useUserStore";
+import useNotification from "@/hooks/ui/useNotification";
+import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 
 const JobAvailable = () => {
   const { person, setPerson } = useUserStore();

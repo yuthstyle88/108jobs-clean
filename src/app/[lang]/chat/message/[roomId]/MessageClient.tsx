@@ -5,7 +5,7 @@ import ChatRoomView from "@/modules/chat/components/ChatRoomView";
 import { UserService } from "@/services";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 import { RoomNotFound } from "@/components/RoomNotFound";
-import { useMyUser } from "@/hooks/profile-api/useMyUser";
+import { useMyUser } from "@/hooks/api/profile/useMyUser";
 import {useChatSession} from "@/modules/chat/hooks/useChatSession";
 
 export default function MessageClient({ roomId }: { roomId: string }) {

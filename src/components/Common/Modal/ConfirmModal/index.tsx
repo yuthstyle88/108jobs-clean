@@ -1,6 +1,6 @@
 "use client";
 import {ERROR_CONSTANTS} from "@/constants/error";
-import useNotification from "@/hooks/useNotification";
+import useNotification from "@/hooks/ui/useNotification";
 import {zodResolver} from "@hookform/resolvers/zod";
 import React, {useState} from "react";
 import {useForm} from "react-hook-form";

@@ -2,7 +2,7 @@
 import ErrorPage from "@/app/[lang]/error";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 import {ERROR_CONSTANTS} from "@/constants/error";
-import useNotification from "@/hooks/useNotification";
+import useNotification from "@/hooks/ui/useNotification";
 import {HttpService,} from "@/services";
 import {useEffect, useRef, useState} from "react";
 import {t} from "@/utils/i18nHelper";

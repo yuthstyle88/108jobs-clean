@@ -4,7 +4,7 @@ import {useTranslation} from "react-i18next";
 import {useRouter} from "next/navigation";
 import {dmRoomId} from "@/utils/helpers";
 import {MessageCircle} from "lucide-react";
-import {useHttpPost} from "@/hooks/useHttpPost";
+import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 
 interface ChatNoWorkButtonProps {
     profile: Person;

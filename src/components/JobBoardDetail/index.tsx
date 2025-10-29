@@ -1,20 +1,18 @@
 "use client";
 
-import ConfirmVerifyFreelancer from "@/app/[lang]/(job)/job-board/_components/ConfirmVerifyFreelancer";
 import {ProfileImage} from "@/constants/images";
 import {PostId} from "lemmy-js-client";
 import {formatDateToLong} from "@/utils";
 import {ArrowLeft, Coins} from "lucide-react";
 import Image from "next/image";
-import {useState} from "react";
 import InfoMessage from "../InfoMessage";
 import {Badge} from "../ui/Badge";
 import {Button} from "../ui/Button";
 import JobBoardProposal from "./components/JobBoardProposal";
 import {useParams, useRouter} from "next/navigation";
-import {useMyUser} from "@/hooks/profile-api/useMyUser";
+import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {UserService} from "@/services";
-import {useHttpGet} from "@/hooks/useHttpGet";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useTranslation} from "react-i18next";
 import {toCamelCaseLastSegment} from "@/utils/helpers";
 import {getLocale} from "@/utils/date";
@@ -28,7 +26,6 @@ const JobBoardDetail = ({jobId}: Props) => {
     const isLoggedIn = UserService.Instance.isLoggedIn;
     const isGuest = !isLoggedIn;
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const route = useRouter();
     const {data: jobDetailData} = useHttpGet("getPost", {id: jobId});
     const {person} = useMyUser();
@@ -48,14 +45,8 @@ const JobBoardDetail = ({jobId}: Props) => {
         return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     };
 
-    const handleConfirmLeave = () => {
-        setIsModalOpen(false);
-        route.push("/seller/my-service");
-    };
-
     const handleProposalClick = () => {
         if (isVerify === "Pending") {
-            setIsModalOpen(true);
             return;
         }
         route.push(`${jobId}/proposal`);
@@ -225,12 +216,6 @@ const JobBoardDetail = ({jobId}: Props) => {
                                   jobCreatorId={jobDetailData?.postView?.creator?.id}/>
             </div>
 
-
-            <ConfirmVerifyFreelancer
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                handleConfirmChange={handleConfirmLeave}
-            />
         </section>
     );
 };

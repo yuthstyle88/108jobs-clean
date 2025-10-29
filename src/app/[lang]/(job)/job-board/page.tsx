@@ -6,8 +6,8 @@ import {useRouter, useSearchParams} from "next/navigation";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {debounce} from "lodash";
 import {CommunityId, IntendedUse, JobType, PostSortType, SearchCombinedView,} from "lemmy-js-client";
-import {useHttpGet} from "@/hooks/useHttpGet";
-import JobBoardTab from "@/app/[lang]/(job)/job-board/_components/JobBoardTab";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
+import JobBoardTab from "@/components/JobBoardTab";
 import {useTranslation} from "react-i18next";
 import {
     formatBudget,
@@ -18,7 +18,7 @@ import {
 } from "@/utils/helpers";
 import ErrorState from "@/components/ErrorState";
 import {REQUEST_STATE} from "@/services/HttpService";
-import {useCommunities} from "@/hooks/communites-api/useCommunities";
+import {useCommunities} from "@/hooks/api/communities/useCommunities";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 
 const ITEMS_PER_PAGE = 20;

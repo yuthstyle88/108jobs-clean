@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import ReviewCard from "@/components/Profile/Reviews/ReviewCard";
 import { PersonId } from "@/lib/lemmy-js-client/src";
-import { usePaginatedReviews } from "@/hooks/usePaginatedReviews";
+import { usePaginatedReviews } from "@/hooks/data/usePaginatedReviews";
 
 const ITEMS_PER_PAGE = 1;
 

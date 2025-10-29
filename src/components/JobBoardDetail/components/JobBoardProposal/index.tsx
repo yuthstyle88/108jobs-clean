@@ -2,19 +2,18 @@
 
 import {ProfileImage} from "@/constants/images";
 import {Pagination} from "@/components/Pagination";
-import {useHttpGet} from "@/hooks/useHttpGet";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import type {CommentView} from "lemmy-js-client";
 import Image from "next/image";
 import React, {useState} from "react";
 import {useParams, useRouter} from "next/navigation";
-import {useMyUser} from "@/hooks/profile-api/useMyUser";
+import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {dmRoomId} from "@/utils/helpers";
-import {HttpService} from "@/services/HttpService";
 import {MessageCircleMore} from "lucide-react";
 import {getLocale} from "@/utils/date";
 import {useTranslation} from "react-i18next";
 import LoadingMultiCircle from "@/components/Common/Loading/LoadingMultiCircle";
-import {useHttpPost} from "@/hooks/useHttpPost";
+import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 
 type JobBoardProposalProps = {
     postId?: number;

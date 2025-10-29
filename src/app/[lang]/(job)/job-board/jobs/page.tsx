@@ -7,9 +7,9 @@ import Image from "next/image";
 import Link from "next/link";
 import {useRouter} from "next/navigation";
 import {useState} from "react";
-import ConfirmCloseJob from "../_components/ConfirmCloseJobs";
-import JobBoardTab from "../_components/JobBoardTab";
-import {useHttpGet} from "@/hooks/useHttpGet";
+import ConfirmCloseJob from "@/components/Common/Modal/ConfirmCloseJobsModal";
+import JobBoardTab from "@/components/JobBoardTab";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useTranslation} from "react-i18next";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 

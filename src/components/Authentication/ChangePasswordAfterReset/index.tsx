@@ -8,8 +8,8 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import * as z from "zod";
-import {useHttpPost} from "@/hooks/useHttpPost"; // ★ เพิ่ม
-import useNotification from "@/hooks/useNotification";
+import {useHttpPost} from "@/hooks/api/http/useHttpPost"; // ★ เพิ่ม
+import useNotification from "@/hooks/ui/useNotification";
 import {REQUEST_STATE} from "@/services/HttpService";
 
 type ChangePasswordProps = {token: string};

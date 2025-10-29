@@ -1,21 +1,17 @@
 'use client';
 
-import { useMyUser } from '@/hooks/profile-api/useMyUser';
 import Image from 'next/image';
-import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Edit, Trash } from 'lucide-react';
-import { PortfolioPic } from 'lemmy-js-client';
+import {useTranslation} from 'react-i18next';
+import {ChevronLeft, ChevronRight, Edit, Trash} from 'lucide-react';
 import PortfolioImageModal from '@/components/Common/Modal/PortfolioImageModal';
-import { usePortfolioImagesForm } from '@/app/[lang]/(profile)/account-setting/hooks/usePortfolioImagesForm';
-import { useState } from 'react';
+import {usePortfolioImagesForm} from '@/hooks/forms/usePortfolioImagesForm';
+import {useState} from 'react';
 import FullScreenImageModal from "@/components/Common/Modal/FullScreenImageModal";
+import {useUserStore} from "@/store/useUserStore";
 
 export default function PortfolioImages() {
-    const { t } = useTranslation();
-    const { profileState, person } = useMyUser();
-    const defaultPortfolio: PortfolioPic[] =
-        profileState === 'success' ? (person?.portfolioPics ?? []).filter((item) => item.imageUrl) : [];
-
+    const {t} = useTranslation();
+    const {person, setPerson} = useUserStore();
     const {
         fields,
         remove,
@@ -39,7 +35,7 @@ export default function PortfolioImages() {
         confirmAddImage,
         confirmUpdateImage,
         isSubmitting,
-    } = usePortfolioImagesForm(defaultPortfolio, 3);
+    } = usePortfolioImagesForm({person: person ?? undefined, imagesPerPage: 3, setPerson});
 
     // State for full-screen image modal
     const [isFullScreenModalOpen, setIsFullScreenModalOpen] = useState(false);
@@ -69,7 +65,8 @@ export default function PortfolioImages() {
                     </h3>
                     <div className="relative flex items-start space-x-4">
                         <div className="flex-1 max-w-md">
-                            <div className="w-full h-12 border border-gray-300 rounded-lg flex items-center justify-between px-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+                            <div
+                                className="w-full h-12 border border-gray-300 rounded-lg flex items-center justify-between px-4 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
                                 <input
                                     type="file"
                                     ref={portfolioFileInputRef}
@@ -98,7 +95,7 @@ export default function PortfolioImages() {
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
                                     >
-                                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
                                     </svg>
                                 </button>
                             </div>
@@ -110,7 +107,7 @@ export default function PortfolioImages() {
                             type="button"
                             onClick={() => {
                                 setEditingImage(null);
-                                setNewImage({ title: '' });
+                                setNewImage({title: ''});
                                 setSelectedPortfolioImage(null);
                             }}
                             className="mt-2 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
@@ -143,7 +140,8 @@ export default function PortfolioImages() {
                                         className="w-full h-36 object-cover rounded-t-lg"
                                     />
                                 ) : (
-                                    <div className="w-full h-36 bg-gray-100 flex items-center justify-center rounded-t-lg">
+                                    <div
+                                        className="w-full h-36 bg-gray-100 flex items-center justify-center rounded-t-lg">
                                         <span className="text-gray-500 text-sm">
                                             {t('portfolioImages.noImage') || 'No image available'}
                                         </span>
@@ -161,7 +159,7 @@ export default function PortfolioImages() {
                                             className="p-1 text-primary hover:text-blue-800"
                                             disabled={isSubmitting}
                                         >
-                                            <Edit className="w-5 h-5" />
+                                            <Edit className="w-5 h-5"/>
                                         </button>
                                         <button
                                             type="button"
@@ -172,7 +170,7 @@ export default function PortfolioImages() {
                                             className="p-1 text-red-600 hover:text-red-800"
                                             disabled={isSubmitting}
                                         >
-                                            <Trash className="w-5 h-5" />
+                                            <Trash className="w-5 h-5"/>
                                         </button>
                                     </div>
                                 </div>
@@ -191,7 +189,7 @@ export default function PortfolioImages() {
                                         : 'hover:backdrop-blur-none hover:bg-[#063a68]'
                                 }`}
                             >
-                                <ChevronLeft className="w-6 h-6" />
+                                <ChevronLeft className="w-6 h-6"/>
                             </button>
                             <button
                                 type="button"
@@ -203,7 +201,7 @@ export default function PortfolioImages() {
                                         : 'hover:backdrop-blur-none hover:bg-[#063a68]'
                                 }`}
                             >
-                                <ChevronRight className="w-6 h-6" />
+                                <ChevronRight className="w-6 h-6"/>
                             </button>
                         </>
                     )}
@@ -218,7 +216,7 @@ export default function PortfolioImages() {
                 initialImage={selectedPortfolioImage}
                 error={uploadError}
                 imageTitle={newImage.title}
-                onTitleChange={(val) => setNewImage({ title: val })}
+                onTitleChange={(val) => setNewImage({title: val})}
             />
             <FullScreenImageModal
                 isOpen={isFullScreenModalOpen}

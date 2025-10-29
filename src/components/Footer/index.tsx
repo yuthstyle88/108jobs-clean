@@ -9,7 +9,7 @@ import Link from "next/link";
 import {getAppName} from "@/utils/appConfig";
 import React from "react";
 import {useTranslation} from "react-i18next";
-import {useCommunities} from "@/hooks/communites-api/useCommunities";
+import {useCommunities} from "@/hooks/api/communities/useCommunities";
 import {getCommunitiesAtLevel, toCamelCaseLastSegment} from "@/utils/helpers";
 
 const Footer = () => {

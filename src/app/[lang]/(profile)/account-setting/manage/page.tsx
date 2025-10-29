@@ -1,40 +1,46 @@
 "use client";
 
-import {useEffect, useState} from "react";
-import {useTranslation} from "react-i18next";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "react-toastify";
+
 import TotpModal from "@/components/Common/Modal/TotpModal";
-import {toast} from "react-toastify";
-import {HttpService, UserService} from "@/services";
 import PasswordChangeModal from "@/components/ChangePasswordModal";
-import {REQUEST_STATE} from "@/services/HttpService";
+
+import { REQUEST_STATE } from "@/services/HttpService";
+import { useHttpPost } from "@/hooks/api/http/useHttpPost";
+import {useUserStore} from "@/store/useUserStore";
 
 export default function AccountManagePage() {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
+    const { user, setUser } = useUserStore();
     const [totpEnabled, setTotpEnabled] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [showTotpModal, setShowTotpModal] = useState(false);
     const [modalType, setModalType] = useState<"generate" | "remove">("generate");
-    const [secretUrl, setSecretUrl] = useState<string | undefined>();
+    const [secretUrl, setSecretUrl] = useState<string>();
 
     const [showPasswordModal, setShowPasswordModal] = useState(false);
 
     useEffect(() => {
-        const enabled =
-            !!UserService.Instance.myUserInfo?.localUserView.localUser.totp2faEnabled;
+        const enabled = !!user?.totp2faEnabled;
         setTotpEnabled(enabled);
     }, []);
+
+    const { execute: generateTotpSecret } = useHttpPost("generateTotpSecret");
+    const { execute: updateTotp } = useHttpPost("updateTotp");
 
     const handleTotpToggle = async () => {
         if (!totpEnabled) {
             setModalType("generate");
             setSecretUrl(undefined);
-            try {
-                const res = await HttpService.client.generateTotpSecret();
-                if (res.state === REQUEST_STATE.SUCCESS) {
-                    setSecretUrl(res.data.totpSecretUrl);
-                    setShowTotpModal(true);
-                }
-            } catch {
-                toast(t("accountManage.totpUnexpectedError"), {type: "error"});
+
+            const res = await generateTotpSecret({});
+            if (res.state === REQUEST_STATE.SUCCESS) {
+                setSecretUrl(res.data.totpSecretUrl);
+                setShowTotpModal(true);
+            } else {
+                toast(t("accountManage.totpUnexpectedError"), { type: "error" });
             }
         } else {
             setModalType("remove");
@@ -42,35 +48,28 @@ export default function AccountManagePage() {
         }
     };
 
+    // 🔹 Submit TOTP enable/disable
     const handleTotpSubmit = async (code: string): Promise<boolean> => {
-        try {
-            const res = await HttpService.client.updateTotp({
-                enabled: modalType === "generate",
-                totpToken: code,
-            });
+        const res = await updateTotp({
+            enabled: modalType === "generate",
+            totpToken: code,
+        });
 
-            if (res.state === REQUEST_STATE.SUCCESS) {
-                setTotpEnabled(modalType === "generate");
-                setShowTotpModal(false);
-                toast(
-                    modalType === "generate"
-                        ? t("accountManage.totpSuccessEnable")
-                        : t("accountManage.totpSuccessDisable"),
-                    {type: "success"}
-                );
+        if (res.state === REQUEST_STATE.SUCCESS) {
+            setTotpEnabled(modalType === "generate");
+            setShowTotpModal(false);
+            const prevUser = user ?? null;
+            // snapshot old value
+            const prev = user?.totp2faEnabled ?? true;
 
-                const siteRes = await HttpService.client.getSite();
-                if (siteRes.state === REQUEST_STATE.SUCCESS) {
-                    UserService.Instance.myUserInfo!.localUserView.localUser.totp2faEnabled =
-                        modalType === "generate";
-                }
-                return true;
-            } else {
-                toast(t("accountManage.totpIncorrectCode"), {type: "error"});
-                return false;
+            // optimistic update to the store so all pages reflect immediately
+            if (prevUser) {
+                setUser({ ...prevUser, totp2faEnabled: !prev });
             }
-        } catch {
-            toast(t("accountManage.totpError"), {type: "error"});
+
+            return true;
+        } else {
+            setError(t("accountManage.totpIncorrectCode"));
             return false;
         }
     };
@@ -80,12 +79,17 @@ export default function AccountManagePage() {
             {/* TOTP modal */}
             <TotpModal
                 show={showTotpModal}
-                onClose={() => setShowTotpModal(false)}
+                onClose={() => {
+                    setShowTotpModal(false);
+                    setError("");
+                }}
                 onSubmit={handleTotpSubmit}
+                error={error}
                 type={modalType}
                 secretUrl={modalType === "generate" ? secretUrl : undefined}
             />
 
+            {/* Password modal */}
             <PasswordChangeModal
                 isOpen={showPasswordModal}
                 onClose={() => setShowPasswordModal(false)}
@@ -120,8 +124,7 @@ export default function AccountManagePage() {
                                 checked={totpEnabled}
                                 onChange={handleTotpToggle}
                             />
-                            <div
-                                className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:bg-green-500 transition-colors duration-200 relative">
+                            <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:bg-green-500 transition-colors duration-200 relative">
                 <span
                     className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
                         totpEnabled ? "translate-x-5" : ""

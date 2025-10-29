@@ -1,7 +1,7 @@
 "use client";
 import {LanguageFile} from "@/constants/language";
 import {getNamespace} from "@/utils/i18nHelper";
-import {useClickOutside} from "@/hooks/useClickOutside";
+import {useClickOutside} from "@/hooks/ui/useClickOutside";
 import {faBell} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useState} from "react";

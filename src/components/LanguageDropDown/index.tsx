@@ -1,6 +1,6 @@
 "use client";
 import {useLanguage} from "@/contexts/LanguageContext";
-import {useClickOutside} from "@/hooks/useClickOutside";
+import {useClickOutside} from "@/hooks/ui/useClickOutside";
 import Image from "next/image";
 import {useState} from "react";
 

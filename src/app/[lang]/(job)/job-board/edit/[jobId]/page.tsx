@@ -1,22 +1,28 @@
+"use client";
+
 import {PostForm} from "@/components/Job/PostForm";
-import {HttpService} from "@/services";
-import {REQUEST_STATE} from "@/services/HttpService";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
+import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
+import NotFound from "@/components/Common/NotFound";
+import {useParams} from "next/navigation";
 
-export default async function editPost({
-                                           params,
-                                       }: {
-    params: Promise<{ jobId: number; commentId: number }>;
-}) {
-    const resolvedParams = await params;
+export default function EditPostPage() {
+    const { jobId, commentId } = useParams() as { jobId: string; commentId?: string };
 
-    const resp = await HttpService.client.getPost({
-        id: resolvedParams.jobId,
-        commentId: resolvedParams.commentId,
+    const {
+        data: postResponse,
+        isMutating: isLoading,
+    } = useHttpGet("getPost", {
+        id: Number(jobId),
+        commentId: commentId ? Number(commentId) : undefined,
     });
+
+    if (isLoading) return <LoadingBlur text="Loading post..." />;
+    if (!postResponse?.postView) return <NotFound />;
 
     return (
         <main className="w-full min-h-screen bg-[#F6F9FE] pt-16">
-            <PostForm mode={"edit"} postView={resp.state === REQUEST_STATE.SUCCESS ? resp?.data.postView : null}/>
+            <PostForm mode="edit" postView={postResponse.postView} />
         </main>
     );
 }

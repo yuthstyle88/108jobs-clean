@@ -3,7 +3,7 @@
 import {useLanguage} from "@/contexts/LanguageContext";
 import {useParams} from "next/navigation";
 import React, {useCallback, useMemo, useState, useEffect} from "react";
-import {useMyUser} from "@/hooks/profile-api/useMyUser";
+import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {useChatRoomsContext} from "@/modules/chat/contexts/ChatRoomsContext";
 import type {ChatRoom} from "@/modules/chat/types/chat";
 import {debounce} from "lodash";

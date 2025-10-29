@@ -1,9 +1,9 @@
 // --- E2EE bootstrap mounted once at app root (not tied to rooms list) ---
-import {useMyUser} from "@/hooks/profile-api/useMyUser";
+import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {useEffect} from "react";
 import {UserService} from "@/services";
 import {ensureIdentityKeyPair, ensureSharedKeyForLocalUser} from "@/modules/chat/utils/security/crypto";
-import {useHttpPost} from "@/hooks/useHttpPost";
+import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 import {REQUEST_STATE} from "@/services/HttpService";
 
 let __e2eeInitInFlight = false;

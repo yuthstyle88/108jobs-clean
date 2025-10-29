@@ -1,5 +1,5 @@
 "use client";
-import {useClickOutside} from "@/hooks/useClickOutside";
+import {useClickOutside} from "@/hooks/ui/useClickOutside";
 import {faUpDown} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {X} from "lucide-react";

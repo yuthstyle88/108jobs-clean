@@ -1,15 +1,16 @@
 'use client';
 
-import {useMyUser} from '@/hooks/profile-api/useMyUser';
-import {useWorkSamplesForm} from '@/app/[lang]/(profile)/account-setting/hooks/useWorkSamplesForm';
+import {useMyUser} from '@/hooks/api/profile/useMyUser';
+import {useWorkSamplesForm} from '@/hooks/forms/useWorkSamplesForm';
 import {CustomInput} from '@/components/ui/InputField';
 import {useTranslation} from 'react-i18next';
 import {ChevronLeft, ChevronRight, Edit, Plus, Trash} from 'lucide-react';
 import {useState} from 'react';
+import {useUserStore} from "@/store/useUserStore";
 
 export default function WorkSamples() {
     const {t} = useTranslation();
-    const {person} = useMyUser();
+    const {person, setPerson} = useUserStore();
     const {
         form,
         errors,
@@ -20,7 +21,9 @@ export default function WorkSamples() {
         startEditing,
         cancelEditing,
         validateField,
-    } = useWorkSamplesForm(person ?? undefined);
+    } = useWorkSamplesForm({
+        person: person ?? undefined, setPerson
+    });
     const [currentSampleIndex, setCurrentSampleIndex] = useState(0);
     const samplesPerPage = 2;
 
@@ -128,44 +131,49 @@ export default function WorkSamples() {
                 </div>
                 <div className="relative">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {form.workSamples
-                            .slice(currentSampleIndex, currentSampleIndex + samplesPerPage)
-                            .map((sample) => (
-                                <div
-                                    key={sample.id}
-                                    className="p-4 rounded-lg border border-gray-200 transition-transform duration-300 hover:scale-105"
-                                >
-                                    <h4 className="font-medium text-gray-800 text-xs sm:text-sm">{sample.title}</h4>
-                                    <p className="text-gray-600 text-xs mt-1">{sample.description}</p>
-                                    <a
-                                        href={sample.sampleUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-primary text-xs hover:underline"
+                        {Array.isArray(person?.workSamples) && person.workSamples.length > 0 ? (
+                            person.workSamples
+                                .slice(currentSampleIndex, currentSampleIndex + samplesPerPage)
+                                .map((sample) => (
+                                    <div
+                                        key={sample.id}
+                                        className="p-4 rounded-lg border border-gray-200 transition-transform duration-300 hover:scale-105"
                                     >
-                                        {t('profileInfo.viewWorkSample')}
-                                    </a>
-                                    <div className="flex justify-start gap-2 mt-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => startEditing(sample)}
-                                            className="p-1 text-primary hover:text-blue-800"
-                                            aria-label={t('profileInfo.editWorkSample')}
+                                        <h4 className="font-medium text-gray-800 text-xs sm:text-sm">{sample.title}</h4>
+                                        <p className="text-gray-600 text-xs mt-1">{sample.description}</p>
+                                        <a
+                                            href={sample.sampleUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-primary text-xs hover:underline"
                                         >
-                                            <Edit className="w-4 h-4 sm:w-5 sm:h-5"/>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => deleteSample(sample.id)}
-                                            className="p-1 text-red-600 hover:text-red-800"
-                                            aria-label={t('profileInfo.deleteWorkSample')}
-                                        >
-                                            <Trash className="w-4 h-4 sm:w-5 sm:h-5"/>
-                                        </button>
+                                            {t('profileInfo.viewWorkSample')}
+                                        </a>
+                                        <div className="flex justify-start gap-2 mt-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => startEditing(sample)}
+                                                className="p-1 text-primary hover:text-blue-800"
+                                                aria-label={t('profileInfo.editWorkSample')}
+                                            >
+                                                <Edit className="w-4 h-4 sm:w-5 sm:h-5"/>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => deleteSample(sample.id)}
+                                                className="p-1 text-red-600 hover:text-red-800"
+                                                aria-label={t('profileInfo.deleteWorkSample')}
+                                            >
+                                                <Trash className="w-4 h-4 sm:w-5 sm:h-5"/>
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                        ) : (
+                            <p className="text-gray-500 text-sm">{t('profile.noWorkSamples')}</p>
+                        )}
                     </div>
+
                     {form.workSamples.length > samplesPerPage && (
                         <>
                             <button

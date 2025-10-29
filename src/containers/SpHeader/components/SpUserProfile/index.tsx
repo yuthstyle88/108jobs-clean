@@ -1,7 +1,7 @@
 "use client";
 import {ProfileImage} from "@/constants/images";
 import {useLanguage} from "@/contexts/LanguageContext";
-import {useMyUser} from "@/hooks/profile-api/useMyUser";
+import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import Image from "next/image";
 import Link from "next/link";
 import {usePathname} from "next/navigation";

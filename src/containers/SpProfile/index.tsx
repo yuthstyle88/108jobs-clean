@@ -2,7 +2,7 @@
 import {ProfileIcon} from "@/constants/icons";
 import {ProfileImage} from "@/constants/images";
 import {useLanguage} from "@/contexts/LanguageContext";
-import {useMyUser} from "@/hooks/profile-api/useMyUser";
+import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {UserService} from "@/services";
 import {faHeart} from "@fortawesome/free-regular-svg-icons";
 import {

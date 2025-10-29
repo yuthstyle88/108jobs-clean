@@ -7,7 +7,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEdit} from "@fortawesome/free-solid-svg-icons";
 import {Person} from "lemmy-js-client";
 import {ProfileImage} from "@/constants/images";
-import {useMyUser} from "@/hooks/profile-api/useMyUser";
+import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import ChatNoWorkButton from "@/components/Common/Button/ChatNoWorkButton";
 
 interface ProfileSidebarProps {

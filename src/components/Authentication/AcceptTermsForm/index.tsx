@@ -2,7 +2,7 @@
 import LoadingCircle from "@/components/Common/Loading/LoadingCircle";
 import {CustomInput} from "@/components/ui/InputField";
 /* เพิ่ม hook */
-import {useHttpPost} from "@/hooks/useHttpPost";
+import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 import {HttpService, UserService} from "@/services";
 import {isSuccess, REQUEST_STATE} from "@/services/HttpService"; // เพิ่ม import นี้
 import {RegisterOAuthFormData} from "@/types/formTypes/RegisterOAuth";

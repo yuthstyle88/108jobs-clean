@@ -8,6 +8,7 @@ import getQueryParams from "@/utils/helpers";
 import {isSuccess, REQUEST_STATE} from "@/services/HttpService";
 import {getAppName} from "@/utils/appConfig";
 import {isBrowser} from "@/utils";
+import {t} from "i18next";
 
 export const handleUseOAuthProvider = async (params: {
     oauthProvider: OAuthProvider;
@@ -135,6 +136,7 @@ export async function handleLoginSuccess(i: LoginFormClass, loginRes: LoginRespo
 
 export async function handleSubmitTotp(i: LoginFormClass, totp: string) {
     const {usernameOrEmail, password} = i.state.form;
+    const {t} = i.props;
 
     i.setState(prev => ({
         form: {
@@ -151,11 +153,10 @@ export async function handleSubmitTotp(i: LoginFormClass, totp: string) {
 
     const successful = isSuccess(loginRes);
     if (successful) {
-        i.setState({show2faModal: false});
         await handleLoginSuccess(i,
             loginRes.data);
     } else {
-        toast("incorrectTotpCode");
+        i.props.setApiError(t("totp.invalidCode"));
     }
 
     return successful;

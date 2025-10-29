@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Person } from "lemmy-js-client";
-import { useMyUser } from "@/hooks/profile-api/useMyUser";
+import { useMyUser } from "@/hooks/api/profile/useMyUser";
 import ProfileHeader from "@/components/Profile/ProfileHeader";
 import ProfileSidebar from "@/components/Profile/ProfileSidebar";
 import PortfolioSlider from "@/components/Profile/PortfolioSlider";

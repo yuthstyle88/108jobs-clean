@@ -4,7 +4,7 @@ import {faCoins} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useState} from "react";
 import {useTranslation} from "react-i18next";
-import {useMyUser} from "@/hooks/profile-api/useMyUser";
+import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import TopUpModal from "@/components/Common/Modal/TopUpModal";
 
 const Coins108Jobs = () => {

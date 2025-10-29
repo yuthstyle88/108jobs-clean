@@ -2,7 +2,7 @@
 import LanguageDropdown from "@/components/LanguageDropDown";
 import NotificationDropdown from "@/components/NotificationDropdown";
 import {ProfileImage} from "@/constants/images";
-import {useToggle} from "@/hooks/useToggle";
+import {useToggle} from "@/hooks/ui/useToggle";
 import {faChevronDown} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Image from "next/image";
@@ -10,7 +10,7 @@ import Link from "next/link";
 import UserMegaMenu from "../UserMegaMenu";
 import UserImproveMenu from "../UserImproveMenu";
 import ProfileUser from "../ProfileUser";
-import {useMyUser} from "@/hooks/profile-api/useMyUser";
+import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {useTranslation} from "react-i18next";
 import ChatBadge from "@/components/Header/components/ChatBadge";
 import {ProfileIcon} from "@/constants/icons";

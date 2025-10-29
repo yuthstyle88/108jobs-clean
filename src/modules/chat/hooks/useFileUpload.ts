@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { REQUEST_STATE } from '@/services/HttpService';
-import { useHttpPost } from '@/hooks/useHttpPost';
+import { useHttpPost } from '@/hooks/api/http/useHttpPost';
 
 export type UploadedFile = { fileUrl: string; fileType: string; fileName: string } | null;
 

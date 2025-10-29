@@ -1,6 +1,6 @@
 "use client";
 import {AssetIcon} from "@/constants/icons";
-import {useAuthInfo} from "@/hooks/authenticate-api/useAuthInfo";
+import {useAuthInfo} from "@/hooks/api/authenticate/useAuthInfo";
 import Image from "next/image";
 import Link from "next/link";
 import {useTranslation} from "react-i18next";

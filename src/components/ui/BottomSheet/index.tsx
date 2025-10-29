@@ -1,7 +1,7 @@
 "use client";
 import {ReactNode, useEffect} from "react";
 import {AnimatePresence, motion} from "framer-motion";
-import {useClickOutside} from "@/hooks/useClickOutside";
+import {useClickOutside} from "@/hooks/ui/useClickOutside";
 
 interface BottomSheetProps {
     open: boolean;

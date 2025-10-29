@@ -8,11 +8,11 @@ import {useParams, useRouter} from "next/navigation";
 import {useForm} from "react-hook-form";
 import * as z from "zod";
 import {useTranslation} from "react-i18next";
-import {useHttpPost} from "@/hooks/useHttpPost";
+import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 import {useCallback} from "react";
 import {CreateComment, PostId} from "lemmy-js-client";
 import {REQUEST_STATE} from "@/services/HttpService";
-import useNotification from "@/hooks/useNotification";
+import useNotification from "@/hooks/ui/useNotification";
 
 const createJobApplicationSchema = (t: (key: string, options?: any) => string) =>
     z.object({

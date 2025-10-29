@@ -158,15 +158,30 @@ export class LoginFormClass extends Component<
                 {this.state.show2faModal && (
                     <TotpModal
                         show={this.state.show2faModal}
-                        onClose={() => this.setState({show2faModal: false})}
-                        onSubmit={handleSubmit((data: string) => handleSubmitTotp(this,
-                            data))}
+                        onClose={() => {
+                            // Clear server-side or local TOTP payload if it exists
+                            this.setState({ show2faModal: false });
+
+                            // Optional: if your backend expects no totp field after close, clear it
+                            if (this.state.form.totp2faToken) {
+                                this.setState(prev => ({
+                                    form: { ...prev.form, totp2faToken: "" },
+                                }));
+                            }
+
+                            if (this.props.apiError) {
+                                this.props.setApiError(null);
+                            }
+
+                        }}
+                        onSubmit={(code) => handleSubmitTotp(this, code)}
                         type={"login"}
+                        error={this.props.apiError}
                     />
                 )}
                 <form onSubmit={handleSubmit((data: any) => handleLogin(this,
                     data))} className="space-y-5">
-                    {this.props.apiError && (
+                    {this.props.apiError && this.props.apiError !== t("totp.invalidCode") && (
                         <p className="text-red-500 text-sm text-center mb-4">
                             {this.props.apiError}
                         </p>
