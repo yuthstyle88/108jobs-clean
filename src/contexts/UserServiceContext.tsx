@@ -25,6 +25,7 @@ export function UserServiceProvider({ children, token }: UserServiceProviderProp
   const iso = getIsoData()?.myUserInfo ?? null;
   const setUser = useUserStore((s) => s.setUser);
   const setPerson = useUserStore((s) => s.setPerson);
+  const setUserInfo = useUserStore((s) => s.setUserInfo);
   const user = UserService.Instance;
 
   // Seed the global store once on mount (after login redirect)
@@ -32,6 +33,7 @@ export function UserServiceProvider({ children, token }: UserServiceProviderProp
     if (iso) {
       setUser(iso.localUserView?.localUser ?? null);
       setPerson(iso.localUserView?.person ?? null);
+      setUserInfo(iso ?? null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

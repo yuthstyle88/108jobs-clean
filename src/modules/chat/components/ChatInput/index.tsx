@@ -1,7 +1,7 @@
 "use client";
 
 import {Paperclip, Send, Smile} from "lucide-react";
-import React, {useEffect, useRef} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {useForm} from "react-hook-form";
 import {useTranslation} from "react-i18next";
 
@@ -36,12 +36,55 @@ const ChatInput: React.FC<ChatInputProps> = ({
     const messageRef = useRef<HTMLTextAreaElement | null>(null);
 
     const {ref, ...rest} = register("message");
-    const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const typingLastSentAtRef = useRef<number>(0);
     const typingLastStateRef = useRef<boolean | null>(null);
     const TYPING_TRUE_THROTTLE_MS = 5000; // 5 seconds throttle for typing=true
     const TYPING_STOP_DEBOUNCE_MS = 1500; // stop-typing debounce
+
+    // Drag and drop state and handlers
+    const [isDragging, setIsDragging] = useState(false);
+    const dragCounterRef = useRef(0);
+
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try { (e.dataTransfer as DataTransfer).dropEffect = 'copy'; } catch {}
+    };
+    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current += 1;
+        setIsDragging(true);
+    };
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current -= 1;
+        if (dragCounterRef.current <= 0) {
+            setIsDragging(false);
+        }
+    };
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current = 0;
+        setIsDragging(false);
+        try {
+            // Pass the native event so caller can read dataTransfer.files
+            onFileUpload?.(e.nativeEvent as unknown as Event);
+        } catch {}
+    };
+
+    useEffect(() => {
+        const onWindowDragLeave = () => {
+            setIsDragging(false);
+            dragCounterRef.current = 0;
+        };
+        window.addEventListener('dragleave', onWindowDragLeave);
+        return () => window.removeEventListener('dragleave', onWindowDragLeave);
+    }, []);
 
     const resizeTextarea = () => {
         const textarea = messageRef.current;
@@ -59,7 +102,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
     const internalSubmit = (data: MessageForm) => {
         if (disabled) return;
-        onSubmit(data);
+        const text = (data.message ?? '').trim();
+        if (!text) return; // guard against empty messages
+        onSubmit({ message: text });
         // stop typing on submit
         try { onTyping?.(false); } catch {}
         typingLastStateRef.current = false;
@@ -68,6 +113,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
         reset();
         setTimeout(() => resizeTextarea(), 0);
     };
+
+    useEffect(() => {
+        return () => {
+            if (typingTimerRef.current) {
+                try { clearTimeout(typingTimerRef.current); } catch {}
+                typingTimerRef.current = null;
+            }
+        };
+    }, []);
 
     return (
         <form
@@ -81,7 +135,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                     type="file"
                     id="fileInput"
                     className="hidden"
-                    onChange={(e) => onFileUpload?.(e as unknown as Event)}
+                    onChange={(e) => onFileUpload?.(e.nativeEvent as unknown as Event)}
                 />
                 <label
                     htmlFor="fileInput"
@@ -93,7 +147,20 @@ const ChatInput: React.FC<ChatInputProps> = ({
                         <Paperclip size={20}/>
                     )}
                 </label>
-                <div className="flex-1 border rounded-lg overflow-hidden flex">
+                <div
+                    className={`relative flex-1 border rounded-lg overflow-hidden flex transition-colors ${
+                        isDragging ? "border-dashed bg-blue-50 border-blue-400" : ""
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                >
+                    {isDragging && (
+                        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-blue-50/70 text-blue-700 text-sm">
+                            {t("profileChat.dropFiles") || "Drop files to upload"}
+                        </div>
+                    )}
           <textarea
               data-testid="chat-input"
               {...rest}
@@ -106,17 +173,21 @@ const ChatInput: React.FC<ChatInputProps> = ({
                       ? (disabledHint !== undefined ? disabledHint : (t("profileChat.userNotAvailable") || "This user is not available for messages."))
                       : (typingHint ? typingHint : (t("profileChat.typeMessageHere") || "Type a message..."))
               }
-              className={`text-text-primary flex-1 px-3 py-2 resize-none focus:outline-none min-h-[40px] max-h-[150px] overflow-y-auto break-words whitespace-pre-wrap ${disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''}`}
+              className={`text-text_primary flex-1 px-3 py-2 resize-none focus:outline-none min-h-[40px] max-h-[150px] overflow-y-auto break-words whitespace-pre-wrap ${disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''}`}
               rows={1}
               disabled={disabled}
               onKeyDown={(e) => {
                   if (disabled) { e.preventDefault(); return; }
+                  if ((e as any).isComposing) return; // respect IME composition
                   if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
                       const form = e.currentTarget.closest("form");
                       if (form) form.requestSubmit();
                   }
               }}
+              onFocus={() => { try { sendLatestRead(); } catch {} }}
+              onClick={() => { try { sendLatestRead(); } catch {} }}
+              onDrop={(e) => { e.preventDefault(); }}
               onChange={(e) => {
                   // keep RHF in sync
                   try { (rest as any).onChange?.(e); } catch {}
@@ -136,11 +207,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
                               typingLastSentAtRef.current = now;
                           }
                       } else {
-                          if (typingLastStateRef.current !== false) {
-                              onTyping?.(false);
-                              typingLastStateRef.current = false;
-                              typingLastSentAtRef.current = now;
-                          }
+                          // Don't immediately send typing=false here.
+                          // Let the debounce timer below handle stop-typing to avoid flapping.
                       }
                   } catch {}
 
@@ -150,7 +218,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
                   }
                   typingTimerRef.current = setTimeout(() => {
                       try {
-                          if (typingLastStateRef.current !== false) {
+                          const stillEmpty = !messageRef.current || (messageRef.current.value || '').trim().length === 0;
+                          if (stillEmpty && typingLastStateRef.current !== false) {
                               onTyping?.(false);
                               typingLastStateRef.current = false;
                               typingLastSentAtRef.current = Date.now();

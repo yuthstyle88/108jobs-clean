@@ -65,6 +65,7 @@ import {useRoomPresence} from "@/modules/chat/hooks/useRoomPresence";
 import {SubmitReviewModal} from "@/modules/chat/components/Modal/SubmitReviewModal";
 import {REQUEST_STATE} from "@/services/HttpService";
 import {isBrowser} from "@/utils";
+import {useUserStore} from "@/store/useUserStore";
 
 
 /** Shape of the form submitted by ChatInput. */
@@ -123,7 +124,8 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                                                        partnerPersonId
                                                    }) => {
     const {t} = useTranslation();
-    const {person, wallet} = useMyUser();
+    const {person, userInfo} = useUserStore();
+    const wallet = userInfo?.wallet;
     // --- Availability & basic send gating ---
     // Treat undefined availability as "available". Block sending if either side is unavailable.
     const isSubmittingRef = useRef(false);
@@ -275,20 +277,22 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
         sendLatestRead();
     }, [lastMsgId, roomId, sendLatestRead]);
 
+    // Keep latest sendLatestRead in a ref so global listeners (mounted once) always call fresh logic
+    const sendLatestReadRef = useRef(sendLatestRead);
+    useEffect(() => {
+        sendLatestReadRef.current = sendLatestRead;
+    }, [sendLatestRead]);
     // Re-send latest read receipt when the page becomes visible/active again
     useEffect(() => {
-        let timer: ReturnType<typeof setTimeout> | null = null;
+        const timerRef: { current: ReturnType<typeof setTimeout> | null } = { current: null };
 
         const trySend = () => {
-            // Debounce a bit to avoid flapping when multiple events fire together
-            if (timer) clearTimeout(timer);
-            timer = setTimeout(() => {
-                // Only attempt when page is actually visible and focused
+            if (timerRef.current) clearTimeout(timerRef.current);
+            timerRef.current = setTimeout(() => {
                 if (typeof document !== 'undefined' && document.visibilityState === 'visible' && document.hasFocus()) {
                     try {
-                        sendLatestRead();
-                    } catch {
-                    }
+                        sendLatestReadRef.current?.();
+                    } catch {}
                 }
             }, 120);
         };
@@ -307,13 +311,13 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
         trySend();
 
         return () => {
-            if (timer) clearTimeout(timer);
+            if (timerRef.current) clearTimeout(timerRef.current);
             window.removeEventListener('focus', onFocus);
             document.removeEventListener('visibilitychange', onVisibility);
             window.removeEventListener('pageshow', onPageShow);
             window.removeEventListener('online', onOnline);
         };
-    }, [sendLatestRead]);
+    }, []);
 
     // Auto-collapse the workflow panel on narrow viewports to preserve space for the conversation.
     useEffect(() => {
