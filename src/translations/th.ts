@@ -1962,6 +1962,8 @@ export const th = {
             preview: "ตัวอย่างรูปภาพ",
             fullScreenImage: "รูปภาพเต็มหน้าจอ",
             uploadFailed: "ไม่สามารถอัปโหลดไฟล์ได้",
+            updateAvailable: "มีอัปเดต",
+            updateNotAvailable: "ไม่มีอัปเดต",
         },
         upload: {
             noFile: "No file selected",

@@ -2004,6 +2004,8 @@ export const en = {
             preview: "Image preview",
             fullScreenImage: "Full screen image",
             uploadFailed: "File upload failed",
+            updateAvailable: "Update available",
+            updateNotAvailable: "No update available",
         },
         upload: {
             noFile: "No file selected",

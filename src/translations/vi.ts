@@ -2014,6 +2014,8 @@ export const vi = {
             preview: "Xem trước hình ảnh",
             fullScreenImage: "Hình ảnh toàn màn hình",
             uploadFailed: "Không thể tải lên tệp",
+            updateAvailable: "Có bản cập nhật",
+            updateNotAvailable: "Không có bản cập nhật",
         },
         upload: {
             noFile: "Không có tệp nào được chọn",
