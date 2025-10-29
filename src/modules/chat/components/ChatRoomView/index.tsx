@@ -25,7 +25,6 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {v4 as uuidv4} from "uuid";
-import {useMyUser} from "@/hooks/profile-api/useMyUser";
 import {ProfileImage} from "@/constants/images";
 import type {
     ChatMessage,
@@ -277,22 +276,20 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
         sendLatestRead();
     }, [lastMsgId, roomId, sendLatestRead]);
 
-    // Keep latest sendLatestRead in a ref so global listeners (mounted once) always call fresh logic
-    const sendLatestReadRef = useRef(sendLatestRead);
-    useEffect(() => {
-        sendLatestReadRef.current = sendLatestRead;
-    }, [sendLatestRead]);
     // Re-send latest read receipt when the page becomes visible/active again
     useEffect(() => {
-        const timerRef: { current: ReturnType<typeof setTimeout> | null } = { current: null };
+        let timer: ReturnType<typeof setTimeout> | null = null;
 
         const trySend = () => {
-            if (timerRef.current) clearTimeout(timerRef.current);
-            timerRef.current = setTimeout(() => {
+            // Debounce a bit to avoid flapping when multiple events fire together
+            if (timer) clearTimeout(timer);
+            timer = setTimeout(() => {
+                // Only attempt when page is actually visible and focused
                 if (typeof document !== 'undefined' && document.visibilityState === 'visible' && document.hasFocus()) {
                     try {
-                        sendLatestReadRef.current?.();
-                    } catch {}
+                        sendLatestRead();
+                    } catch {
+                    }
                 }
             }, 120);
         };
@@ -311,13 +308,13 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
         trySend();
 
         return () => {
-            if (timerRef.current) clearTimeout(timerRef.current);
+            if (timer) clearTimeout(timer);
             window.removeEventListener('focus', onFocus);
             document.removeEventListener('visibilitychange', onVisibility);
             window.removeEventListener('pageshow', onPageShow);
             window.removeEventListener('online', onOnline);
         };
-    }, []);
+    }, [sendLatestRead]);
 
     // Auto-collapse the workflow panel on narrow viewports to preserve space for the conversation.
     useEffect(() => {
