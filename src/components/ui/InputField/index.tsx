@@ -11,6 +11,7 @@ type InputProps = {
     register?: UseFormRegisterReturn;
     error?: string;
     showPassword?: boolean;
+    autoComplete?: string;
     toggleShowPassword?: () => void;
     placeholder?: string;
     readonly?: boolean;
@@ -29,6 +30,7 @@ export const CustomInput = ({
                                 register,
                                 error,
                                 showPassword,
+                                autoComplete,
                                 toggleShowPassword,
                                 placeholder,
                                 readonly = false,
@@ -65,6 +67,7 @@ export const CustomInput = ({
                     }`}
                     type={showPassword ? "text" : type}
                     placeholder={placeholder}
+                    autoComplete={autoComplete}
                     readOnly={readonly}
                     aria-describedby={error ? `${name}-error` : undefined}
                 />

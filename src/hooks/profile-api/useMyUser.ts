@@ -10,9 +10,10 @@ export const useMyUser = () => {
     const [user, setUser] = useState(() => getIsoData()?.myUserInfo ?? null);
 
     useEffect(() => {
-        // อัปเดตค่าเมื่อรันบนเบราว์เซอร์หลัง hydration เพื่อกระตุ้นให้เกิด re-render ในโหมด production
+        // อัปเดตหลัง hydration; เลื่อน setState ออกจาก body ของ effect เพื่อลด cascading renders
         const next = getIsoData()?.myUserInfo ?? null;
-        setUser(next);
+        queueMicrotask(() => setUser(next));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const profileState = user ? REQUEST_STATE.SUCCESS : REQUEST_STATE.FAILED;

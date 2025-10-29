@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {LANGUAGE_COOKIE} from "@/constants/language";
-import {JWT} from "@/utils/config";
-import {isHttps} from "@/utils";
+import {isHttps, JWT} from "@/utils";
 import {langFromPath, resolveLanguage} from "@/utils/getCookies";
+import {getJwtCookieFromServer, isJwtExpired, parseJwtClaims} from "@/utils/helper-server";
 
 const LOCALE_RE = /^\/([a-z]{2})(\/|$)/i;
 
@@ -10,33 +10,17 @@ function stripLocalePrefix(pathname: string) {
   return pathname.replace(LOCALE_RE, '/');
 }
 // Disable protection: make all routes public
-const PROTECTED_PATHS: string[] = ['/chat' ,'/account', '/admin'];
-
-function decodeBase64Url(input: string): string {
-    const b64 = input.replace(/-/g, '+').replace(/_/g, '/');
-    const pad = '==='.slice((b64.length + 3) % 4);
-    return atob(b64 + pad);
-}
-
-function parseJwtClaims(token?: string): any {
-    if (!token) return {};
-    const parts = token.split('.');
-    if (parts.length < 2) return {};
-    try {
-        const json = decodeBase64Url(parts[1]);
-        return JSON.parse(json);
-    } catch {
-        return {};
-    }
-}
+const PROTECTED_PATHS: string[] = ['/chat', '/profile' ,'/account-setting', '/admin'];
 
 
-export function proxy(req: NextRequest) {
+export async function proxy(req: NextRequest) {
     const { pathname, search } = req.nextUrl;
     const pathLngCurrent = langFromPath(pathname);
 
-    const rawCookie = req.cookies.get(JWT)?.value;
-    const sid = Boolean(rawCookie);
+    const rawCookie = (await getJwtCookieFromServer()) ?? "";
+    // Normalize token (some environments may store it with a 'Bearer ' prefix)
+    const token = rawCookie.startsWith("Bearer ") ? rawCookie.slice(7).trim() : rawCookie;
+    const sid = Boolean(token) && !isJwtExpired(token);
     // Read claims from JWT (Edge-safe decode, no verification). Fall back to cookie when absent.
     let jwtLang: string | undefined;
     try {

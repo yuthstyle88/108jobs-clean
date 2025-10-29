@@ -12,7 +12,6 @@ const JobAvailable = () => {
   const [isAvailable, setIsAvailable] = useState<boolean>(person?.available ?? true);
   const {successMessage, errorMessage} = useNotification();
   const { t } = useTranslation();
-
   // Sync with person.available when it changes
   useEffect(() => {
     setIsAvailable(person?.available ?? true);

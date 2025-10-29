@@ -8,23 +8,7 @@ import {
     PaginationCursor,
     PersonId
 } from "lemmy-js-client";
-import type {IncomingHttpHeaders} from "http";
-import {authCookieName} from "@/utils/config";
 
-// Lightweight cookie header parser (server-only usage). Avoids bundling the `cookie` pkg in client code.
-function parseCookieHeader(header: string): Record<string, string> {
-    return (header || "")
-        .split(/;\s*/)
-        .filter(Boolean)
-        .reduce((acc: Record<string, string>, pair: string) => {
-            const eq = pair.indexOf("=");
-            if (eq === -1) return acc;
-            const k = decodeURIComponent(pair.slice(0, eq).trim());
-            const v = decodeURIComponent(pair.slice(eq + 1));
-            acc[k] = v;
-            return acc;
-        }, {});
-}
 import {Match} from "@/utils/router";
 import {ErrorPageData} from "@/utils/types";
 
@@ -376,66 +360,6 @@ export function matchPath(
         result);
 
     return result;
-}
-
-export function getJwtCookieFromServer(headers: IncomingHttpHeaders): string | undefined {
-    // 1) Prefer explicit Authorization header: "Bearer <token>"
-    const authHeader = (headers.authorization ??
-        // Some proxies / environments may preserve original casing
-        (headers as any)['Authorization']) as string | undefined;
-
-    if (typeof authHeader === 'string') {
-        const m = authHeader.match(/^\s*Bearer\s+(.+)\s*$/i);
-        if (m?.[1]) {
-            return m[1].trim();
-        }
-    }
-
-    // 2) Fallback to Cookie header
-    // Node's IncomingHttpHeaders.cookie can be string | string[] | undefined
-    const rawCookie =
-        Array.isArray(headers.cookie) ? headers.cookie.join('; ') : headers.cookie;
-
-    if (!rawCookie || rawCookie.length === 0) return undefined;
-
-    const parsed = parseCookieHeader(rawCookie);
-
-    // Primary cookie name (from config)
-    const byConfiguredName = parsed[authCookieName];
-    if (byConfiguredName) return byConfiguredName;
-
-    // Final fallback to a couple of common names to ease migrations.
-    return parsed['jwt'] ?? parsed['token'] ?? undefined;
-}
-
-export function setForwardedHeaders(headers: IncomingHttpHeaders): {
-    [key: string]: string;
-} {
-    const out: { [key: string]: string } = {};
-
-    if (headers.host) {
-        out.host = headers.host;
-    }
-
-    const realIp = headers["x-real-ip"];
-
-    if (realIp) {
-        out["x-real-ip"] = realIp as string;
-    }
-
-    const forwardedFor = headers["x-forwarded-for"];
-
-    if (forwardedFor) {
-        out["x-forwarded-for"] = forwardedFor as string;
-    }
-
-    const auth = getJwtCookieFromServer(headers);
-
-    if (auth) {
-        out["Authorization"] = `Bearer ${auth}`;
-    }
-
-    return out;
 }
 
 /**

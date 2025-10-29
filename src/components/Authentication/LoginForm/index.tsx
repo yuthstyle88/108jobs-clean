@@ -182,6 +182,7 @@ export class LoginFormClass extends Component<
                         name="usernameOrEmail"
                         register={register("usernameOrEmail")}
                         error={errors.usernameOrEmail?.message}
+                        autoComplete="username webauthn"
                         placeholder={t("authen.placeholderUsernameOrEmail")}
                     />
 

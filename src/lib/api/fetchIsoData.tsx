@@ -12,7 +12,7 @@
  */
 import {FailedRequestState, RequestState, wrapClient} from "@/services/HttpService";
 import {isAuthPath} from "@/utils/app";
-import {getErrorPageData, getJwtCookieFromServer, matchPath, setForwardedHeaders} from "@/utils/helpers";
+import {getErrorPageData,  matchPath } from "@/utils/helpers";
 import {Match} from "@/utils/router";
 import {routes} from "@/utils/routes";
 import {ErrorPageData, IsoData, RouteData} from "@/utils/types";
@@ -20,6 +20,7 @@ import {parsePath} from "history";
 import {IncomingHttpHeaders} from "http";
 import {GetSiteResponse, LemmyHttp, ListCommunitiesResponse, MyUserInfo} from "lemmy-js-client";
 import {getHttpBase} from "@/utils";
+import {getJwtCookieFromServer, setForwardedHeaders} from "@/utils/helper-server";
 
 /**
  * Optimized logger that conditionally logs based on environment
@@ -82,9 +83,10 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
     let communities: ListCommunitiesResponse | undefined = undefined;
     let activeRoute;
     try {
+
         // Set up headers and authentication
-        const headers = setForwardedHeaders(incomingHeaders);
-        const auth = getJwtCookieFromServer(incomingHeaders);
+        const headers = await setForwardedHeaders(incomingHeaders);
+        const auth = await getJwtCookieFromServer(incomingHeaders);
         // Create a per-request client and set headers without mutating the shared client
         const tempClient = wrapClient(new LemmyHttp(getHttpBase()));
         await (tempClient as any).setHeaders(headers);

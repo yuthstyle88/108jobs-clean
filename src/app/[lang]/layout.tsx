@@ -5,7 +5,6 @@ import FontAwesomeConfig from "../fontawesome";
 import "../globals.css";
 import React from "react";
 import {isoDataInitializer} from "@/utils";
-import {ClientSWRProvider} from "@/components/ClientSWRProvider";
 import {GlobalLoaderProvider} from "@/contexts/GlobalLoaderContext";
 import {GlobalErrorProvider} from "@/contexts/GlobalErrorContext";
 import {AnnouncementProvider} from "@/contexts/AnnouncementContext";
@@ -58,13 +57,11 @@ export default async function RootLayout({
                 <GlobalErrorProvider>
                     <GlobalLoaderProvider>
                         <AnnouncementProvider>
-                            <ClientSWRProvider>
                                 <Toaster richColors closeButton position="bottom-right"/>
                                 <AccessibleAnnouncements/>
                                 <GlobalError/>
                                 <GlobalLoader/>
                                 {children}
-                            </ClientSWRProvider>
                         </AnnouncementProvider>
                     </GlobalLoaderProvider>
                 </GlobalErrorProvider>

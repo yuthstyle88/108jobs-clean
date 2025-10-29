@@ -1,22 +1,6 @@
 import {t} from "@/utils/i18nHelper";
 import {LanguageFile} from "@/constants/language";
 
-export const ERROR_REGISTER = {
-  emailAlreadyExists: "EMAIL_ALREADY_EXISTS",
-  databaseError: "DATABASE_ERROR",
-  rateLimitError: "RATE_LIMIT_ERROR",
-};
-
-export const ERROR_VERIFY_EMAIL = {
-  verificationCodeExpired: "VERIFICATION_CODE_EXPIRED",
-  invalidVerificationCode: "INVALID_VERIFICATION_CODE",
-};
-
-export const ERROR_VERIFY_PASSWORD = {
-  invalidPassword: "INVALID_PASSWORD",
-  invalidCredentials: "INVALID_CREDENTIALS",
-};
-
 export const ERROR_CONSTANTS = {
   EMAIL_EXIST: () => t(LanguageFile.ERROR, "emailExists"),
   EMAIL_VERIFIED: () => t(LanguageFile.ERROR, "emailVerified"),
