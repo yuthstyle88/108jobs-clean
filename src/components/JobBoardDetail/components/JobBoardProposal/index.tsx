@@ -14,6 +14,7 @@ import {MessageCircleMore} from "lucide-react";
 import {getLocale} from "@/utils/date";
 import {useTranslation} from "react-i18next";
 import LoadingMultiCircle from "@/components/Common/Loading/LoadingMultiCircle";
+import {useHttpPost} from "@/hooks/useHttpPost";
 
 type JobBoardProposalProps = {
     postId?: number;
@@ -29,7 +30,7 @@ const JobBoardProposal = ({postId, jobCreatorId}: JobBoardProposalProps) => {
         pageCursor: currentCursor,
         ...(postId ? {postId} : {}),
     });
-
+    const {execute: createChatRoom} = useHttpPost("createChatRoom");
     const {person: currentUser} = useMyUser();
     const route = useRouter();
     const params = useParams();
@@ -52,7 +53,7 @@ const JobBoardProposal = ({postId, jobCreatorId}: JobBoardProposalProps) => {
         try {
             setStartingChatFor(partnerPersonId);
             try {
-                await HttpService.client.createChatRoom({
+                await createChatRoom({
                     partnerPersonId,
                     roomId,
                     ...(cv.post.id ? {postId: cv.post.id} : {}),

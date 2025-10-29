@@ -1,6 +1,6 @@
 import { cookies as nextCookies, headers as nextHeaders } from 'next/headers';
 import type {IncomingHttpHeaders} from "http";
-import {JWT} from "@/utils/config";
+import {authCookieName, JWT} from "@/utils/config";
 
 
 /**
@@ -19,7 +19,6 @@ export async function getJwtCookieFromServer(
         const v = store.get(JWT)?.value;
         if (v) return v;
     } catch {}
-
     // 2) Provided headers param
     let raw: string | null = null;
     if (headers) {
@@ -39,13 +38,49 @@ export async function getJwtCookieFromServer(
     }
 
     if (!raw) return null;
-    const map = Object.fromEntries(
-      raw.split(';').map((c) => {
-          const [k, ...rest] = c.trim().split('=');
-          return [k, rest.join('=')];
-      })
-    );
-    return (map as Record<string, string>)[JWT] ?? null;
+
+    const entries = raw
+      .split(';')
+      .map((c) => c.trim())
+      .filter(Boolean)
+      .map((pair) => {
+        const [k, ...rest] = pair.split('=');
+        const key = decodeURIComponent(k.trim());
+        // join back the rest to preserve '=' inside the value
+        let val = rest.join('=');
+        // Safari can quote cookie values: JWT="eyJ...=="
+        if (val?.startsWith('"') && val.endsWith('"')) {
+          val = val.slice(1, -1);
+        }
+        try { val = decodeURIComponent(val); } catch {}
+        return [key, val] as const;
+      });
+
+    const map = Object.fromEntries(entries) as Record<string, string>;
+
+    // Build a case-insensitive view
+    const lowerMap: Record<string, string> = {};
+    for (const [k, v] of Object.entries(map)) lowerMap[k.toLowerCase()] = v;
+
+    // Candidate cookie names, in priority order
+    const candidates = [
+      JWT,
+      authCookieName,
+    ].filter(Boolean) as string[];
+
+    let token: string | null = null;
+    for (const name of candidates) {
+      const direct = map[name];
+      const lower = lowerMap[name.toLowerCase()];
+      if (direct || lower) {
+        token = (direct ?? lower)!;
+        break;
+      }
+    }
+
+    if (!token) return null;
+    if (token.startsWith('Bearer ')) token = token.slice(7).trim();
+    return token;
 }
 
 
@@ -74,10 +109,16 @@ export async function setForwardedHeaders(reqHeaders: IncomingHttpHeaders): Prom
   return out;
 }
 
+function safeAtob(b64: string): string {
+  if (typeof atob === 'function') return atob(b64);
+  // Node.js fallback
+  return Buffer.from(b64, 'base64').toString('binary');
+}
+
 function decodeBase64Url(input: string): string {
-    const b64 = input.replace(/-/g, '+').replace(/_/g, '/');
-    const pad = '==='.slice((b64.length + 3) % 4);
-    return atob(b64 + pad);
+  const b64 = input.replace(/-/g, '+').replace(/_/g, '/');
+  const pad = '==='.slice((b64.length + 3) % 4);
+  return safeAtob(b64 + pad);
 }
 
 export function parseJwtClaims(token?: string): any {

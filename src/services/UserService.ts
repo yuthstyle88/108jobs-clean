@@ -79,6 +79,9 @@ export class UserService {
                 console.warn('[UserService.login] Failed to POST /api/session', e);
             }
 
+            // Give the browser a tiny moment to flush Set-Cookie I/O (helps Safari after OAuth/login)
+            await new Promise<void>(r => setTimeout(r, 60));
+
             // 3) Language cookie (non-HttpOnly for client-side reads)
             if (!VALID_LANGUAGES.includes(this.currentLanguage)) return;
             setLangCookie(this.currentLanguage);

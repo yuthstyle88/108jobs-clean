@@ -3,7 +3,7 @@ import {NextRequest} from "next/server";
 import {SUPPORTED} from "@/utils/localeHref";
 import {LANGUAGE_COOKIE} from "@/constants/language";
 import {SupportedLang} from "@/lib/metadata";
-import {JWT} from "@/utils/config";
+import {authCookieName, JWT} from "@/utils/config";
 
 type Lang = typeof SUPPORTED[number];
 
@@ -32,8 +32,27 @@ export function resolveLanguage(args: { req: NextRequest; cookieLang?: string; j
 }
 
 export async function getCookies(): Promise<[SupportedLang | null, string | null]> {
-    const cookieStore = await cookies();
-    const langCookie = (cookieStore.get(LANGUAGE_COOKIE)?.value as SupportedLang) ?? null;
-    const tokenCookie = cookieStore.get(JWT)?.value ?? null;
-    return [langCookie, tokenCookie];
+  const store = await cookies();
+
+  // 1) language cookie (strict name)
+  const langRaw = store.get(LANGUAGE_COOKIE)?.value ?? null;
+  const langCookie = (langRaw as SupportedLang | null);
+
+  // 2) jwt token: support multiple names and normalize value
+  const candidates = [JWT, authCookieName];
+  let token: string | null = null;
+
+  for (const name of candidates) {
+    const v = store.get(name)?.value;
+    if (v) { token = v; break; }
+  }
+
+  if (token) {
+    // Safari sometimes wraps cookie values in quotes
+    if (token.startsWith('"') && token.endsWith('"')) token = token.slice(1, -1);
+    // Strip optional Bearer prefix
+    if (token.startsWith('Bearer ')) token = token.slice(7).trim();
+  }
+
+  return [langCookie, token];
 }

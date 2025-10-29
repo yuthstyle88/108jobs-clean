@@ -3,8 +3,8 @@ import {Person, PersonId} from "@/lib/lemmy-js-client/src";
 import {useTranslation} from "react-i18next";
 import {useRouter} from "next/navigation";
 import {dmRoomId} from "@/utils/helpers";
-import {HttpService} from "@/services";
 import {MessageCircle} from "lucide-react";
+import {useHttpPost} from "@/hooks/useHttpPost";
 
 interface ChatNoWorkButtonProps {
     profile: Person;
@@ -14,13 +14,13 @@ interface ChatNoWorkButtonProps {
 const ChatNoWorkButton: React.FC<ChatNoWorkButtonProps> = ({profile, currentUserId}) => {
     const {t} = useTranslation();
     const router = useRouter();
-
+    const {execute: createChatRoom} = useHttpPost("createChatRoom");
     const handleChatClick = async () => {
         try {
             if (!currentUserId || !profile?.id || currentUserId === profile.id) return;
             const roomId = dmRoomId(currentUserId, profile.id, undefined);
             try {
-                await HttpService.client.createChatRoom({partnerPersonId: profile.id, roomId});
+                await createChatRoom({partnerPersonId: profile.id, roomId});
             } catch (e) {
                 // If room already exists or API fails, proceed to navigate anyway
             }

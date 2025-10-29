@@ -31,7 +31,7 @@ export const EnsureSharedKeyBootstrap: React.FC = () => {
                 if (resp.state !== REQUEST_STATE.SUCCESS) throw new Error('Failed to exchange public key');
                 const serverPublicKeyHex = resp.data.publicKey;
                 if (!cancelled) {
-                    await ensureSharedKeyForLocalUser(uid, privateKey, serverPublicKeyHex);
+                   await ensureSharedKeyForLocalUser(uid, privateKey, serverPublicKeyHex);
                     __e2eeInitializedForUser = uid;
                 }
             } catch (e) {

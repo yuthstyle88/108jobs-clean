@@ -122,9 +122,16 @@ export default function OAuthCallbackPage() {
 // ฟังก์ชันช่วยจัดการการเข้าสู่ระบบที่สำเร็จ
 async function handleLoginSuccess(loginData: LoginResponse, prev?: string) {
   try {
-    UserService.Instance.login({
+    // Ensure login side-effects (cookies, session) complete before navigation (Safari-sensitive)
+    await UserService.Instance.login({
       res: loginData,
     });
+
+    // Clear temporary OAuth state
+    try { localStorage.removeItem("oauthState"); } catch {}
+
+    // Give the browser a brief moment to flush Set-Cookie and IO (helps Safari)
+    await new Promise<void>(r => setTimeout(r, 120));
 
     // Skip E2EE key exchange during login to avoid unintended pairing on login.
     // If needed, the key exchange will be performed lazily when entering chat.

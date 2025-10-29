@@ -66,7 +66,7 @@ export async function ensureSharedKeyForLocalUser(
     try {
         // guard: ต้องมี WebCrypto
         if (typeof window === 'undefined' || !window.crypto?.subtle) return null;
-
+        console.log('[crypto] ensureSharedKeyForLocalUser', { localUserId, sharedOrPubHex });
         const keyId = String(localUserId);
 
         // 1) ใช้ cache ถ้ามี
