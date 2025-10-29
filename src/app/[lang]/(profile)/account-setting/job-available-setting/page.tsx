@@ -1,36 +1,48 @@
 "use client";
 
 import * as Switch from "@radix-ui/react-switch";
-import {useEffect, useState} from "react";
+import { useState } from "react";
 import useNotification from "@/hooks/useNotification";
-import {HttpService, REQUEST_STATE} from "@/services/HttpService";
-import {useMyUser} from "@/hooks/profile-api/useMyUser";
 import {useTranslation} from "react-i18next";
+import {useHttpPost} from "@/hooks/useHttpPost";
+import {REQUEST_STATE} from "@/services/HttpService";
+import {useUserStore} from "@/store/useUserStore";
 
 const JobAvailable = () => {
-  const {person} = useMyUser();
-  const [isAvailable, setIsAvailable] = useState<boolean>(person?.available ?? true);
+  const { person, setPerson } = useUserStore();
   const {successMessage, errorMessage} = useNotification();
+  const { execute: saveUserSettings } = useHttpPost("saveUserSettings");
   const { t } = useTranslation();
-  // Sync with person.available when it changes
-  useEffect(() => {
-    setIsAvailable(person?.available ?? true);
-  }, [person?.available]);
 
   // ใช้ HttpService.client เพื่อเรียก API โดยตรง
   const [isMutating, setIsMutating] = useState(false);
 
   const handleToggle = async (value: boolean) => {
-    setIsAvailable(value);
+    const prevPerson = person ?? null;
+    // snapshot old value
+    const prev = person?.available ?? true;
+
+    // optimistic update to the store so all pages reflect immediately
+    if (prevPerson) {
+      setPerson({ ...prevPerson, available: value });
+    }
     setIsMutating(true);
     try {
-      const response = await HttpService.client.saveUserSettings({ available: value });
+      const response = await saveUserSettings({ available: value });
       if (response.state === REQUEST_STATE.SUCCESS) {
         successMessage("profile", value ? "updateAvailable" : "updateNotAvailable");
       } else {
-        setIsAvailable((prev) => !prev);
+        // revert store
+        if (prevPerson) {
+          setPerson({ ...prevPerson, available: prev });
+        }
         errorMessage("profile", "updateAvailableFail");
       }
+    } catch (e) {
+      if (prevPerson) {
+        setPerson({ ...prevPerson, available: prev });
+      }
+      errorMessage("profile", "updateAvailableFail");
     } finally {
       setIsMutating(false);
     }
@@ -49,18 +61,16 @@ const JobAvailable = () => {
         <div className="flex items-center justify-between">
           <span className="text-base font-medium text-gray-700">{t("global.acptJob")}</span>
           <Switch.Root
-            checked={isAvailable}
-            onCheckedChange={handleToggle}
+            checked={Boolean(person?.available)}
+            onCheckedChange={(checked) => handleToggle(Boolean(checked))}
             disabled={isMutating}
             aria-label={t("global.acptJob")}
-            className={`w-[42px] h-[24px] rounded-full relative transition-colors ${
-              isAvailable ? "bg-primary" : "bg-gray-300"
-            } ${isMutating ? "opacity-50 pointer-events-none" : "cursor-pointer"}`}
+            className={`relative w-[42px] h-[24px] rounded-full transition-colors bg-gray-300 data-[state=checked]:bg-primary ${
+              isMutating ? "opacity-50 pointer-events-none" : "cursor-pointer"
+            }`}
           >
             <Switch.Thumb
-              className={`block w-[18px] h-[18px] bg-white rounded-full shadow-md transition-transform duration-200 ${
-                isAvailable ? "translate-x-[18px]" : "translate-x-[3px]"
-              }`}
+              className={`block w-[18px] h-[18px] bg-white rounded-full shadow-md transition-transform duration-200 translate-x-[3px] data-[state=checked]:translate-x-[21px]`}
             />
           </Switch.Root>
         </div>

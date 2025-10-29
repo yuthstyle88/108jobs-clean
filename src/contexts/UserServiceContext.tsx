@@ -1,6 +1,8 @@
 "use client";
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { UserService } from "@/services/UserService";
+import {getIsoData} from "@/hooks/useIsoData";
+import {useUserStore} from "@/store/useUserStore";
 
 // Instance type for the singleton user service
 type UserClient = UserService;
@@ -20,7 +22,19 @@ interface UserServiceProviderProps {
 
 export function UserServiceProvider({ children, token }: UserServiceProviderProps) {
   // Use the singleton instance
+  const iso = getIsoData()?.myUserInfo ?? null;
+  const setUser = useUserStore((s) => s.setUser);
+  const setPerson = useUserStore((s) => s.setPerson);
   const user = UserService.Instance;
+
+  // Seed the global store once on mount (after login redirect)
+  useEffect(() => {
+    if (iso) {
+      setUser(iso.localUserView?.localUser ?? null);
+      setPerson(iso.localUserView?.person ?? null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     (async () => {
