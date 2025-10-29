@@ -34,6 +34,7 @@ export const vi = {
             urlInvalid: "URL is invalid",
         },
         profileChat: {
+            price: "ngân sách",
             jobFlow: "Quy trình công việc",
             jobDetails: "Chi tiết công việc",
             guide: "Hướng dẫn sử dụng",

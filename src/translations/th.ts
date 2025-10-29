@@ -34,6 +34,7 @@ export const th = {
             urlInvalid: "Url ไม่ถูกต้อง",
         },
         profileChat: {
+            price: "งบประมาณ",
             jobFlow: "ลำดับงาน",
             jobDetails: "รายละเอียดงาน",
             guide: "คู่มือการใช้งาน",

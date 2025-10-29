@@ -57,7 +57,6 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                                                          }) => {
     const {t, i18n} = useTranslation();
     const {resend} = useChatServices();
-
     const liveMessage = useChatStore((s) => {
         const mid = message?.id;
         if (!mid) return undefined;
@@ -222,14 +221,16 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                                     {parsed!.quote!.projectName}
                                 </h4>
                             </div>
+
+                        </div>
+
+                        <div className="px-5 py-4 space-y-4 bg-white">
                             <div className="text-lg font-bold text-blue-700">
-                                {parsed!.quote!.amount.toLocaleString(undefined, {
+                                {t('profileChat.price')}:  {parsed!.quote!.amount.toLocaleString(undefined, {
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2,
                                 })}
                             </div>
-                        </div>
-                        <div className="px-5 py-4 space-y-4 bg-white">
                             <div className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
                                 {parsed!.quote!.proposal}
                             </div>

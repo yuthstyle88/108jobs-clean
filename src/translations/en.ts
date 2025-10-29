@@ -34,6 +34,7 @@ export const en = {
             urlInvalid: "URL is invalid",
         },
         profileChat: {
+            price: "Budget",
             jobFlow: "Job Flow",
             jobDetails: "Job Details",
             guide: "Usage Guide",
