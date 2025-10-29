@@ -65,6 +65,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
         );
     });
     const viewMsg = liveMessage || message;
+    const createdAt = (viewMsg as any)?.createdAt as any;
     const roomIdStr = String((viewMsg as any)?.roomId ?? "");
     const selectPeerLastReadAt = useMemo(
         () => (s: any) => s?.getPeerLastReadAt?.(roomIdStr, partnerId) ?? null,
@@ -76,7 +77,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
     }, [lastReadAt]);
     const isIncoming = !viewMsg.isOwner;
 
-    const time = toLocalTime(viewMsg.createdAt as any, i18n?.language || "th-TH");
+    const time = toLocalTime(createdAt, i18n?.language || "th-TH");
     const isOwner = !!viewMsg.isOwner;
 
     const peerOnline = usePeerOnline(Number(partnerId));
@@ -86,17 +87,17 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
         return (
             isOwner &&
             lastReadAt != null &&
-            isSameOrAfter(lastReadAt as any, (viewMsg as any).createdAt as any)
+            isSameOrAfter(lastReadAt as any, createdAt)
         );
-    }, [isOwner, peerOnline, lastReadAt, (viewMsg as any).createdAt]);
+    }, [isOwner, lastReadAt, createdAt]);
 
     const isLastRead = useMemo(() => {
         return (
             isOwner &&
             lastReadAt != null &&
-            isApproxSame(lastReadAt as any, (viewMsg as any).createdAt as any)
+            isApproxSame(lastReadAt as any, createdAt)
         );
-    }, [isOwner, lastReadAt, (viewMsg as any).createdAt]);
+    }, [isOwner, lastReadAt, createdAt]);
 
     const readTime = useMemo(() => {
         return isLastRead && lastReadAt

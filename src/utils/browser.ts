@@ -1,8 +1,8 @@
 import {authCookieName} from "@/utils/config";
 import {GetSiteResponse, MyUserInfo} from "lemmy-js-client";
 import {isHttps} from "@/utils/env";
-import {LANGUAGE_COOKIE, VALID_LANGUAGES} from "@/constants/language";
-import {buildLangRedirectTarget, invalidateClientLanguageCache} from "@/utils/getClientCurrentLanguage";
+import {LANGUAGE_COOKIE} from "@/constants/language";
+import {invalidateClientLanguageCache} from "@/utils/getClientCurrentLanguage";
 
 // Minimal browser-safe cookie serializer to avoid importing the `cookie` package in app-client bundles
 function serializeCookie(name: string, value: string, opts?: {
