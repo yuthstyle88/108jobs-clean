@@ -65,6 +65,7 @@ import {SubmitReviewModal} from "@/modules/chat/components/Modal/SubmitReviewMod
 import {REQUEST_STATE} from "@/services/HttpService";
 import {isBrowser} from "@/utils";
 import {useUserStore} from "@/store/useUserStore";
+import {useJobFlowSidebar} from "@/modules/chat/contexts/JobFlowSidebarContext";
 
 
 /** Shape of the form submitted by ChatInput. */
@@ -93,27 +94,6 @@ interface ChatRoomViewProps {
     partnerPersonId: PersonId;
 }
 
-function ResponsiveFlowPanel({isOpen, children}: { isOpen: boolean; children: React.ReactNode }) {
-    // Desktop: render as a true right sidebar fixed to the viewport, independent from the chat scroll.
-    // Reserve space for it by adding responsive right padding on the main content container.
-    const desktop = "hidden md:flex fixed top-16 sm:top-20 right-0 h-[calc(100vh-64px)] sm:h-[calc(100vh-80px)] md:w-64 lg:w-80 xl:w-96 max-w-[360px] border-l bg-gray-50 shadow-none flex-col z-40";
-    // Mobile: keep the slide-in drawer behavior.
-    const mobile = `md:hidden fixed top-16 sm:top-20 right-0 h-[calc(100vh-64px)] sm:h-[calc(100vh-80px)] w-[80vw] sm:w-[70vw] max-w-[360px] bg-white border-l shadow-xl z-40 flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`;
-    return (
-        <>
-            {/* Desktop: fixed right sidebar */}
-            <aside className={desktop} role="complementary" aria-label="Job Flow Sidebar">
-                {children}
-            </aside>
-            {/* Mobile: overlay from right */}
-            {isOpen && (
-                <aside className={mobile} role="dialog" aria-modal="true" aria-label="Job Flow Sidebar">
-                    {children}
-                </aside>
-            )}
-        </>
-    );
-}
 
 const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                                                        post,
@@ -146,7 +126,8 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     const [showQuotationModal, setShowQuotationModal] = useState<boolean>(false);
     const [showJobDetailModal, setShowJobDetailModal] = useState<boolean>(false);
     const [hasStarted, setHasStarted] = useState<boolean>(false);
-    const [isFlowOpen, setIsFlowOpen] = useState(false);
+    // Flow sidebar is now managed globally via JobFlowSidebarProvider
+    const { isOpen: isFlowOpen, setOpen: setIsFlowOpen, setContent } = useJobFlowSidebar();
     const [currentRoom, setCurrentRoom] = useState<ChatRoomData>(roomData);
     // Store selector pinned to the current room. Guarantees stable ascending order and dedup at selector level.
     const roomSelector = React.useMemo(() => (s: any) => selectRoomMessages(s, String(roomId)), [roomId]);
@@ -671,6 +652,20 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
         </>
     );
 
+    // Provide JobFlowContent to the global sidebar
+    React.useEffect(() => {
+        setContent(
+            <JobFlowContent
+                setIsFlowOpen={setIsFlowOpen}
+                renderFlowContent={renderFlowContent}
+                setShowJobDetailModal={setShowJobDetailModal}
+                currentRoom={currentRoom?.room ?? ""}
+            />
+        );
+        return () => setContent(null);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentRoom, setContent, setIsFlowOpen, setShowJobDetailModal, isEmployer, isEmployerKnown, hasStarted, selectedFile, isDeletingFile, statusBeforeCancel, availableBalance, latestQuoteAmount, currentStatus]);
+
     return (
         <>
             <div className="relative flex-1 min-w-0 flex flex-col md:flex-row h-full">
@@ -680,7 +675,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                         avatarUrl={partnerAvatar}
                         displayName={partnerName || "User"}
                         typingText={isPartnerTyping ? (t("profileChat.typing") || "กำลังพิมพ์...") : undefined}
-                        onToggleFlow={() => setIsFlowOpen((v) => !v)}
+                        onToggleFlow={() => setIsFlowOpen(!isFlowOpen)}
                         isFlowOpen={isFlowOpen}
                         partnerId={partnerId}
                     />
@@ -758,21 +753,6 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                         </div>
                     </div>
                 </div>
-                <ResponsiveFlowPanel isOpen={isFlowOpen}>
-                    <JobFlowContent
-                        setIsFlowOpen={setIsFlowOpen}
-                        renderFlowContent={renderFlowContent}
-                        setShowJobDetailModal={setShowJobDetailModal}
-                        currentRoom={currentRoom?.room ?? ""}
-                    />
-                </ResponsiveFlowPanel>
-                {isFlowOpen && (
-                    <div
-                        className="md:hidden fixed inset-0 bg-black/50 z-30"
-                        onClick={() => setIsFlowOpen(false)}
-                        aria-hidden="true"
-                    />
-                )}
             </div>
             {/* Delivery review modal (employer review of delivered work) */}
             {showReviewDeliveryModal && (

@@ -130,7 +130,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             className="flex flex-col gap-2"
             aria-disabled={disabled}
         >
-            <div className="flex items-center w-full">
+            <div className="flex text-black items-center w-full">
                 <input
                     type="file"
                     id="fileInput"

@@ -13,6 +13,8 @@ import ChatWrapper from "@/containers/ChatWrapper";
 import {EnsureSharedKeyBootstrap} from "@/modules/chat/components/EnsureSharedKeyBootstrap";
 import NavBar from "@/components/Home/NavBar";
 import MobileSidebar from "@/components/MobileSidebar";
+import {JobFlowSidebarProvider} from "@/modules/chat/contexts/JobFlowSidebarContext";
+import JobFlowSidebar from "@/modules/chat/components/JobFlowSidebar";
 
 function decodeJwtSub(token?: string | null): number {
     try {
@@ -108,26 +110,36 @@ export default function ProfileLayout({children}: LayoutProps) {
                             options={{token, senderId, roomId: activeRoomId}}
                         >
                             <ChatRoomsProvider>
-                                {/* Left Sidebar (desktop) - ALWAYS show on desktop, conditionally on mobile */}
-                                <div className={`
-                                    ${!activeRoomId ? 'flex' : 'hidden md:flex'} 
-                                    flex-col w-full md:w-64 lg:w-80 xl:w-96 border-r border-gray-200 h-full
-                                `}>
-                                    <ChatWrapper
-                                        isSidebarOpen={isSidebarOpen}
-                                        onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
-                                        setIsSidebarOpen={setIsSidebarOpen}
-                                    />
-                                </div>
+                                <div className="flex h-full w-full">
+                                    {/* LEFT: Chat list */}
+                                    <aside
+                                        className={`
+                                            ${!activeRoomId ? 'flex' : 'hidden md:flex'}
+                                            flex-col w-full md:w-64 lg:w-80 xl:w-96
+                                            border-r border-gray-200 bg-white h-full overflow-y-auto
+                                        `}
+                                    >
+                                        <ChatWrapper
+                                            isSidebarOpen={isSidebarOpen}
+                                            onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
+                                            setIsSidebarOpen={setIsSidebarOpen}
+                                        />
+                                    </aside>
 
-                                {/* Main Content - Show children OR placeholder */}
-                                <div className={`
-                                    ${activeRoomId ? 'flex' : 'hidden md:flex'} 
-                                    flex-1 min-w-0 h-full
-                                `}>
-                                    {children}
-                                </div>
+                                    {/* CENTER + RIGHT: Wrapped in provider */}
+                                    <JobFlowSidebarProvider>
+                                        <div className="flex flex-1 h-full">
 
+                                            {/* CENTER: Conversation */}
+                                            <main className="flex-1 min-w-0 h-full overflow-hidden bg-gray-50">
+                                                {children}
+                                            </main>
+
+                                            {/* RIGHT: Sidebar */}
+                                            {activeRoomId && <JobFlowSidebar />}
+                                        </div>
+                                    </JobFlowSidebarProvider>
+                                </div>
                             </ChatRoomsProvider>
                         </WebSocketProvider>
                     ) : (
