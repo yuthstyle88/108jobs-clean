@@ -15,6 +15,7 @@ import {Match} from "@/utils/router"
 
 
 export interface IsoData<T extends RouteData = RouteData> {
+  jwt?: string;
   path: string;
   routeData: T;
   siteRes?: GetSiteResponse;

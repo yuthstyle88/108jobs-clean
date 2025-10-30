@@ -86,14 +86,14 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
 
         // Set up headers and authentication
         const headers = await setForwardedHeaders(incomingHeaders);
-        const auth = await getJwtCookieFromServer(incomingHeaders);
+        const jwt = await getJwtCookieFromServer(incomingHeaders) ?? "";
         // Create a per-request client and set headers without mutating the shared client
         const tempClient = wrapClient(new LemmyHttp(getHttpBase()));
         await (tempClient as any).setHeaders(headers);
 
         // Check authentication for protected routes
-        if (!auth && isAuthPath(url)) {
-            return createIsoDataResponse(url, undefined, undefined, undefined, {}, {
+        if (!jwt && isAuthPath(url)) {
+            return createIsoDataResponse(jwt, url, undefined, undefined, undefined, {}, {
                 code: 302,
                 redirectTo: `/login?prev=${encodeURIComponent(url)}`,
             } as any);
@@ -115,7 +115,9 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
             url,
             headers)) {
             // If site data processing failed, return early with error data
-            return createIsoDataResponse(url,
+            return createIsoDataResponse(
+                undefined,
+                url,
                 siteRes,
                 myUserInfo,
                 communities,
@@ -125,7 +127,9 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
 
         // Check for errors in route data
         if (hasRouteDataErrors()) {
-            return createIsoDataResponse(url,
+            return createIsoDataResponse(
+                undefined,
+                url,
                 siteRes,
                 myUserInfo,
                 communities,
@@ -134,7 +138,9 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
         }
 
         // Return the complete data
-        return createIsoDataResponse(url,
+        return createIsoDataResponse(
+            jwt,
+            url,
             siteRes,
             myUserInfo,
             communities,
@@ -146,7 +152,9 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
             err);
         errorPageData = getErrorPageData(err as Error,
             undefined);
-        return createIsoDataResponse(url,
+        return createIsoDataResponse(
+            undefined,
+            url,
             undefined,
             undefined,
             undefined,
@@ -257,6 +265,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
      * Create a standardized IsoData response object
      */
     function createIsoDataResponse(
+        jwt: string | undefined,
         path: string,
         siteRes?: GetSiteResponse,
         myUserInfo?: MyUserInfo,
@@ -265,6 +274,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
         errorPageData?: ErrorPageData
     ): IsoData {
         return {
+            jwt,
             path,
             siteRes,
             myUserInfo,

@@ -33,7 +33,8 @@ export default async function RootLayout({
 }>) {
     const { lang } = await params;
     const isoData = await isoDataInitializer();
-    const [langCookie, tokenCookie] = await getCookies();
+    const tokenCookie =  isoData?.jwt;
+    const langCookie = await getCookies();
     const userLang = isoData?.myUserInfo?.localUserView?.localUser?.interfaceLanguage as string | undefined;
     const initialLang = langCookie || lang || userLang;
     return (
