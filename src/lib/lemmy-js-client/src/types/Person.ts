@@ -66,5 +66,5 @@ export type Person = {
     /**
      * Whether you are currently available for new jobs
      */
-    available?: boolean;
+    available: boolean;
 };

@@ -128,8 +128,8 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     // --- Availability & basic send gating ---
     // Treat undefined availability as "available". Block sending if either side is unavailable.
     const isSubmittingRef = useRef(false);
-    const myAvailable = person?.available !== false; // treat undefined as available
-    const canSend = (partnerAvailable !== false) && myAvailable;
+    const myAvailable = person!.available;
+    const canSend =  myAvailable;
     const disabledReason = !myAvailable
         ? (t("profileChat.youAreNotAvailable") || "You are currently unavailable. Enable availability in your profile to send messages.")
         : (t("profileChat.userNotAvailable") || "This user is currently not accepting messages. You can read history but cannot send new messages.");
