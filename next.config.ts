@@ -152,6 +152,7 @@ const nextConfig: NextConfig = {
             fallback: [],
         };
     },
+
 };
 
 export default nextConfig;
