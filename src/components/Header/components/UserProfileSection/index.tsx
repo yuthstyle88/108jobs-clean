@@ -72,7 +72,7 @@ const UserProfileSection = () => {
                 <LanguageDropdown />
             </div>
             <div className="relative px-1 shrink-0">
-                <button
+                <button name="profile"
                     onClick={toggle}
                     className="flex items-center justify-center gap-0.5 min-w-0"
                 >
