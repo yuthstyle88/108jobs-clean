@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {LANGUAGE_COOKIE} from "@/constants/language";
 import {isHttps, JWT} from "@/utils";
-import {langFromPath, resolveLanguage} from "@/utils/getCookies";
+import {langFromPath, resolveLanguage} from "@/utils/getLangCookies";
 import {getJwtCookieFromServer, isJwtExpired, parseJwtClaims} from "@/utils/helper-server";
 
 const LOCALE_RE = /^\/([a-z]{2})(\/|$)/i;

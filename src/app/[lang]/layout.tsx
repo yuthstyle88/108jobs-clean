@@ -11,7 +11,7 @@ import {AnnouncementProvider} from "@/contexts/AnnouncementContext";
 import AccessibleAnnouncements from "@/components/AccessibleAnnouncements";
 import GlobalError from "@/components/GlobalError";
 import GlobalLoader from "@/components/Common/Loading/Loading";
-import {getCookies} from "@/utils/getCookies";
+import {getLangCookies} from "@/utils/getLangCookies";
 import { UserServiceProvider } from "@/contexts/UserServiceContext";
 
 const kanit = Kanit({
@@ -34,7 +34,7 @@ export default async function RootLayout({
     const { lang } = await params;
     const isoData = await isoDataInitializer();
     const tokenCookie =  isoData?.jwt;
-    const langCookie = await getCookies();
+    const langCookie = await getLangCookies();
     const userLang = isoData?.myUserInfo?.localUserView?.localUser?.interfaceLanguage as string | undefined;
     const initialLang = langCookie || lang || userLang;
     return (

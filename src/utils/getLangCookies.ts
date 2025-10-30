@@ -30,7 +30,7 @@ export function resolveLanguage(args: { req: NextRequest; cookieLang?: string; j
     return normalizeLang(browserLng || cookieLng || jwtLng || pathLng);
 }
 
-export async function getCookies(): Promise<SupportedLang | null> {
+export async function getLangCookies(): Promise<SupportedLang | null> {
   const store = await cookies();
 
   // 1) language cookie (strict name)
