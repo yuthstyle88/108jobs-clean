@@ -94,11 +94,14 @@ interface ChatRoomViewProps {
 }
 
 function ResponsiveFlowPanel({isOpen, children}: { isOpen: boolean; children: React.ReactNode }) {
-    const desktop = "hidden md:flex md:static md:order-last h-full md:w-64 lg:w-80 xl:w-96 max-w-[360px] border-l bg-gray-50 shadow-none flex-col";
+    // Desktop: render as a true right sidebar fixed to the viewport, independent from the chat scroll.
+    // Reserve space for it by adding responsive right padding on the main content container.
+    const desktop = "hidden md:flex fixed top-16 sm:top-20 right-0 h-[calc(100vh-64px)] sm:h-[calc(100vh-80px)] md:w-64 lg:w-80 xl:w-96 max-w-[360px] border-l bg-gray-50 shadow-none flex-col z-40";
+    // Mobile: keep the slide-in drawer behavior.
     const mobile = `md:hidden fixed top-16 sm:top-20 right-0 h-[calc(100vh-64px)] sm:h-[calc(100vh-80px)] w-[80vw] sm:w-[70vw] max-w-[360px] bg-white border-l shadow-xl z-40 flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`;
     return (
         <>
-            {/* Desktop: right column, static */}
+            {/* Desktop: fixed right sidebar */}
             <aside className={desktop} role="complementary" aria-label="Job Flow Sidebar">
                 {children}
             </aside>
