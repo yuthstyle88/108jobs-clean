@@ -7,7 +7,6 @@ import {useState} from "react";
 import {AcceptTermsForm} from "@/components/Authentication/AcceptTermsForm";
 import {getAppName} from "@/utils/appConfig";
 import {useTranslation} from "react-i18next";
-import {DotLottieReact} from "@lottiefiles/dotlottie-react";
 
 
 type ViewState = "update-term";

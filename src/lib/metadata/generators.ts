@@ -14,7 +14,7 @@ export async function generateLocalizedMetadata(
   pageKeyOrContent: PageKey | PageContent,
   overrides?: Partial<Metadata>
 ): Promise<Metadata> {
-  const [langCookie] = await getLangCookies();
+  const langCookie = await getLangCookies();
   const t = seoTranslations[langCookie as SupportedLang] || seoTranslations.th;
 
   const page =

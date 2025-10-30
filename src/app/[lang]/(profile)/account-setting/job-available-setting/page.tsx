@@ -25,7 +25,7 @@ const JobAvailable = () => {
         if (!person) return;
 
         const prevPerson = { ...person };
-        const prevAvailable = person.available ?? false;
+        const prevAvailable = person.available;
 
         // Optimistic UI update
         setChecked(value);
