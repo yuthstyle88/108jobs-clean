@@ -28,6 +28,7 @@ export function UserServiceProvider({ children, token }: UserServiceProviderProp
   const setUserInfo = useUserStore((s) => s.setUserInfo);
   const user = UserService.Instance;
 
+
   // Seed the global store once on mount (after login redirect)
   useEffect(() => {
     if (iso) {

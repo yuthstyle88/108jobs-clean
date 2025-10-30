@@ -2212,7 +2212,12 @@ export const en = {
             errorBankRequired: "Please select a bank",
             errorAccountNumberMin: "Account number must be at least 6 characters",
             errorAccountNameRequired: "Account name is required",
-            errorInvalidAccountNumber: "Invalid account number for the selected bank"
+            errorInvalidAccountNumber: "Invalid account number for the selected bank",
+            default: "Default",
+            confirmDeleteTitle: "Delete Bank Account",
+            confirmDeleteDescription: "Are you sure you want to delete this bank account? This action cannot be undone.",
+            bankAccountAlreadyExistsForThisBank:
+                "You already have a bank account registered with this bank. Please use a different bank or edit the existing account.",
         },
         sellerCommitmentLetter: {
             incomeTaxDescription: `To receive payments via the ${getAppName()} system, freelancers must verify and agree to provide their income information for tax authorities to review compliance with legal requirements.`,

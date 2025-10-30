@@ -5,15 +5,18 @@ import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 import {useHttpPut} from "@/hooks/api/http/useHttpPut";
 import {Pencil, Plus, Star, Trash2} from "lucide-react";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import BankAccountModal, {BankAccountFormValues} from "@/components/Common/Modal/AddBankAccountModal";
 import ConfirmDeleteModal from "@/components/Common/Modal/DeleteBankModal";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 import {useTranslation} from "react-i18next";
+import {isSuccess} from "@/services/HttpService";
 
 
 const BankAccount = () => {
     const {t} = useTranslation();
+    const [bankAccountList, setBankAccountList] = useState<Array<any>>([]);
+    const [error, setError] = useState<string | null>(null);
     const {
         data: bankListRes,
         isMutating: isBankListLoading,
@@ -22,28 +25,40 @@ const BankAccount = () => {
     const {
         data: bankAccountsRes,
         isMutating: isBankAccountsLoading,
-        execute: reloadBankAccounts,
+        execute: mutateBankAccounts,
     } = useHttpGet("listUserBankAccounts");
 
     const {execute: createBankAccount} = useHttpPost("createBankAccount");
+    const {execute: updateBankAccount} = useHttpPut("updateBankAccount");
     const {execute: setDefaultBankAccount} = useHttpPut("setDefaultBankAccount");
     const {execute: deleteBankAccount, isMutating: isDeleting} =
         useHttpDelete("deleteBankAccount");
+    useEffect(() => {
+        setBankAccountList(bankAccountsRes?.bankAccounts ?? []);
+    }, [bankAccountsRes]);
 
     const bankList = bankListRes?.banks || [];
-    const bankAccounts = (bankAccountsRes?.bankAccounts ?? []) as any[];
-    // Normalize API response keys to support both snake_case and camelCase from backend
-    const normalizedAccounts = bankAccounts
+
+    // Sort bank accounts with default account on top
+    const normalizedAccounts = bankAccountList
         .map((acc: any) => {
             const userBank = acc?.user_bank_account ?? acc?.userBankAccount;
             const bank = acc?.bank ?? acc?.Bank ?? undefined;
             if (!userBank) return null;
             return {user_bank_account: userBank, bank};
         })
-        .filter(Boolean) as any[];
+        .filter(Boolean)
+        .sort((a: any, b: any) => {
+            // Put default accounts first (true comes before false)
+            if (a.user_bank_account.isDefault && !b.user_bank_account.isDefault) return -1;
+            if (!a.user_bank_account.isDefault && b.user_bank_account.isDefault) return 1;
+
+            // If both have same default status, sort by account name or keep original order
+            return a.user_bank_account.accountName.localeCompare(b.user_bank_account.accountName);
+        }) as any[];
 
     const [modalOpen, setModalOpen] = useState(false);
-    const [editingAccount, setEditingAccount] = useState<BankAccountFormValues | null>(null);
+    const [editingAccount, setEditingAccount] = useState<{ id?: number } & BankAccountFormValues | null>(null);
 
     const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
     const [deletingAccountId, setDeletingAccountId] = useState<number | null>(null);
@@ -55,6 +70,7 @@ const BankAccount = () => {
 
     const handleEdit = (account: any) => {
         setEditingAccount({
+            id: account.user_bank_account.id, // Add the ID for editing
             bankId: String(account.user_bank_account.bankId),
             accountNumber: account.user_bank_account.accountNumber,
             accountName: account.user_bank_account.accountName,
@@ -62,23 +78,48 @@ const BankAccount = () => {
         setModalOpen(true);
     };
 
-    const handleSubmit = async (data: BankAccountFormValues & { id?: string }) => {
+    const handleSubmit = async (data: BankAccountFormValues & { id?: number }) => {
         const bank = bankList.find((b: any) => String(b.id) === data.bankId);
         if (!bank) {
             return;
         }
-        await createBankAccount({
-            bankId: Number(data.bankId),
-            accountNumber: data.accountNumber,
-            accountName: data.accountName,
-            countryId: bank.countryId,
-        });
-        await reloadBankAccounts();
+
+        let res;
+
+        // Check if has ID - then it's an update, otherwise it's a create
+        if (data.id) {
+            // Update existing bank account - match the UpdateBankAccount type
+            res = await updateBankAccount({
+                bankAccountId: data.id, // This matches bankAccountId in UpdateBankAccount type
+                bankId: Number(data.bankId),
+                accountNumber: data.accountNumber,
+                accountName: data.accountName,
+                // isDefault is optional, so we don't include it unless we're changing it
+            });
+        } else {
+            // Create new bank account
+            res = await createBankAccount({
+                bankId: Number(data.bankId),
+                accountNumber: data.accountNumber,
+                accountName: data.accountName,
+                countryId: bank.countryId,
+            });
+        }
+
+        if (isSuccess(res)) {
+            // Refresh the bank accounts list
+            await mutateBankAccounts();
+            setModalOpen(false);
+        } else {
+            setError(t("sellerBankAccount.bankAccountAlreadyExistsForThisBank"))
+        }
     };
 
     const handleSetDefault = async (id: number) => {
-        await setDefaultBankAccount({bankAccountId: id});
-        await reloadBankAccounts();
+        const res = await setDefaultBankAccount({bankAccountId: id});
+        if (isSuccess(res)) {
+            await mutateBankAccounts();
+        }
     };
 
     const handleConfirmDelete = (id: number) => {
@@ -88,8 +129,11 @@ const BankAccount = () => {
 
     const handleDelete = async () => {
         if (deletingAccountId == null) return;
-        await deleteBankAccount({bankAccountId: deletingAccountId});
-        await reloadBankAccounts();
+        const res = await deleteBankAccount({bankAccountId: deletingAccountId});
+        if (isSuccess(res)) {
+            // Refresh the bank accounts list
+            await mutateBankAccounts();
+        }
         setConfirmDeleteOpen(false);
         setDeletingAccountId(null);
     };
@@ -115,7 +159,7 @@ const BankAccount = () => {
             </div>
 
             <div className="p-6 space-y-4">
-                {isBankAccountsLoading && <p>Loading accounts...</p>}
+                {isBankAccountsLoading && <LoadingBlur text={""}/>}
                 {(isBankListLoading || isBankAccountsLoading) && <LoadingBlur text=""/>}
                 {!isBankAccountsLoading && normalizedAccounts.length === 0 && (
                     <p className="text-text-primary">{t("sellerBankAccount.noBankFound")}</p>
@@ -127,14 +171,18 @@ const BankAccount = () => {
                             acc.user_bank_account.isDefault ? "border-blue-500 bg-blue-50" : "border-gray-200"
                         }`}
                     >
-                        <div>
-                            <p className="font-medium text-gray-800">{acc.bank?.name ?? "Unknown Bank"}</p>
-                            <p className="text-gray-500">
-                                {acc.user_bank_account.accountNumber} — {acc.user_bank_account.accountName}
-                            </p>
+                        <div className="flex items-center gap-3">
                             {acc.user_bank_account.isDefault && (
-                                <span className="text-xs text-primary font-medium">✅ Default</span>
+                                <span className="text-xs text-primary font-medium bg-blue-100 px-2 py-1 rounded">
+                                    ✅ {t("sellerBankAccount.default") || "Default"}
+                                </span>
                             )}
+                            <div>
+                                <p className="font-medium text-gray-800">{acc.bank?.name ?? "Unknown Bank"}</p>
+                                <p className="text-gray-500">
+                                    {acc.user_bank_account.accountNumber} — {acc.user_bank_account.accountName}
+                                </p>
+                            </div>
                         </div>
 
                         <div className="flex gap-2">
@@ -170,10 +218,14 @@ const BankAccount = () => {
 
             <BankAccountModal
                 isOpen={modalOpen}
-                onClose={() => setModalOpen(false)}
+                onClose={() => {
+                    setModalOpen(false);
+                    setError("");
+                }}
                 initialData={editingAccount}
                 onSubmit={handleSubmit}
                 bankList={bankList}
+                error={error}
             />
 
             <ConfirmDeleteModal
@@ -181,8 +233,8 @@ const BankAccount = () => {
                 onClose={() => setConfirmDeleteOpen(false)}
                 onConfirm={handleDelete}
                 isLoading={isDeleting}
-                title="Delete Bank Account"
-                description="Are you sure you want to delete this bank account? This action cannot be undone."
+                title={t("sellerBankAccount.confirmDeleteTitle")}
+                description={t("sellerBankAccount.confirmDeleteDescription")}
             />
         </div>
     );

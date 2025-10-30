@@ -274,6 +274,8 @@ import type {SubmitUserReviewForm} from "./types/SubmitUserReviewForm";
 import type {SubmitUserReviewResponse} from "./types/SubmitUserReviewResponse";
 import type {ListUserReviewsResponse} from "./types/ListUserReviewsResponse";
 import type {ListUserReviewsQuery} from "./types/ListUserReviewsQuery";
+import {BankAccountOperationResponse} from "./types/BankAccountOperationResponse";
+import {UpdateBankAccount} from "./types/UpdateBankAccount";
 
 enum HttpType {
     Get = "GET",
@@ -1822,8 +1824,26 @@ export class LemmyHttp extends Controller {
         @Body() form: BankAccountForm,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<BankAccountForm, SuccessResponse>(
+        return this.#wrapper<BankAccountForm, BankAccountOperationResponse>(
             HttpType.Post,
+            "/account/bank-account",
+            form,
+            options,
+        );
+    }
+
+    /**
+     * @summary update bank account.
+     */
+    @Security("bearerAuth")
+    @Post("/account/bank-account")
+    @Tags("Account")
+    async updateBankAccount(
+        @Body() form: UpdateBankAccount,
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<UpdateBankAccount, BankAccountOperationResponse>(
+            HttpType.Put,
             "/account/bank-account",
             form,
             options,

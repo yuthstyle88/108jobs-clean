@@ -17,7 +17,7 @@ export default function EditPostPage() {
         commentId: commentId ? Number(commentId) : undefined,
     });
 
-    if (isLoading) return <LoadingBlur text="Loading post..." />;
+    if (isLoading) return <LoadingBlur text="" />;
     if (!postResponse?.postView) return <NotFound />;
 
     return (

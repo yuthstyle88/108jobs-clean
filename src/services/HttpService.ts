@@ -291,11 +291,19 @@ export class HttpService {
 let cachedJwt: string | undefined;
 
 function ensureAuthHeader() {
-  const jwt = UserService.Instance?.authInfo?.auth;
-  if (jwt && jwt !== cachedJwt) {
-    cachedJwt = jwt;
-    (HttpService.client as any).setHeaders?.({Authorization: `Bearer ${jwt}`});
-  }
+    const jwt = UserService.Instance?.authInfo?.auth;
+    if (jwt && jwt !== cachedJwt) {
+        cachedJwt = jwt;
+        (HttpService.client as any).setHeaders?.({
+            Authorization: `Bearer ${jwt}`
+        });
+    } else if (!jwt && cachedJwt) {
+        // Clear header if token was removed
+        cachedJwt = undefined;
+        (HttpService.client as any).setHeaders?.({
+            Authorization: undefined
+        });
+    }
 }
 
 /* ===== Generic helper ======================================= */

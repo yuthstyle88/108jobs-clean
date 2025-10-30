@@ -2225,7 +2225,12 @@ export const vi = {
             errorBankRequired: "Vui lòng chọn ngân hàng",
             errorAccountNumberMin: "Số tài khoản phải có ít nhất 6 ký tự",
             errorAccountNameRequired: "Vui lòng nhập tên chủ tài khoản",
-            errorInvalidAccountNumber: "Số tài khoản không hợp lệ cho ngân hàng đã chọn"
+            errorInvalidAccountNumber: "Số tài khoản không hợp lệ cho ngân hàng đã chọn",
+            default: "Mặc định",
+            confirmDeleteTitle: "Xóa Tài khoản Ngân hàng",
+            confirmDeleteDescription: "Bạn có chắc chắn muốn xóa tài khoản ngân hàng này? Hành động này không thể hoàn tác.",
+            bankAccountAlreadyExistsForThisBank:
+                "Bạn đã có tài khoản ngân hàng đăng ký với ngân hàng này. Vui lòng sử dụng ngân hàng khác hoặc chỉnh sửa tài khoản hiện tại.",
         },
         sellerCommitmentLetter: {
             incomeTaxDescription: `Để nhận thanh toán thông qua hệ thống ${getAppName()} , freelancer phải xác nhận và đồng ý tự cung cấp thông tin thu nhập của mình để cơ quan thuế xem xét tuân thủ các yêu cầu pháp lý.`,

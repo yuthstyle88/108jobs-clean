@@ -2171,7 +2171,12 @@ export const th = {
             errorBankRequired: "กรุณาเลือกธนาคาร",
             errorAccountNumberMin: "หมายเลขบัญชีต้องมีอย่างน้อย 6 ตัวอักษร",
             errorAccountNameRequired: "กรุณากรอกชื่อเจ้าของบัญชี",
-            errorInvalidAccountNumber: "หมายเลขบัญชีไม่ถูกต้องสำหรับธนาคารที่เลือก"
+            errorInvalidAccountNumber: "หมายเลขบัญชีไม่ถูกต้องสำหรับธนาคารที่เลือก",
+            default: "ค่าเริ่มต้น",
+            confirmDeleteTitle: "ลบบัญชีธนาคาร",
+            confirmDeleteDescription: "คุณแน่ใจหรือไม่ว่าต้องการลบบัญชีธนาคารนี้? การดำเนินการนี้ไม่สามารถยกเลิกได้",
+            bankAccountAlreadyExistsForThisBank:
+                "คุณมีบัญชีธนาคารที่ลงทะเบียนกับธนาคารนี้อยู่แล้ว กรุณาใช้ธนาคารอื่นหรือแก้ไขบัญชีที่มีอยู่",
         },
         sellerCommitmentLetter: {
             incomeTaxDescription: `เพื่อรับชำระเงินผ่านระบบของ ${getAppName()} ฟรีแลนซ์จะต้องยืนยันและยอมรับในการให้ข้อมูลรายได้ของตนเองเพื่อให้หน่วยงานภาษีตรวจสอบการปฏิบัติตามข้อกำหนดทางกฎหมาย`,

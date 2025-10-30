@@ -2,6 +2,7 @@ import {useGlobalLoader} from "@/contexts/GlobalLoaderContext";
 import {useGlobalError} from "@/contexts/GlobalErrorContext"; // Import GlobalError Context
 import useSWR, { SWRConfiguration } from "swr";
 import {callHttp, EMPTY_REQUEST, Payload, REQUEST_STATE, RequestState, WrappedLemmyHttp,} from "@/services/HttpService";
+import {UserService} from "@/services";
 
 export function useHttpGet<K extends keyof WrappedLemmyHttp>(
   // ชื่อ request method
@@ -55,11 +56,15 @@ export function useHttpGet<K extends keyof WrappedLemmyHttp>(
   };
 
   /* ---------- swr ---------- */
-  const swr = useSWR<RequestState<Payload<K>>, Error>(key, fetcher, {
-    keepPreviousData: true,
-    revalidateOnFocus: false,
-    ...options,
-  });
+    const swr = useSWR<RequestState<Payload<K>>, Error>(
+        UserService.Instance?.authInfo?.auth ? key : null, // Only fetch if token exists
+        fetcher,
+        {
+            keepPreviousData: true,
+            revalidateOnFocus: false,
+            ...options,
+        }
+    );
 
   /* ---------- mapping ---------- */
   const state = swr.data ?? EMPTY_REQUEST;

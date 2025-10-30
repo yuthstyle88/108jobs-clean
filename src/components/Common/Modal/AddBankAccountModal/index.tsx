@@ -1,13 +1,13 @@
 "use client";
 
 import * as z from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useEffect } from "react";
+import {useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import React, {useEffect} from "react";
 import Modal from "@/components/ui/Modal";
-import { Bank } from "@/lib/lemmy-js-client/src";
-import { CustomInput } from "@/components/ui/InputField";
-import { useTranslation } from "react-i18next";
+import {Bank} from "@/lib/lemmy-js-client/src";
+import {CustomInput} from "@/components/ui/InputField";
+import {useTranslation} from "react-i18next";
 
 // Zod schema with dynamic account number validation
 const getSchema = (bankList: Bank[], t: (key: string) => string) =>
@@ -17,7 +17,7 @@ const getSchema = (bankList: Bank[], t: (key: string) => string) =>
         accountName: z.string().min(1, t("sellerBankAccount.errorAccountNameRequired")),
     }).refine(
         (data) => {
-            const { bankId, accountNumber } = data;
+            const {bankId, accountNumber} = data;
             if (!bankId) return true; // No bank selected, skip account number validation
 
             const selectedBank = bankList.find((b) => b.id.toString() === bankId);
@@ -41,9 +41,10 @@ export type BankAccountFormValues = z.infer<ReturnType<typeof getSchema>>;
 interface BankAccountModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (data: BankAccountFormValues & { id?: string }) => void;
-    initialData?: BankAccountFormValues & { id?: string } | null;
+    onSubmit: (data: BankAccountFormValues & { id?: number }) => void; // Change to number
+    initialData?: BankAccountFormValues & { id?: number } | null; // Change to number
     bankList?: Bank[];
+    error: string | null
 }
 
 const BankAccountModal: React.FC<BankAccountModalProps> = ({
@@ -52,15 +53,16 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
                                                                onSubmit,
                                                                initialData,
                                                                bankList = [],
+                                                               error
                                                            }) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     const {
         setValue,
         watch,
         handleSubmit,
         reset,
-        formState: { errors },
+        formState: {errors},
         trigger,
     } = useForm<BankAccountFormValues>({
         resolver: zodResolver(getSchema(bankList, t)),
@@ -73,7 +75,7 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
 
     // Watch form values
     const formValues = watch();
-    const { bankId, accountNumber, accountName } = formValues;
+    const {bankId, accountNumber, accountName} = formValues;
 
     // Trigger re-validation of accountNumber when bankId changes
     useEffect(() => {
@@ -85,13 +87,12 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
     // Reset form when modal opens or initialData changes
     useEffect(() => {
         if (isOpen) {
-            reset(initialData || { bankId: "", accountNumber: "", accountName: "" });
+            reset(initialData || {bankId: "", accountNumber: "", accountName: ""});
         }
     }, [initialData, isOpen, reset]);
 
     const onSubmitForm = (data: BankAccountFormValues) => {
-        onSubmit({ ...data, id: initialData?.id });
-        onClose();
+        onSubmit({...data, id: initialData?.id});
     };
 
     const selectedBank = bankList.find((bank) => bank.id.toString() === bankId);
@@ -100,7 +101,6 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
         <Modal
             isOpen={isOpen}
             onClose={() => {
-                console.log("Current form values before close:", formValues); // Debug
                 onClose();
             }}
             title={
@@ -117,7 +117,7 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
                     <select
                         value={bankId}
                         onChange={(e) => {
-                            setValue("bankId", e.target.value, { shouldValidate: true });
+                            setValue("bankId", e.target.value, {shouldValidate: true});
                             console.log("bankId changed:", e.target.value); // Debug
                         }}
                         className="w-full border rounded-md px-3 py-2 text-text-primary"
@@ -144,8 +144,7 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
                         name={"accountNumber"}
                         value={accountNumber}
                         onChange={(e) => {
-                            setValue("accountNumber", e.target.value, { shouldValidate: true });
-                            console.log("accountNumber changed:", e.target.value); // Debug
+                            setValue("accountNumber", e.target.value, {shouldValidate: true});
                         }}
                         label={t("sellerBankAccount.bankAccountNumberLabel")}
                         placeholder={t("sellerBankAccount.bankAccountNumberPlaceholder")}
@@ -178,8 +177,14 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
                         placeholder="John Smith"
                         error={errors.accountName?.message}
                         required
-                        aria-describedby={errors.accountName ? "accountName-error" : undefined}                   />
+                        aria-describedby={errors.accountName ? "accountName-error" : undefined}/>
                 </div>
+
+                {error && (
+                    <p id="bankId-error" className="text-red-500 text-sm mt-1">
+                        {error}
+                    </p>
+                )}
 
                 <div className="flex justify-end pt-2">
                     <button
