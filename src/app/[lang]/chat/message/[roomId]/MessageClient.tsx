@@ -12,7 +12,6 @@ export default function MessageClient({ roomId }: { roomId: string }) {
     const isLoggedIn = UserService.Instance.isLoggedIn;
     const { localUser } = useMyUser();
     const state = useChatSession(roomId, localUser?.id, isLoggedIn);
-    console.log("state", state)
 
     if (state.loading || !state.currentRoom || !localUser || !state.partnerPersonId) {
         return <LoadingBlur text="" />;
