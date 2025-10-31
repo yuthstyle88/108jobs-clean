@@ -1,8 +1,6 @@
 "use client";
 import LoadingCircle from "@/components/Common/Loading/LoadingCircle";
 import {CustomInput} from "@/components/ui/InputField";
-import {EMPTY_REQUEST, HttpService, isSuccess,} from "@/services/HttpService";
-import {setIsoData} from "@/utils/app";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {OAuthProvider,} from "lemmy-js-client";
 import {useRouter, useSearchParams} from "next/navigation";
@@ -16,6 +14,8 @@ import {OAuthButtons} from "@/components/Authentication/LoginForm/oauth-provider
 import TotpModal from "@/components/Common/Modal/TotpModal";
 import {useTranslation} from "react-i18next";
 import {t} from "i18next";
+import {getIsoData} from "@/hooks/data/useIsoData";
+import {EMPTY_REQUEST} from "@/services/HttpService";
 
 
 const withHooks = (Component: any) => {
@@ -90,7 +90,8 @@ export class LoginFormClass extends Component<
         oauthProviders: [],
         hasFetchedSite: false
     };
-    private isoData = setIsoData(this.context);
+
+    private isoData = getIsoData();
     private hasFetchedSite = false;
 
     constructor(props: any, context: any) {
@@ -118,21 +119,6 @@ export class LoginFormClass extends Component<
 
         this.hasFetchedSite = true;
 
-        const site = await HttpService.client.getSite();
-        if (isSuccess(site)) {
-            this.setState({
-                siteRes: site.data,
-                oauthProviders: site.data.oauthProviders ?? [],
-                hasFetchedSite: true,
-            });
-        } else {
-            this.props.setApiError(t("error.serverError"));
-            this.setState({
-                hasFetchedSite: true,
-                oauthProviders: [],
-            });
-        }
-
     }
 
     toggleShowPassword = () => {
@@ -141,11 +127,15 @@ export class LoginFormClass extends Component<
         }));
     };
 
-    handleLoginWithProvider = (provider: OAuthProvider) => {
-        handleUseOAuthProvider({
-            oauthProvider: provider,
-            prev: this.props.redirectUrl,
-        });
+    handleLoginWithProvider = async (provider: OAuthProvider) => {
+        try {
+            await handleUseOAuthProvider({
+                oauthProvider: provider,
+                prev: this.props.redirectUrl,
+            });
+        } catch (err) {
+            console.error('OAuth provider login failed:', err);
+        }
     };
 
     render() {
