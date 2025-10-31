@@ -1,9 +1,11 @@
 "use client";
 
 import {Paperclip, Send, Smile} from "lucide-react";
-import React, {useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import {useForm} from "react-hook-form";
 import {useTranslation} from "react-i18next";
+import Picker, { EmojiClickData } from "emoji-picker-react";
+import { createPortal } from "react-dom";
 
 type MessageForm = {
     message: string;
@@ -32,7 +34,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                                                  sendLatestRead
                                              }) => {
     const {t} = useTranslation();
-    const {register, handleSubmit, reset, watch} = useForm<MessageForm>();
+    const {register, handleSubmit, reset, watch, setValue, getValues} = useForm<MessageForm>();
     const messageRef = useRef<HTMLTextAreaElement | null>(null);
 
     const {ref, ...rest} = register("message");
@@ -42,7 +44,44 @@ const ChatInput: React.FC<ChatInputProps> = ({
     const typingLastStateRef = useRef<boolean | null>(null);
     const TYPING_TRUE_THROTTLE_MS = 5000; // 5 seconds throttle for typing=true
     const TYPING_STOP_DEBOUNCE_MS = 1500; // stop-typing debounce
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const emojiButtonRef = useRef<HTMLButtonElement>(null);
+    const insertEmojiAtCursor = useCallback(
+        (emoji: string) => {
+            const textarea = messageRef.current;
+            if (!textarea) return;
 
+            const start = textarea.selectionStart ?? 0;
+            const end = textarea.selectionEnd ?? 0;
+            const current = getValues("message") ?? "";
+
+            const newValue = current.slice(0, start) + emoji + current.slice(end);
+            setValue("message", newValue, { shouldValidate: true });
+
+            // put cursor right after the inserted emoji
+            const newPos = start + emoji.length;
+            setTimeout(() => {
+                textarea.focus();
+                textarea.setSelectionRange(newPos, newPos);
+                resizeTextarea();
+            }, 0);
+        },
+        [getValues, setValue]
+    );
+    useEffect(() => {
+        if (!showEmojiPicker) return;
+
+        const handler = (e: MouseEvent) => {
+            if (
+                emojiButtonRef.current &&
+                !emojiButtonRef.current.contains(e.target as Node)
+            ) {
+                setShowEmojiPicker(false);
+            }
+        };
+        document.addEventListener("mousedown", handler);
+        return () => document.removeEventListener("mousedown", handler);
+    }, [showEmojiPicker]);
     // Drag and drop state and handlers
     const [isDragging, setIsDragging] = useState(false);
     const dragCounterRef = useRef(0);

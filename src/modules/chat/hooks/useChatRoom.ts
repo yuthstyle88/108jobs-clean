@@ -63,7 +63,7 @@ export function useChatRoom({
     const peerUserId = React.useMemo(() => {
         const participants = roomData?.room?.participants || [];
         const peer = participants.find((p: any) => String(p.memberId) !== String(localUser?.id));
-        return peer ? Number(peer.memberId) : 0;
+        return peer ? Number(peer.participant.memberId) : 0;
     }, [roomData?.room?.participants, localUser?.id]);
     // Bind presence watcher (HTTP + focus/visibility + heartbeat). Safe for 0/undefined.
     useRoomPresence((peerUserId || undefined) as any);
