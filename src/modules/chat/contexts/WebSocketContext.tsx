@@ -71,7 +71,7 @@ export const WebSocketProvider: React.FC<React.PropsWithChildren<{ options?: Use
     const adapter: any = anyWs?.adapter ?? null;
 
     // guard conditions (centralized join here only)
-    if (!joinInProvider) return;                   // join only if Provider allows
+    if (!joinInProvider) return;                   // join only if providers allows
     if (!roomId || typeof senderId !== 'number') return;
     if (anyWs?.status !== 'connected') return;
 
@@ -114,4 +114,4 @@ export function useWebSocketContext(): WebSocketContextValue {
 
 // Notes:
 // - The real connection logic (Phoenix adapter, events, retry, etc.) lives in `@/hooks/useWebSocket`.
-// - This file now only exposes a Context/Provider wrapper around that hook.
+// - This file now only exposes a Context/providers wrapper around that hook.

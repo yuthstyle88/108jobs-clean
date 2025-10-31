@@ -2623,10 +2623,10 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary Create a new oauth provider method
+     * @summary Create a new oauth providers method
      */
     @Security("bearerAuth")
-    @Post("/oauth-provider")
+    @Post("/oauth-providers")
     @Tags("Miscellaneous", "OAuth")
     async createOAuthProvider(
         @Body() form: CreateOAuthProvider,
@@ -2634,17 +2634,17 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<CreateOAuthProvider, OAuthProvider>(
             HttpType.Post,
-            "/oauth-provider",
+            "/oauth-providers",
             form,
             options,
         );
     }
 
     /**
-     * @summary Edit an existing oauth provider method
+     * @summary Edit an existing oauth providers method
      */
     @Security("bearerAuth")
-    @Put("/oauth-provider")
+    @Put("/oauth-providers")
     @Tags("Miscellaneous", "OAuth")
     async editOAuthProvider(
         @Body() form: EditOAuthProvider,
@@ -2652,17 +2652,17 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<EditOAuthProvider, OAuthProvider>(
             HttpType.Put,
-            "/oauth-provider",
+            "/oauth-providers",
             form,
             options,
         );
     }
 
     /**
-     * @summary Delete an oauth provider method
+     * @summary Delete an oauth providers method
      */
     @Security("bearerAuth")
-    @Post("/oauth-provider/delete")
+    @Post("/oauth-providers/delete")
     @Tags("Miscellaneous", "OAuth")
     async deleteOAuthProvider(
         @Body() form: DeleteOAuthProvider,
@@ -2670,7 +2670,7 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<DeleteOAuthProvider, SuccessResponse>(
             HttpType.Post,
-            "/oauth-provider/delete",
+            "/oauth-providers/delete",
             form,
             options,
         );

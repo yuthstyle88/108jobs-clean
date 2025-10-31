@@ -2,26 +2,26 @@
 import type {OAuthProviderId} from "./OAuthProviderId";
 
 /**
- * oauth provider with client_secret - should never be sent to the client
+ * oauth providers with client_secret - should never be sent to the client
  */
 export type OAuthProvider = {
   id: OAuthProviderId;
   /**
-   * The OAuth 2.0 provider name displayed to the profile on the Login page
+   * The OAuth 2.0 providers name displayed to the profile on the Login page
    */
   displayName: string;
   /**
-   * The issuer url of the OAUTH provider.
+   * The issuer url of the OAUTH providers.
    */
   issuer: string;
   /**
    * The authorization endpoint is used to interact with the resource owner and obtain an
-   * authorization grant. This is usually provided by the OAUTH provider.
+   * authorization grant. This is usually provided by the OAUTH providers.
    */
   authorizationEndpoint: string;
   /**
    * The token endpoint is used by the client to obtain an access token by presenting its
-   * authorization grant or refresh token. This is usually provided by the OAUTH provider.
+   * authorization grant or refresh token. This is usually provided by the OAUTH providers.
    */
   tokenEndpoint: string;
   /**
@@ -30,12 +30,12 @@ export type OAuthProvider = {
    */
   userinfoEndpoint: string;
   /**
-   * The OAuth 2.0 claim containing the unique profile ID returned by the provider. Usually this
+   * The OAuth 2.0 claim containing the unique profile ID returned by the providers. Usually this
    * should be set to "sub".
    */
   idClaim: string;
   /**
-   * The client_id is provided by the OAuth 2.0 provider and is a unique identifier to this
+   * The client_id is provided by the OAuth 2.0 providers and is a unique identifier to this
    * service
    */
   clientId: string;
@@ -53,7 +53,7 @@ export type OAuthProvider = {
    */
   accountLinkingEnabled: boolean;
   /**
-   * switch to enable or disable an oauth provider
+   * switch to enable or disable an oauth providers
    */
   enabled: boolean;
   publishedAt: string;

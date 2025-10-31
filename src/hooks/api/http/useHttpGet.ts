@@ -78,5 +78,13 @@ export function useHttpGet<K extends keyof WrappedLemmyHttp>(
   const execute = () => swr.mutate();
   const isMutating = swr.isValidating;
 
-  return { state, data, execute, isMutating, pagination };
+  return {
+    state,
+    data,
+    error: swr.error,
+    isLoading: swr.isLoading,
+    execute,
+    isMutating,
+    pagination,
+  };
 }

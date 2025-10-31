@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import {LocalUser, MyUserInfo, Person, ProfileData} from "lemmy-js-client";
+import {LocalUser, MyUserInfo, Person} from "lemmy-js-client";
 
 type UserStore = {
   user: LocalUser | null;

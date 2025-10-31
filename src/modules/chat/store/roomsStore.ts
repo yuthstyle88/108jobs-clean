@@ -65,12 +65,10 @@ const readLastIdStoreUtils = {
       }
     } catch {}
   },
-  clearRoom: (roomId: string) => {
+  clearRoom: async (roomId: string) => {
     try {
-      const { clearRoom } = require('@/modules/chat/store/readStore');
-      if (typeof clearRoom === 'function') {
-        clearRoom(roomId);
-      }
+      const mod = await import('@/modules/chat/store/readStore');
+      if (typeof mod.clearRoom === 'function') await mod.clearRoom(roomId);
     } catch {}
   },
   setPeerLastAt: (roomId: string, userId: number, timestamp: string) => {
@@ -132,6 +130,10 @@ export type RoomsState = {
   findByParticipant: (participantId: number) => Room | undefined;
   /** Reset the store to initial (clear rooms) */
   reset: () => void;
+  /** Batch upsert rooms */
+  bulkUpsert: (incoming: Room[]) => void;
+  /** Get total unread count */
+  getTotalUnread: () => number;
 };
 
 export const useRoomsStore = create<RoomsState>((set, get) => ({
@@ -172,6 +174,16 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
         ? s.rooms.map((r) => (r.id === room.id ? { ...r, ...room } : r))
         : [...s.rooms, room],
     })),
+
+  bulkUpsert: (incoming: Room[]) =>
+    set((s) => {
+      const byId = new Map(s.rooms.map(r => [r.id, r]));
+      for (const room of incoming) {
+        const prev = byId.get(room.id);
+        byId.set(room.id, prev ? { ...prev, ...room } : room);
+      }
+      return { rooms: Array.from(byId.values()) };
+    }),
 
   getRooms: () => get().rooms.slice(),
 
@@ -215,10 +227,25 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
   findByParticipant: (participantId) =>
     get().rooms.find((r) => r.participant?.id === participantId),
 
-  reset: () => set({ rooms: [] }),
+  reset: () => {
+    const empty: Room[] = [];
+    set({ rooms: empty });
+    unreadStoreUtils.pruneByRooms(empty);
+    readLastIdStoreUtils.pruneByRooms(empty);
+  },
+
+  getTotalUnread: () => {
+    const ids = get().rooms.map(r => r.id);
+    return ids.reduce((sum, id) => sum + unreadStoreUtils.getUnreadCount(id), 0);
+  },
 }));
 
 // Convenience hooks/selectors
 export const useActiveRoomId = () => useRoomsStore((s) => s.getActiveRoomId());
 export const useActiveRoom = () => useRoomsStore((s) => s.getActiveRoom());
 export const useRooms = () => useRoomsStore((s) => s.getRooms());
+
+export const useRoomsSortedByLastMessage = () =>
+  useRoomsStore((s) =>
+    [...s.getRooms()].sort((a, b) => (b.lastMessageAt ?? '').localeCompare(a.lastMessageAt ?? ''))
+  );

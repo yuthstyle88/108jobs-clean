@@ -78,7 +78,6 @@ type MessageForm = { message: string };
  * @property partnerName        Display name for the chat partner.
  * @property partnerAvatar      URL for the partner avatar (fallbacks applied at render).
  * @property partnerId          Numeric partner ID used by quotation modal and workflow actions.
- * @property partnerAvailable   Whether partner currently accepts messages (false blocks sending).
  * @property roomData           Full room data object (server-sourced). Used to seed currentRoom and workflow.
  * @property localUser          Current logged-in user record.
  * @property peerPublicKeyHex   Public key used for peer activity/typing via channel hook.

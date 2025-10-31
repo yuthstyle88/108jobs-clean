@@ -134,7 +134,7 @@ export class LoginFormClass extends Component<
                 prev: this.props.redirectUrl,
             });
         } catch (err) {
-            console.error('OAuth provider login failed:', err);
+            console.error('OAuth providers login failed:', err);
         }
     };
 

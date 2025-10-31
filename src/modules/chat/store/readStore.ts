@@ -90,3 +90,11 @@ export function pruneReadLastByRooms(rooms: Array<{ id: string | number }>) {
 
     if (changed) useReadLastIdStore.setState({ byRoomUser: next });
 }
+
+export async function clearRoom(roomId: string) {
+    const rk = String(roomId);
+    const st = useReadLastIdStore.getState();
+    const next = { ...st.byRoomUser };
+    for (const k of Object.keys(next)) if (k.startsWith(`${rk}:`)) delete next[k];
+    useReadLastIdStore.setState({ byRoomUser: next });
+}

@@ -16,7 +16,6 @@ import {useTranslation} from "react-i18next";
 import {buildCommunitiesTree} from "@/utils/helpers";
 import {useCommunities} from "@/hooks/api/communities/useCommunities";
 import {LandingImage} from "@/constants/images";
-import {ChatRoomsProvider} from "@/modules/chat/contexts/ChatRoomsContext";
 import {ChatLanguageProvider} from "@/contexts/ChatLanguage";
 import Link from "next/link";
 import NavBar from "@/components/Home/NavBar";
@@ -34,7 +33,6 @@ export default function Home() {
 
     return (
         <ChatLanguageProvider>
-            <ChatRoomsProvider>
                 <div className="min-h-[100vh] bg-gray-50">
                     <div className="hidden sm:block">
                         <Header type="transparent"/>
@@ -134,7 +132,6 @@ export default function Home() {
                     </main>
                     <Footer/>
                 </div>
-            </ChatRoomsProvider>
         </ChatLanguageProvider>
     );
 }

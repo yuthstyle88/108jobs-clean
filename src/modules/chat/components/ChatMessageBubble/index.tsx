@@ -5,7 +5,6 @@ import type {ChatMessage, LocalUserId} from "lemmy-js-client";
 import {MessageImage} from "@/constants/images";
 import {useTranslation} from "react-i18next";
 import {useChatStore} from "@/modules/chat/store/chatStore";
-import {useChatServices} from "@/modules/chat/contexts/PhoenixChatBridgeProvider";
 import React, {useMemo, useEffect} from "react";
 import {toLocalTime} from "@/utils/date";
 import MessageStatusIndicator from "@/modules/chat/components/MessageStatusIndicator";
@@ -14,6 +13,7 @@ import {isSameOrAfter, isApproxSame} from "@/modules/chat/utils/helpers";
 import {useReadLastIdStore} from "@/modules/chat/store/readStore";
 import {usePeerOnline} from "@/modules/chat/store/presenceStore";
 import {Stars} from "@/components/RatingDisplay";
+import {useChatServices} from "@/modules/chat/providers/PhoenixChatBridgeProvider";
 
 interface ChatMessageItemProps {
     message: ChatMessage;

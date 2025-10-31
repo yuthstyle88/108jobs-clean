@@ -2,11 +2,11 @@
 
 import {useLanguage} from "@/contexts/LanguageContext";
 import {useParams} from "next/navigation";
-import React, {useCallback, useMemo, useState, useEffect} from "react";
+import React, {useMemo, useState, useEffect} from "react";
 import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {useChatRoomsContext} from "@/modules/chat/contexts/ChatRoomsContext";
 import type {ChatRoom} from "@/modules/chat/types/chat";
-import {debounce} from "lodash";
+import debounce from "lodash/debounce";
 import ChatListItem from "@/modules/chat/components/ChatRoomList";
 import {useTranslation} from "react-i18next";
 
@@ -21,22 +21,18 @@ const ChatWrapper = ({
                          setIsSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
                      }) => {
     const {t} = useTranslation();
-    const params = useParams();
-    const activeRoomId = params?.roomId as string | undefined;
+    const params = useParams() as { roomId?: string };
+    const activeRoomId = params?.roomId ?? null;
     const {lang: currentLang} = useLanguage();
     const {localUser} = useMyUser();
-    const chatCtx = useChatRoomsContext();
-    const {rooms, isLoading, error} = chatCtx || {} as any;
+    const { rooms, isLoading, error, setActiveRoomId } = useChatRoomsContext();
     const [searchQuery, setSearchQuery] = useState("");
 
-    // Refs to prevent repeated connect/join on re-renders
-    const connectedRef = React.useRef(false);
-    const lastJoinedRoomRef = React.useRef<string | undefined>(undefined);
 
     // Debounce search input to prevent excessive re-renders
-    const debouncedSetSearchQuery = useCallback(
-        debounce((value: string) => setSearchQuery(value), 300),
-        []
+    const debouncedSetSearchQuery = useMemo(
+      () => debounce((value: string) => setSearchQuery(value), 300),
+      []
     );
     useEffect(() => {
         return () => {
@@ -44,48 +40,20 @@ const ChatWrapper = ({
         };
     }, [debouncedSetSearchQuery]);
 
-    // Auto-connect once; join when roomId changes
+    // Sync active room with provider (new API handles connection elsewhere)
     useEffect(() => {
-        if (!chatCtx) return;
-        try {
-            if (!connectedRef.current) {
-                (chatCtx as any)?.connect?.();
-                connectedRef.current = true;
-            }
+      if (activeRoomId !== undefined) {
+        try { setActiveRoomId(activeRoomId); } catch (e) { console.warn('[ChatWrapper] setActiveRoomId failed', e); }
+      }
+      if (isSidebarOpen) setIsSidebarOpen(false);
+    }, [activeRoomId, isSidebarOpen, setIsSidebarOpen, setActiveRoomId]);
 
-            if (!activeRoomId) return;
-            const roomKey = activeRoomId;
-
-            // Skip if we already joined this room (prevents duplicate joins on re-render)
-            if (lastJoinedRoomRef.current !== roomKey) {
-                const ensured = (chatCtx as any)?.ensureJoined?.(roomKey);
-                if (!ensured) {
-                    const joinFn = (chatCtx as any)?.joinRoom ?? (chatCtx as any)?.openRoom;
-                    joinFn?.(roomKey);
-                }
-                lastJoinedRoomRef.current = roomKey;
-            }
-
-            (chatCtx as any)?.setActiveRoomId?.(roomKey);
-        } catch (e) {
-            console.warn('[ChatWrapper] auto-join failed', e);
-        }
-
-        if (isSidebarOpen) setIsSidebarOpen(false);
-
-    }, [activeRoomId, chatCtx, isSidebarOpen, setIsSidebarOpen]);
-
-    // Reset connection state when auth user changes (logout/login)
+    // Reset active room on logout/login
     useEffect(() => {
-        if (!chatCtx) return;
-        // reset guards so next login will connect/join fresh
-        connectedRef.current = false;
-        lastJoinedRoomRef.current = undefined;
-        // on logout explicitly disconnect
-        if (!localUser) {
-            try { (chatCtx as any)?.disconnect?.(); } catch {}
-        }
-    }, [localUser?.id, chatCtx]);
+      if (!localUser) {
+        try { setActiveRoomId(null); } catch {}
+      }
+    }, [localUser?.id, setActiveRoomId]);
 
 
     // Memoized filtered rooms to optimize search performance

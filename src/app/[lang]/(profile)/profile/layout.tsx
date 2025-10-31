@@ -2,13 +2,11 @@
 
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import SpHeader from "@/containers/SpHeader";
 import React, {ReactNode, useState} from "react";
-import ChatWrapper from "@/containers/ChatWrapper";
 import {ChatLanguageProvider} from "@/contexts/ChatLanguage";
-import {ChatRoomsProvider} from "@/modules/chat/contexts/ChatRoomsContext";
 import NavBar from "@/components/Home/NavBar";
 import MobileSidebar from "@/components/MobileSidebar";
+import {ChatRoomsProvider} from "@/modules/chat/providers/ChatRoomsProvider";
 
 interface UserLayoutProps {
     children: ReactNode;

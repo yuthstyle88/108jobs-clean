@@ -378,7 +378,7 @@ export const en = {
             cPlusPlus: "C++",
         },
         authen: {
-            continueWith: "Continue with {{provider}}",
+            continueWith: "Continue with {{providers}}",
             labelOrSignInWith: "Or sign in with",
             buttonCreateAccount: "Create Account",
             buttonLoginFacebook: "Log in with your Facebook account",
@@ -2823,7 +2823,7 @@ export const en = {
             "contact.4":
                 "Users acknowledge and agree not to engage in any actions, including but not limited to, encouraging or inducing communication for commissioning work outside the Platform, inquiring about or delivering additional work through channels other than the Platform, or any other actions that violate the Terms of Use. In the event that the Company finds that a User has engaged in any conduct that encourages or induces communication for commissioning work outside the Platform, such as paying a deposit, making partial payments, etc., the Company will consider the User to have violated the Terms of Use, and the Company reserves the right to suspend or terminate the profile account, as well as claim damages incurred from the User.",
             "contact.5":
-                "Personal data or any other information communicated by Users via the Platform's Chat shall be considered confidential profile information. The recipient of the information cannot disclose confidential information unless written consent is obtained from the information provider, or the information is generally public, or when required by law or government agency authority.",
+                "Personal data or any other information communicated by Users via the Platform's Chat shall be considered confidential profile information. The recipient of the information cannot disclose confidential information unless written consent is obtained from the information providers, or the information is generally public, or when required by law or government agency authority.",
             "contact.6":
                 "The Company encourages Users to communicate courteously to prevent the risk of disputes.",
             "fee.title":
@@ -2887,7 +2887,7 @@ export const en = {
             orderCancelRefundReason3:
                 "The Employer is involved in any fraudulent or illicit activities, whether for their own benefit or the benefit of others. The Company will consider this as fraudulent use of the Platform service in relation to such Order.",
             orderCancelRefundReason4:
-                "The Employer has initiated a payment stop or requested a refund from a payment service provider, including but not limited to banks, financial institutions, or other third parties, other than the Company.",
+                "The Employer has initiated a payment stop or requested a refund from a payment service providers, including but not limited to banks, financial institutions, or other third parties, other than the Company.",
             accountSuspensionTitle: "Account Suspension and Termination",
             accountSuspensionIntro:
                 "To ensure that the use of Platform services complies with the Terms of Use, the Company reserves the right to verify profile account ownership throughout the period of using the Platform services. Upon verification, Users must demonstrate account ownership by providing various evidence, such as national ID card, bank passbook, passport, legal documents issued by government agencies, or any other documents requested by the Company, for identity verification purposes.",
@@ -2954,7 +2954,7 @@ export const en = {
                 "In the event that the Company is liable to a User, the Company agrees to compensate the User for actual damages incurred.",
             "limitation.title": "Limitation of Company's Liability",
             "limitation.intro":
-                "The provision of Platform services does not make the Company a joint principal, joint agent, joint debtor, or any other legal relationship with Users, other than being a service provider for whom Users are obligated to pay Platform Service Fees and Payment Processing Fees, as the case may be, to the Company.",
+                "The provision of Platform services does not make the Company a joint principal, joint agent, joint debtor, or any other legal relationship with Users, other than being a service providers for whom Users are obligated to pay Platform Service Fees and Payment Processing Fees, as the case may be, to the Company.",
             "limitation.exclusions":
                 "The Company reserves the right to disclaim any liability for deliverables and/or services received by the Employer from the Freelancer in the following cases:",
             "limitation.exclusions.outOfOrder":
