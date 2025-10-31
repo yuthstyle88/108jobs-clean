@@ -1,11 +1,10 @@
-import {Budget} from "./types/Budget";
-
 export * from "./http";
 export type {UploadImage} from "./other_types";
 export type {ChatRoom} from "./types/ChatRoom";
 export type {ChatRoomView} from "./types/ChatRoomView";
 export type {ChatRoomId} from "./types/ChatRoomId";
 export type {ChatParticipant} from "./types/ChatParticipant";
+export type {ChatParticipantView} from "./types/ChatParticipantView";
 export type {LastMessage} from "./types/LastMessage";
 export type {ChatRoomResponse} from "./types/ChatRoomResponse";
 export type {ChatRoomData} from "./types/ChatRoomResponse";

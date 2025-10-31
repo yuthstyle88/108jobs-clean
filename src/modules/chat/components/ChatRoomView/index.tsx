@@ -88,7 +88,6 @@ interface ChatRoomViewProps {
     partnerName: string;
     partnerAvatar?: string;
     partnerId: LocalUserId;
-    partnerAvailable?: boolean;
     roomData: ChatRoomData;
     localUser: LocalUser;
     partnerPersonId: PersonId;
@@ -100,7 +99,6 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                                                        partnerName,
                                                        partnerAvatar,
                                                        partnerId,
-                                                       partnerAvailable,
                                                        roomData,
                                                        localUser,
                                                        partnerPersonId
@@ -653,7 +651,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     );
 
     // Provide JobFlowContent to the global sidebar
-    React.useEffect(() => {
+    useEffect(() => {
         setContent(
             <JobFlowContent
                 setIsFlowOpen={setIsFlowOpen}

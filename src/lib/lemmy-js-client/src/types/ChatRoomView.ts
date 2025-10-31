@@ -1,7 +1,7 @@
 import type {ChatRoom} from "./ChatRoom";
-import type {ChatParticipant} from "./ChatParticipant";
 import type {Post} from "./Post";
 import type {Comment} from "./Comment";
+import type {ChatParticipantView} from "./ChatParticipantView";
 
 /**
  * A chat room view, including its participants.
@@ -10,7 +10,7 @@ import type {Comment} from "./Comment";
 export type ChatRoomView = {
   room: ChatRoom;
   // Not selectable by Diesel; assembled separately via additional query
-  participants: ChatParticipant[];
+  participants: ChatParticipantView[];
   post?: Post;
   currentComment?: Comment;
 };
