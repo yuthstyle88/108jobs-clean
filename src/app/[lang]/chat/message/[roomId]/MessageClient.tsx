@@ -11,7 +11,7 @@ import {PhoenixChatBridgeProvider} from "@/modules/chat/providers/PhoenixChatBri
 export default function MessageClient({ roomId }: { roomId: string }) {
     const isLoggedIn = UserService.Instance.isLoggedIn;
     const { localUser } = useMyUser();
-    const state = useChatSession(roomId, localUser?.id, isLoggedIn);
+    const state = useChatSession(roomId, localUser!.id, isLoggedIn);
 
     if (state.loading || !state.currentRoom || !localUser || !state.partnerPersonId) {
         return <LoadingBlur text="" />;

@@ -15,12 +15,12 @@ export interface ChatSessionState {
     loading: boolean;
 }
 
-export function useChatSession(roomId?: string, localUserId?: number, isLoggedIn?: boolean) {
+export function useChatSession(roomId: string, localUserId: number, isLoggedIn: boolean) {
     const reset = useStateMachineStore((s) => s.reset);
 
-    const {state: chatState} = useHttpGet(
+    const { state: chatState } = useHttpGet(
         "getChatRoom",
-        [roomId!]
+        [roomId ?? ""]
     );
 
     // Reset external state when switching rooms
@@ -29,6 +29,11 @@ export function useChatSession(roomId?: string, localUserId?: number, isLoggedIn
     }, [roomId, reset]);
 
     const derived = useMemo<ChatSessionState>(() => {
+        // If no roomId or not logged in, don't attempt to read room data
+        if (!roomId || !isLoggedIn) {
+            return { partnerName: "Unknown", notFound: false, loading: false };
+        }
+
         // While fetching or not successful yet → loading
         if (!isSuccess(chatState)) {
             return { partnerName: "Unknown", notFound: false, loading: true };
@@ -64,14 +69,14 @@ export function useChatSession(roomId?: string, localUserId?: number, isLoggedIn
         return {
             currentRoom: room,
             post: room?.room?.post,
-            partnerName: other.memberPerson.name ?? "Unknown",
-            partnerId: other.participant.memberId,
-            partnerPersonId: other.memberPerson.id,
-            partnerAvatar: other.memberPerson.avatar,
+            partnerName: other?.memberPerson?.name ?? "Unknown",
+            partnerId: other?.participant?.memberId,
+            partnerPersonId: other?.memberPerson?.id,
+            partnerAvatar: other?.memberPerson?.avatar,
             notFound: false,
             loading: false,
         };
-    }, [chatState, localUserId]);
+    }, [chatState, localUserId, roomId, isLoggedIn]);
 
     return derived;
 }
