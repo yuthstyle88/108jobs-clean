@@ -32,11 +32,29 @@ function getOrCreateSocket(url: string, opts?: any): PhoenixSocket {
   const key = url;
   const existing = socketCache.get(key);
   if (existing) {
-    // update params (e.g. token may rotate)
-    if (opts?.params) (existing as any).params = { ...(existing as any).params, ...opts.params };
+    // update params (e.g., token may rotate) without breaking phoenix versions
+    if (opts?.params) {
+      const curr: any = (existing as any).params;
+      const incoming: any = (opts as any).params;
+      if (typeof curr === 'function') {
+        const currFn = curr.bind(existing);
+        (existing as any).params = () => ({ ...(currFn() || {}), ...(typeof incoming === 'function' ? incoming() : incoming || {}) });
+      } else if (curr && typeof curr === 'object') {
+        (existing as any).params = { ...curr, ...(typeof incoming === 'function' ? incoming() : incoming || {}) };
+      } else {
+        // keep as function to be compatible with phoenix that expects params()
+        (existing as any).params = () => (typeof incoming === 'function' ? incoming() : (incoming || {}));
+      }
+    }
     return existing;
   }
-  const s = new PhoenixSocket(url, opts);
+
+  // Normalize opts.params to a function for cross-version compatibility
+  let normOpts = opts as any;
+  if (opts?.params && typeof (opts as any).params !== 'function') {
+    normOpts = { ...(opts as any), params: () => ((opts as any).params || {}) };
+  }
+  const s = new PhoenixSocket(url, normOpts);
   socketCache.set(key, s);
   return s;
 }
