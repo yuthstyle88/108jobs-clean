@@ -163,7 +163,7 @@ const FreelanceChatFlow: React.FC<FreelanceChatFlowProps> = ({
     const viewStatus: ViewStatus = currentStatus as ViewStatus;
 
     const currentIndex = Math.max(0, STEPS.findIndex((s) => s.key === viewStatus));
-
+    console.log('currentStatus', currentStatus);
     // Consolidate final-state logic to avoid overlap
     const isFinal = currentStatus === 'Completed' || currentStatus === 'Cancelled';
     const showMessageHiring = isFinal && isEmployer;
