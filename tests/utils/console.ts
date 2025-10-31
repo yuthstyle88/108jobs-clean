@@ -20,7 +20,7 @@ export function captureConsole(page: Page): CapturedConsole {
     const text = msg.text();
     if (type === 'error') {
       errors.push(text);
-    } else if (type === 'warning' || type === 'warn') {
+    } else if (type === 'warning') {
       warnings.push(text);
     } else {
       logs.push(`[${type}] ${text}`);
