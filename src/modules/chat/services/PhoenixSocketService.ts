@@ -7,6 +7,40 @@
 import {Socket as PhoenixSocket} from "phoenix";
 import {buildActixWsUrl} from "@/modules/chat/utils/chatSocketUtils";
 
+// Safe resolver for socket connection state across Phoenix versions / typings
+function phoenixSocketState(s: any): 'connecting' | 'open' | 'closing' | 'closed' | 'unknown' {
+  try {
+    const byMethod = s?.connectionState?.();
+    if (byMethod) return String(byMethod) as any;
+  } catch {}
+  try {
+    const rs = s?.conn?.readyState;
+    if (rs === 0) return 'connecting';
+    if (rs === 1) return 'open';
+    if (rs === 2) return 'closing';
+    if (rs === 3) return 'closed';
+  } catch {}
+  try {
+    return s?.isConnected?.() ? 'open' : 'closed';
+  } catch {}
+  return 'unknown';
+}
+
+// Keep a single Phoenix socket per URL to avoid double-connect/early-close from remounts
+const socketCache = new Map<string, PhoenixSocket>();
+function getOrCreateSocket(url: string, opts?: any): PhoenixSocket {
+  const key = url;
+  const existing = socketCache.get(key);
+  if (existing) {
+    // update params (e.g. token may rotate)
+    if (opts?.params) (existing as any).params = { ...(existing as any).params, ...opts.params };
+    return existing;
+  }
+  const s = new PhoenixSocket(url, opts);
+  socketCache.set(key, s);
+  return s;
+}
+
 export interface RealtimeChannelAdapter {
     readyState: number; // 0 connecting, 1 open, 2 closing, 3 closed
     onopen?: () => void;
@@ -33,13 +67,39 @@ export function getChannelAdapter(token: string, topic: string, roomId: string, 
     const url = buildActixWsUrl();
     console.log("[phoenix] getChannelAdapter", {url, topic, roomId, senderId});
     const opts = token ? ({params: {token}} as any) : (undefined as any);
-    const socket = new PhoenixSocket(url, opts);
-    socket.connect();
 
+    if (!topic) throw new Error('phoenix: topic is required');
     const params: any = {topic};
     if (roomId) params.roomId = roomId;
     params.senderId = senderId;
     if (token) params.token = token;
+    if (DEV) console.debug('[phoenix] channel()', { topic, params });
+
+    const socket = getOrCreateSocket(url, opts);
+
+    // Attach low-level diagnostics once
+    try {
+        (socket as any)._dbg_hooked ||= false;
+        if (!(socket as any)._dbg_hooked) {
+            (socket as any)._dbg_hooked = true;
+            socket.onOpen(() => {
+                if (DEV) console.debug('[phoenix] socket open', { url, state: phoenixSocketState(socket) });
+            });
+            (socket as any).onClose?.((ev: any) => {
+                if (DEV) console.warn('[phoenix] socket close', { code: ev?.code, reason: ev?.reason, wasClean: ev?.wasClean });
+            });
+            (socket as any).onError?.((err: any) => {
+                if (DEV) console.error('[phoenix] socket error', err);
+            });
+            (socket as any).onMessage?.((msg: any) => {
+                if (DEV && msg?.event === 'phx_error') console.warn('[phoenix] phx_error', msg);
+            });
+        }
+    } catch {}
+
+    if (phoenixSocketState(socket) !== 'open') {
+        socket.connect();
+    }
 
     const ch = socket.channel(topic, params);
 
@@ -149,19 +209,18 @@ export function getChannelAdapter(token: string, topic: string, roomId: string, 
     // Basic lifecycle hooks
     try {
         (ch as any).onError?.((e: any) => {
-            if (DEV) console.log("[phoenix] channel error", e);
+            if (DEV) console.warn('[phoenix] channel error', { topic, e });
             adapter.onerror?.(e);
         });
-    } catch {
-    }
+    } catch {}
     try {
-        (ch as any).onClose?.(() => {
-            if (DEV) console.log("[phoenix] channel closed");
+        (ch as any).onClose?.((e?: any) => {
+            const info = { code: e?.code ?? 1006, reason: e?.reason ?? 'channel closed' };
+            if (DEV) console.warn('[phoenix] channel closed', { topic, ...info });
             readyState = 3;
-            adapter.onclose?.({code: 1006, reason: "channel closed"});
+            adapter.onclose?.(info);
         });
-    } catch {
-    }
+    } catch {}
 
     // Single join
     try {
