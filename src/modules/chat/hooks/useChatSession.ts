@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useMemo} from "react";
 import {isSuccess} from "@/services/HttpService";
 import {useStateMachineStore} from "@/modules/chat/store/stateMachineStore";
 import {ChatRoomData, LocalUserId, PersonId, Post} from "@/lib/lemmy-js-client";
@@ -17,46 +17,51 @@ export interface ChatSessionState {
 
 export function useChatSession(roomId?: string, localUserId?: number, isLoggedIn?: boolean) {
     const reset = useStateMachineStore((s) => s.reset);
-    const [state, setState] = useState<ChatSessionState>({
-        partnerName: "Unknown",
-        notFound: false,
-        loading: true,
-    });
 
     const {state: chatState} = useHttpGet(
         "getChatRoom",
         [roomId!]
     );
 
+    // Reset external state when switching rooms
     useEffect(() => {
         if (roomId) reset();
     }, [roomId, reset]);
 
-    useEffect(() => {
-        if (!isSuccess(chatState)) return;
+    const derived = useMemo<ChatSessionState>(() => {
+        // While fetching or not successful yet → loading
+        if (!isSuccess(chatState)) {
+            return { partnerName: "Unknown", notFound: false, loading: true };
+        }
 
         const room = chatState.data;
         if (!room) {
-            setState({partnerName: "Unknown", notFound: true, loading: false});
-            return;
+            return { partnerName: "Unknown", notFound: true, loading: false };
         }
 
-        const participants = room?.room?.participants ?? [];
-        const other = participants.find(
-            (p) => p.participant.memberId !== localUserId
-        );
+        const participants = Array.isArray(room?.room?.participants)
+          ? (room.room.participants.filter(Boolean) as any[])
+          : [];
+
+        // Prefer a participant that is not the current user; otherwise pick the first valid participant
+        const other =
+          participants.find(p =>
+            p?.participant?.memberId != null &&
+            (localUserId == null || p.participant.memberId !== localUserId)
+          ) ??
+          participants.find(p => p?.participant?.memberId != null) ??
+          null;
 
         if (!other) {
-            setState({
+            return {
                 partnerName: "Unknown",
                 currentRoom: room,
                 loading: false,
                 notFound: false,
-            });
-            return;
+            };
         }
 
-        setState({
+        return {
             currentRoom: room,
             post: room?.room?.post,
             partnerName: other.memberPerson.name ?? "Unknown",
@@ -65,8 +70,8 @@ export function useChatSession(roomId?: string, localUserId?: number, isLoggedIn
             partnerAvatar: other.memberPerson.avatar,
             notFound: false,
             loading: false,
-        });
+        };
     }, [chatState, localUserId]);
 
-    return state;
+    return derived;
 }
