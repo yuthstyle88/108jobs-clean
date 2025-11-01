@@ -16,7 +16,6 @@ import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 import {ChatRoomsProvider} from "@/modules/chat/providers/ChatRoomsProvider";
 import {UserService} from "@/services";
 import {useActiveRoom} from "@/modules/chat/store/roomsStore";
-import {useRooms} from "@/modules/chat/store/roomsStore";
 import ChatWrapper from "@/containers/ChatWrapper";
 
 export default function ProfileLayout({children}: LayoutProps) {
@@ -35,11 +34,11 @@ export default function ProfileLayout({children}: LayoutProps) {
   const token = UserService.Instance.auth();
 
   const wsOptions = React.useMemo(() => ({ token, senderId, roomId: normalizedRoomId }), [token, senderId, normalizedRoomId]);
-
+  const info_data = `user=${user}&token=${token}&senderId=${senderId}&roomId=${normalizedRoomId}`;
   // Keep store in sync with URL param (no-op if action is missing)
   if(!user || !token || senderId === 0) {
     return (
-      <LoadingBlur text={""}/>
+      <LoadingBlur text={info_data}/>
     );
   }
 
