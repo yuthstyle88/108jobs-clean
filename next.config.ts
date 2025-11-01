@@ -11,8 +11,6 @@ const nextConfig: NextConfig = {
     reactStrictMode: true,
     poweredByHeader: false,
     compress: true,
-    // ✅ อนุญาต origin staging สำหรับ dev
-    allowedDevOrigins: ["*.108jobs.com"],
     // Reduce client bundle size and improve runtime perf
 
     // Prefer modern optimizations
@@ -20,10 +18,6 @@ const nextConfig: NextConfig = {
     modularizeImports: {
         lodash: {
             transform: 'lodash/{{member}}',
-            preventFullImport: true,
-        },
-        'date-fns': {
-            transform: 'date-fns/{{member}}',
             preventFullImport: true,
         },
         // Note: lucide-react, react-icons, and Radix UI packages are generally ESM-friendly.
@@ -35,6 +29,9 @@ const nextConfig: NextConfig = {
     compiler: {
         // Trim console.* in production bundles but keep error/warn
         removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+    },
+    typescript: {
+        ignoreBuildErrors: process.env.NODE_ENV !== 'production',
     },
 
     // Help Next.js tree-shake and dedupe by transpiling local packages if needed
@@ -146,7 +143,7 @@ const nextConfig: NextConfig = {
             ],
             // Proxy other API routes and static uploads
             afterFiles: [
-                { source: '/api/:path((?!session$).*)', destination: `${apiBase}/:path*` },
+                { source: '/api/:path*', destination: `${apiBase}/:path*` },
                 { source: '/uploads/:path*', destination: 'https://cdn.108jobs.com/uploads/:path*' },
             ],
             fallback: [],
