@@ -1,7 +1,6 @@
 "use client";
 
 import {useLanguage} from "@/contexts/LanguageContext";
-import {useParams} from "next/navigation";
 import React, {useMemo, useState, useEffect} from "react";
 import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {useChatRoomsContext} from "@/modules/chat/contexts/ChatRoomsContext";
@@ -21,11 +20,9 @@ const ChatWrapper = ({
                          setIsSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
                      }) => {
     const {t} = useTranslation();
-    const params = useParams() as { roomId?: string };
-    const activeRoomId = params?.roomId ?? null;
     const {lang: currentLang} = useLanguage();
     const {localUser} = useMyUser();
-    const { rooms, isLoading, error, setActiveRoomId } = useChatRoomsContext();
+    const { rooms, isLoading, error, setActiveRoomId, activeRoomId: activeCtxRoomId } = useChatRoomsContext();
     const [searchQuery, setSearchQuery] = useState("");
 
 
@@ -40,21 +37,17 @@ const ChatWrapper = ({
         };
     }, [debouncedSetSearchQuery]);
 
-    // Sync active room with provider (new API handles connection elsewhere)
+    // React to active room changes from store only (URL is ignored)
     useEffect(() => {
-      if (activeRoomId !== undefined) {
-        try { setActiveRoomId(activeRoomId); } catch (e) { console.warn('[ChatWrapper] setActiveRoomId failed', e); }
-      }
       if (isSidebarOpen) setIsSidebarOpen(false);
-    }, [activeRoomId, isSidebarOpen, setIsSidebarOpen, setActiveRoomId]);
+    }, [activeCtxRoomId, isSidebarOpen, setIsSidebarOpen]);
 
-    // Reset active room on logout/login
+    // Reset active room on logout/login (only if needed)
     useEffect(() => {
-      if (!localUser) {
+      if (!localUser && activeCtxRoomId !== null) {
         try { setActiveRoomId(null); } catch {}
       }
-    }, [localUser?.id, setActiveRoomId]);
-
+    }, [localUser?.id, activeCtxRoomId, setActiveRoomId]);
 
     // Memoized filtered rooms to optimize search performance
     const filteredRooms = useMemo(() => {

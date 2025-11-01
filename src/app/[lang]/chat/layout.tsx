@@ -15,21 +15,36 @@ import {useUserStore} from "@/store/useUserStore";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 import {ChatRoomsProvider} from "@/modules/chat/providers/ChatRoomsProvider";
 import {UserService} from "@/services";
+import {useActiveRoom} from "@/modules/chat/store/roomsStore";
+import {useRooms} from "@/modules/chat/store/roomsStore";
 import ChatWrapper from "@/modules/chat/ChatWrapper";
 
 export default function ProfileLayout({children}: LayoutProps) {
+  const storeActiveRoomId = useActiveRoom();
+  const rooms = useRooms();
   const params = useParams() as { roomId?: string };
   const {user, } = useUserStore();
   const activeRoomId = params?.roomId ?? null;
-  const normalizedRoomId = activeRoomId ?? "";
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  // Prefer param if present; otherwise fall back to store's activeRoomId
+  // normalizedRoomId feeds WebSocketProvider; prefer URL param, else store, else empty
+  const normalizedRoomId = (activeRoomId ?? storeActiveRoomId ?? "") as string;
+  // default to showing the room list first (especially on mobile)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // derive senderId from user
   const senderId = user?.id ?? 0;
   const token = UserService.Instance.auth();
 
   const wsOptions = React.useMemo(() => ({ token, senderId, roomId: normalizedRoomId }), [token, senderId, normalizedRoomId]);
-
+  // Sync URL param -> store (one-way). If a roomId is present in the URL, reflect it into the store.
+  React.useEffect(() => {
+    const setActive = (rooms as any)?.setActiveRoomId as ((id: string | null) => void) | undefined;
+    if (setActive && activeRoomId) {
+      setActive(activeRoomId);
+    }
+  }, [activeRoomId, rooms]);
+  // Keep store in sync with URL param (no-op if action is missing)
+  console.log("wsOptions", wsOptions);
   if(!user || !token || senderId === 0) {
     return (
       <LoadingBlur text={""}/>
@@ -76,7 +91,7 @@ export default function ProfileLayout({children}: LayoutProps) {
               <div className="flex h-full w-full">
                 <aside
                   className={`
-                                            ${!activeRoomId ? "flex" : "hidden md:flex"}
+                                            ${(!activeRoomId || isSidebarOpen) ? "flex" : "hidden md:flex"}
                                             flex-col w-full md:w-64 lg:w-80 xl:w-96
                                             border-r border-gray-200 bg-white h-full overflow-y-auto
                                         `}
@@ -90,7 +105,7 @@ export default function ProfileLayout({children}: LayoutProps) {
 
                 <JobFlowSidebarProvider>
                   <div className="flex flex-1 h-full">
-                    <main className="flex-1 min-w-0 h-full overflow-hidden bg-gray-50">
+                    <main className={`${isSidebarOpen ? "hidden md:flex" : "flex"} flex-1 min-w-0 h-full overflow-hidden bg-gray-50`}>
                       {children}
                     </main>
                     {activeRoomId && <JobFlowSidebar/>}

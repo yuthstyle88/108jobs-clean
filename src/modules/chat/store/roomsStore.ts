@@ -243,9 +243,7 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
 // Convenience hooks/selectors
 export const useActiveRoomId = () => useRoomsStore((s) => s.getActiveRoomId());
 export const useActiveRoom = () => useRoomsStore((s) => s.getActiveRoom());
-export const useRooms = () => useRoomsStore((s) => s.getRooms());
+export const useRooms = () => useRoomsStore((s) => s.rooms);
 
 export const useRoomsSortedByLastMessage = () =>
-  useRoomsStore((s) =>
-    [...s.getRooms()].sort((a, b) => (b.lastMessageAt ?? '').localeCompare(a.lastMessageAt ?? ''))
-  );
+  useRoomsStore((s) => s.rooms).slice().sort((a, b) => (b.lastMessageAt ?? '').localeCompare(a.lastMessageAt ?? ''));
