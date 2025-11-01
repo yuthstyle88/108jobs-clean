@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
     poweredByHeader: false,
     compress: true,
     // ✅ อนุญาต origin staging สำหรับ dev
-    allowedDevOrigins: ["staging.108jobs.com"],
+    allowedDevOrigins: ["*.108jobs.com"],
     // Reduce client bundle size and improve runtime perf
 
     // Prefer modern optimizations
