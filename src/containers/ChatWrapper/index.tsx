@@ -11,6 +11,7 @@ import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 const ChatWrapper = () => {
     const {t} = useTranslation();
     const {rooms} = useRoomsStore();
+    console.log("ChatWrapper rendered", rooms)
     const {lang: currentLang} = useLanguage();
     const {localUser} = useMyUser();
     const [searchQuery, setSearchQuery] = useState("");
@@ -30,15 +31,25 @@ const ChatWrapper = () => {
     // Memoized filtered rooms to optimize search performance
     const filteredRooms = useMemo(() => {
         if (!rooms || rooms.length === 0) return [];
-        // Filter out any transient undefined/null or malformed entries
-        const validRooms = rooms.filter((r: any) => r && r.room && r.room.id);
+
+        const validRooms = rooms.filter((r: any) => r?.room?.id);
         const q = searchQuery.trim().toLowerCase();
-        return q
-            ? validRooms.filter(
-                (r: any) => (r.room.roomName ?? '').toLowerCase().includes(q)
-            )
-            : validRooms;
+        if (!q) return validRooms;
+
+        return validRooms.filter((r: any) => {
+            const postName = (r.post?.name ?? "").toLowerCase();
+
+            const participantNames = (r.participants ?? [])
+                .map((p: any): string => (p?.memberPerson?.name?.toLowerCase() ?? ""))
+                .filter((name: string): boolean => !!name);
+
+            return (
+                postName.includes(q) ||
+                participantNames.some((n: string) => n.includes(q))
+            );
+        });
     }, [rooms, searchQuery]);
+
 
     // Handle search input change
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,20 +75,6 @@ const ChatWrapper = () => {
 
                 {/* Chat List */}
                 <div className="flex-1 overflow-y-auto">
-                    {filteredRooms.length === 0 && (
-                        <div className="p-3 sm:p-4 space-y-3" aria-live="polite" aria-busy="true">
-                            {Array.from({length: 6}).map((_, i) => (
-                                <div key={i} className="mx-2 p-3 flex items-center gap-3 animate-pulse">
-                                    <div className="w-9 h-9 rounded-full bg-gray-200"/>
-                                    <div className="flex-1">
-                                        <div className="h-3 bg-gray-200 rounded w-2/3 mb-2"/>
-                                        <div className="h-3 bg-gray-100 rounded w-1/3"/>
-                                    </div>
-                                    <div className="w-8 h-5 bg-gray-200 rounded-full"/>
-                                </div>
-                            ))}
-                        </div>
-                    )}
                     {filteredRooms.map((room) => (
                         <ChatListItem
                             key={room.room.id}
