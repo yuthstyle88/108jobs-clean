@@ -36,7 +36,6 @@ import type {
 import ChatHeader from "../ChatHeader";
 import ChatInput from "../ChatInput";
 import ChatRoomMessages from "../ChatRoomMessages";
-import {useUnreadStore} from "@/modules/chat/store/unreadStore";
 import {useRoomsStore} from '@/modules/chat/store/roomsStore';
 import FreelanceChatFlow, {FlowActions, StatusKey} from "@/modules/chat/components/FreelanceChatFlow";
 import {createFlowActions} from "@/modules/chat/utils/flowActions";
@@ -55,8 +54,6 @@ import {emitChatNewMessage} from "@/modules/chat/events";
 import {useChatRoom} from '@/modules/chat/hooks/useChatRoom';
 import {useChatHistory} from '@/modules/chat/hooks/useChatHistory';
 import {useChatStore} from "@/modules/chat/store/chatStore";
-import {useShallow} from 'zustand/react/shallow';
-import {selectRoomMessages} from '@/modules/chat/utils/selectors';
 import {useLoadLastRead} from "@/modules/chat/hooks/useLoadLastRead";
 import {useRoomPresence} from "@/modules/chat/hooks/useRoomPresence";
 import {SubmitReviewModal} from "@/modules/chat/components/Modal/SubmitReviewModal";
@@ -65,7 +62,6 @@ import {isBrowser} from "@/utils";
 import {useUserStore} from "@/store/useUserStore";
 import {useJobFlowSidebar} from "@/modules/chat/contexts/JobFlowSidebarContext";
 import {RoomView} from "@/modules/chat/types";
-import {User} from "@/types/job";
 
 
 /** Shape of the form submitted by ChatInput. */
@@ -96,6 +92,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                                                    }) => {
     const {t} = useTranslation();
     const {person, userInfo} = useUserStore();
+    const {wasUnread, clearWasUnread, markRoomRead} = useRoomsStore();
     const wallet = userInfo?.wallet;
     // --- Availability & basic send gating ---
     // Treat undefined availability as "available". Block sending if either side is unavailable.
@@ -123,11 +120,9 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     // Flow sidebar is now managed globally via JobFlowSidebarProvider
     const {isOpen: isFlowOpen, setOpen: setIsFlowOpen, setContent} = useJobFlowSidebar();
     const [currentRoom, setCurrentRoom] = useState<ChatRoomView>(roomData);
-    // Store selector pinned to the current room. Guarantees stable ascending order and dedup at selector level.
-    const roomSelector = React.useMemo(() => (s: any) => selectRoomMessages(s, String(roomId)), [roomId]);
-    const messages = useChatStore(useShallow(roomSelector)) as ChatMessage[];
+    const {getByRoom} = useChatStore();
+    const messages = getByRoom(roomId);
     const initialFetchRef = useRef(false);
-    const markSeen = useUnreadStore((s) => s.markSeen);
     const [error, setError] = useState<string | null>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [scrollParentEl, setScrollParentEl] = useState<HTMLElement | null>(null);
@@ -260,6 +255,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                 if (typeof document !== 'undefined' && document.visibilityState === 'visible' && document.hasFocus()) {
                     try {
                         sendLatestRead();
+                        markRoomRead(roomId);
                     } catch {
                     }
                 }
@@ -327,32 +323,30 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     useEffect(() => {
         if (initialFetchRef.current) return;
 
-        // always load from local store first
-        const getByRoom = useChatStore.getState().getByRoom;
-        const localMessages: ChatMessage[] = getByRoom ? getByRoom(roomId) : [];
+        const chatStore = useChatStore.getState();
+
+        const localMessages: ChatMessage[] = chatStore.getByRoom
+            ? chatStore.getByRoom(roomId)
+            : [];
         const hasLocalMessages = Array.isArray(localMessages) && localMessages.length > 0;
 
-        if (hasLocalMessages) {
-            // data already present in store, skip fetch
-            // console.debug('💾 Loaded messages from local store');
-            initialFetchRef.current = true;
-            return;
-        }
+        const shouldFetch = wasUnread(roomId) || !hasLocalMessages;
 
-        // only fetch from server if local store empty
-        if (hasMore && !isFetching) {
-            initialFetchRef.current = true;
-            // console.debug('🌐 Fetching history from server (store empty)');
-            fetchHistory()
-                .then(() => {
-                    // console.debug('✅ Initial history fetch complete');
-                })
-                .catch((error) => {
-                    console.error('❌ Failed to fetch initial history:', error);
-                    initialFetchRef.current = false; // Allow retry
-                });
-        }
-    }, [roomId, hasMore, isFetching, fetchHistory]);
+        if (!shouldFetch || isFetching) return;
+
+        initialFetchRef.current = true;
+
+        fetchHistory()
+            .then(() => {
+                // after successfully fetching messages
+                clearWasUnread(roomId);
+                markRoomRead(roomId);
+            })
+            .catch((error) => {
+                console.log('❌ Failed to fetch initial history:', error);
+                initialFetchRef.current = false; // allow retry
+            });
+    }, [roomId, isFetching, fetchHistory]);
 
     const setWorkflowState = (key: StatusKey, statusBeforeCancel?: StatusKey, isClientUpdate = true) => {
         useStateMachineStore.setState({

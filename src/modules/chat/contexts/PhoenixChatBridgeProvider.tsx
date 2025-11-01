@@ -241,7 +241,7 @@ export const PhoenixChatBridgeProvider: React.FC<WebSocketProviderProps> = ({chi
         const unsub = GlobalAckMatcher.subscribe((ack) => {
             if(ack.clientId) {
                 try {
-                    store.promoteToSent(ack.clientId);
+                    store.promoteToSent(ack.roomId, ack.clientId);
                     store.dropRetryMeta(ack.clientId);
                 } catch {
                 }

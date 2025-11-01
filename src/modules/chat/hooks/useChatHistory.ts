@@ -9,7 +9,7 @@ export type UseChatHistoryOptions = {
     localUserId: number;
     receivedSet: Set<string>;
     broadcast: (m: any) => void;
-    upsertHistory: (items: ChatMessage[]) => void
+    upsertHistory: (roomId: string, items: ChatMessage[]) => void;
 };
 
 export type UseChatHistoryResult = {
@@ -59,7 +59,7 @@ export function useChatHistory(opts: UseChatHistoryOptions): UseChatHistoryResul
             const filteredCount = 0;
             if (items && Array.isArray(items)) {
                 // Reverse items before inserting to match ascending render order
-                upsertHistory(items.reverse());
+                upsertHistory(roomId, items.reverse());
             }
             // console.log('[useChatHistory] reset history', items);
 

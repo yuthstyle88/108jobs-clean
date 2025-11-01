@@ -22,41 +22,40 @@ export function useChatSession(roomId: string, localUserId: number, isLoggedIn: 
         "getChatRoom",
         [roomId ?? ""]
     );
-    console.log("chatState", chatState)
 
     // Reset external state when switching rooms
     useEffect(() => {
         if (roomId) reset();
     }, [roomId, reset]);
 
-    const derived = useMemo<ChatSessionState>(() => {
+    return useMemo<ChatSessionState>(() => {
         // If no roomId or not logged in, don't attempt to read room data
         if (!roomId || !isLoggedIn) {
-            return { partnerName: "Unknown", notFound: false, loading: false };
+            return {partnerName: "Unknown", notFound: false, loading: false};
         }
 
         // While fetching or not successful yet → loading
         if (!isSuccess(chatState)) {
-            return { partnerName: "Unknown", notFound: false, loading: true };
+            return {partnerName: "Unknown", notFound: false, loading: true};
         }
 
         const room = chatState.data;
         if (!room) {
-            return { partnerName: "Unknown", notFound: true, loading: false };
+            return {partnerName: "Unknown", notFound: true, loading: false};
         }
 
         const participants = Array.isArray(room?.room?.participants)
-          ? (room.room.participants.filter(Boolean) as any[])
-          : [];
+            ? (room.room.participants.filter(Boolean) as any[])
+            : [];
 
         // Prefer a participant that is not the current user; otherwise pick the first valid participant
         const other =
-          participants.find(p =>
-            p?.participant?.memberId != null &&
-            (localUserId == null || p.participant.memberId !== localUserId)
-          ) ??
-          participants.find(p => p?.participant?.memberId != null) ??
-          null;
+            participants.find(p =>
+                p?.participant?.memberId != null &&
+                (localUserId == null || p.participant.memberId !== localUserId)
+            ) ??
+            participants.find(p => p?.participant?.memberId != null) ??
+            null;
 
         if (!other) {
             return {
@@ -78,6 +77,4 @@ export function useChatSession(roomId: string, localUserId: number, isLoggedIn: 
             loading: false,
         };
     }, [chatState, localUserId, roomId, isLoggedIn]);
-
-    return derived;
 }

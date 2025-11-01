@@ -5,8 +5,9 @@ import Link from "next/link";
 import AvatarBadge from "@/components/AvatarBadge";
 import {usePeerOnline} from "@/modules/chat/store/presenceStore";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
-import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 import {RoomView} from "@/modules/chat/types";
+import {useParams} from "next/navigation";
+import {RoomNotFound} from "@/components/RoomNotFound";
 
 interface ChatRoomListProps {
     room: RoomView;
@@ -15,28 +16,20 @@ interface ChatRoomListProps {
 }
 
 function ChatRoomListComponent({room, currentLang, localUser}: ChatRoomListProps) {
-    const {findPartner, getUnread, markRoomRead, getActiveRoomId} = useRoomsStore();
-    const activeRoomId = getActiveRoomId();
-    const isActive = String(room.room.id) === String(activeRoomId || "");
+    const params = useParams() as { roomId?: string };
+    const activeRoomId = params?.roomId ?? null;
+    const {findPartner, getUnread, markRoomRead} = useRoomsStore();
+    const isActive = room.room.id === String(activeRoomId);
     const partner = findPartner(room.room.id, localUser?.id);
     const jobId = room.post?.id;
     const unreadCount = getUnread(room.room.id);
 
-    if (!partner) return <LoadingBlur text={""}/>;
+    if (!partner) return <RoomNotFound/>;
 
     const partnerName = partner.memberPerson.name || "Unknown";
     const online = usePeerOnline(partner.participant.memberId);
     const handleClick = () => {
-        try {
-            // fire-and-forget after click so Link navigation is never blocked
-            setTimeout(() => {
-                try {
-                    void markRoomRead(String(room.room.id));
-                } catch {
-                }
-            }, 0);
-        } catch {
-        }
+        markRoomRead(room.room.id);
     };
 
     return (

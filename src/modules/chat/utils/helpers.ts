@@ -2,9 +2,11 @@ import type {RefObject} from "react";
 import {HttpService} from "@/services";
 import {REQUEST_STATE} from "@/services/HttpService";
 import {emitReadReceipt} from "@/modules/chat/events";
-import type {ChatMessageView} from "lemmy-js-client";
+import type {ChatMessageView, ChatRoomView} from "lemmy-js-client";
 import {ChatMessage} from "lemmy-js-client";
 import {NormalizedEnvelope} from "@/modules/chat/utils/chatSocketUtils";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
+import {RoomView} from "@/modules/chat/types";
 
 // Type guard: narrow a NormalizedEnvelope to the typing envelope (explicit interface)
 export type TypingEnv = {
@@ -40,29 +42,33 @@ export function parseTypingDetail(env: NormalizedEnvelope, _fallbackRoomId: stri
 }
 
 // ---- helpers: status-change ----
-export async function maybeHandleStatusChange(env: any, roomId: string, setRefreshRoomData: (d: any) => void): Promise<boolean> {
+export async function maybeHandleStatusChange(env: any, roomId: string, setRefreshRoomData: (data: ChatRoomView) => void): Promise<boolean> {
     try {
+        const evName = String(env?.event ?? "");
+        if (!evName.toLowerCase().includes("update")) return false;
 
-        const evName = String(env?.event);
-        if (!evName || !evName.includes("update")) return false;
-        try {
-            const chatRoomRes = await HttpService.client.getChatRoom(roomId);
-            if (chatRoomRes.state === REQUEST_STATE.SUCCESS) {
-                setRefreshRoomData(chatRoomRes.data);
-            }
-        } catch (err) {
-            try {
-                if (localStorage.getItem('chat_debug') === '1') console.error("Error fetching room:", err);
-            } catch {
-            }
+        const api = require("@/modules/chat/store/roomsStore");
+        const {upsertRoom} = api.useRoomsStore.getState();
+
+        const chatRoomRes = await HttpService.client.getChatRoom(roomId);
+        if (chatRoomRes.state === REQUEST_STATE.SUCCESS) {
+            const newRoom = chatRoomRes.data.room;
+            upsertRoom(newRoom as RoomView);
+            setRefreshRoomData(newRoom);
+        } else {
+            console.error("[maybeHandleStatusChange] failed:", chatRoomRes);
         }
+
         return true;
-    } catch {
+    } catch (err) {
+        if (localStorage.getItem("chat_debug") === "1") {
+            console.error("[maybeHandleStatusChange] error:", err);
+        }
         return false;
     }
 }
 
-// ---- helpers: status-change ----
+// ---- helpers: read receipt ----
 export function maybeHandleReadReceipt(env: any, fallbackRoomId: string): boolean {
     try {
         const evName = String(env?.event || env?.content || "");
@@ -76,7 +82,7 @@ export function maybeHandleReadReceipt(env: any, fallbackRoomId: string): boolea
         // Emit event for internal WS listeners
         emitReadReceipt(roomId, lastReadMessageId, readerId);
         const api = require('@/modules/chat/store/readStore');
-        const { setPeerLastReadAt } = api.useReadLastIdStore.getState?.() || {};
+        const {setPeerLastReadAt} = api.useReadLastIdStore.getState?.() || {};
         if (typeof setPeerLastReadAt === 'function' && updatedAt) {
             setPeerLastReadAt(roomId, readerId, updatedAt);
         }
@@ -95,19 +101,19 @@ export async function maybeHandlePresenceUpdate(env: any, meId: number): Promise
         if (!senderId || senderId === Number(meId)) return false;
         try {
             const api = require('@/modules/chat/store/presenceStore');
-            const { setSnapshot } = api.usePresenceStore.getState();
-            setSnapshot([{ userId: senderId, lastSeenAt: Date.now() }]);
+            const {setSnapshot} = api.usePresenceStore.getState();
+            setSnapshot([{userId: senderId, lastSeenAt: Date.now()}]);
         } catch (err) {
             try {
                 if (localStorage.getItem('chat_debug') === '1') console.error('presence update failed:', err);
-            } catch {}
+            } catch {
+            }
         }
         return true;
     } catch {
         return false;
     }
 }
-
 
 // ---- helpers: new messages merge ----
 export function mergeNewMessages(

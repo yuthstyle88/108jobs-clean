@@ -12,7 +12,7 @@ import AccessibleAnnouncements from "@/components/AccessibleAnnouncements";
 import GlobalError from "@/components/GlobalError";
 import GlobalLoader from "@/components/Common/Loading/Loading";
 import {getLangCookies} from "@/utils/getLangCookies";
-import { UserServiceProvider } from "@/contexts/UserServiceContext";
+import {UserServiceProvider} from "@/contexts/UserServiceContext";
 
 const kanit = Kanit({
     subsets: ["latin", "vietnamese", "thai"],
@@ -31,9 +31,9 @@ export default async function RootLayout({
     children: React.ReactNode;
     params: Promise<{ lang: string }>;
 }>) {
-    const { lang } = await params;
+    const {lang} = await params;
     const isoData = await isoDataInitializer();
-    const tokenCookie =  isoData?.jwt;
+    const tokenCookie = isoData?.jwt;
     const langCookie = await getLangCookies();
     const userLang = isoData?.myUserInfo?.localUserView?.localUser?.interfaceLanguage as string | undefined;
     const initialLang = langCookie || lang || userLang;
@@ -58,11 +58,11 @@ export default async function RootLayout({
                 <GlobalErrorProvider>
                     <GlobalLoaderProvider>
                         <AnnouncementProvider>
-                                <Toaster richColors closeButton position="bottom-right"/>
-                                <AccessibleAnnouncements/>
-                                <GlobalError/>
-                                <GlobalLoader/>
-                                {children}
+                            <Toaster richColors closeButton position="bottom-right"/>
+                            <AccessibleAnnouncements/>
+                            <GlobalError/>
+                            <GlobalLoader/>
+                            {children}
                         </AnnouncementProvider>
                     </GlobalLoaderProvider>
                 </GlobalErrorProvider>

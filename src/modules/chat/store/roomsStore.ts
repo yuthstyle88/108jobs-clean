@@ -89,6 +89,7 @@ const readLastIdStoreUtils = {
 export type RoomsState = {
     // state
     rooms: RoomView[];
+    wasUnreadPerRoom: Record<string, boolean>;
 
     // basic mutators (kept for backward compatibility)
     setRooms: (rooms: RoomView[]) => void;
@@ -128,12 +129,18 @@ export type RoomsState = {
     /** Find a room by participant id */
     findByParticipant: (participantId: number) => RoomView | undefined;
     findPartner: (roomId: string, currentUserId?: LocalUserId) => ChatParticipantView | undefined;
+
+    markWasUnread: (roomId: string) => void;
+    clearWasUnread: (roomId: string) => void;
+    wasUnread: (roomId: string) => boolean;
+
     /** Reset the store to initial (clear rooms) */
     reset: () => void;
 };
 
 export const useRoomsStore = create<RoomsState>((set, get) => ({
     rooms: [],
+    wasUnreadPerRoom: {},
 
     // ——— Basic mutators (BC) ———
     setRooms: (rooms) => {
@@ -146,7 +153,12 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
     addRoom: (room) =>
         set((s) => ({rooms: s.rooms.some((r) => r.room.id === room.room.id) ? s.rooms : [...s.rooms, room]})),
     removeRoom: (roomId) => {
-        set((s) => ({rooms: s.rooms.filter((r) => r.room.id !== roomId)}));
+        set((s) => ({
+            rooms: s.rooms.filter((r) => r.room.id !== roomId),
+            wasUnreadPerRoom: Object.fromEntries(
+                Object.entries(s.wasUnreadPerRoom).filter(([id]) => id !== roomId)
+            ),
+        }));
         unreadStoreUtils.removeRoom(roomId);
         readLastIdStoreUtils.clearRoom(roomId);
     },
@@ -214,10 +226,20 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
     // Delegate unread mutations to unreadStore to avoid duplication
     setUnread: (roomId, count) => {
         unreadStoreUtils.setCount(roomId, count);
+        if (count > 0) {
+            set((s) => ({
+                wasUnreadPerRoom: { ...s.wasUnreadPerRoom, [roomId]: true },
+            }));
+        }
     },
 
     incrementUnread: (roomId, delta = 1) => {
         unreadStoreUtils.incrementCount(roomId, delta);
+        if (delta > 0) {
+            set((s) => ({
+                wasUnreadPerRoom: { ...s.wasUnreadPerRoom, [roomId]: true },
+            }));
+        }
     },
 
     getUnread: (roomId) => {
@@ -235,10 +257,17 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
         return room.participants.find(p => p.participant.memberId !== currentUserId);
     },
 
-    reset: () => set({rooms: []}),
-}));
+    markWasUnread: (roomId) =>
+        set((s) => ({
+            wasUnreadPerRoom: { ...s.wasUnreadPerRoom, [roomId]: true },
+        })),
 
-// Convenience hooks/selectors
-export const useActiveRoomId = () => useRoomsStore((s) => s.getActiveRoomId());
-export const useActiveRoom = () => useRoomsStore((s) => s.getActiveRoom());
-export const useRooms = () => useRoomsStore((s) => s.getRooms());
+    clearWasUnread: (roomId) =>
+        set((s) => ({
+            wasUnreadPerRoom: { ...s.wasUnreadPerRoom, [roomId]: false },
+        })),
+
+    wasUnread: (roomId) => get().wasUnreadPerRoom?.[roomId],
+
+    reset: () => set({ rooms: [], wasUnreadPerRoom: {} }),
+}));

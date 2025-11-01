@@ -21,6 +21,7 @@ import {usePresenceStore} from '@/modules/chat/store/presenceStore';
 import {useReadLastIdStore} from "@/modules/chat/store/readStore";
 import { usePartnerTyping } from '@/modules/chat/hooks/usePartnerTyping';
 import { useRoomPresence } from '@/modules/chat/hooks/useRoomPresence';
+import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 
 // Safe DOM CustomEvent dispatcher
 function dispatchDomEvent(name: string, detail: any) {
@@ -58,6 +59,7 @@ export function useChatRoom({
     const peerActiveDecayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastPeerActiveBumpAtRef = useRef<number>(0);
     const peerActiveExpiresAtRef = useRef<number>(0);
+    const {bumpRoomToTop} = useRoomsStore.getState();
 
     // Extract peer userId from roomData
     const peerUserId = React.useMemo(() => {
@@ -357,6 +359,7 @@ export function useChatRoom({
             ...(adapter ? {adapter} : {}),
         } as const;
         await sendChatMessage(deps, payload);
+        bumpRoomToTop(roomId);
     }, [ws, roomId, localUser.id, isE2EMock]);
 
     const resendMessage = useCallback(async (id: string) => {
@@ -418,7 +421,7 @@ export function useChatRoom({
 
     const removePending = useCallback((id: string) => {
         try {
-            useChatStore.getState().removeMessage?.(id);
+            useChatStore.getState().removeMessage?.(roomId, id);
         } catch {
         }
     }, []);

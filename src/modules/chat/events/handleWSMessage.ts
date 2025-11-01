@@ -12,13 +12,15 @@ import {emitChatTyping,} from "@/modules/chat/events/index";
 import type {ChatMessage, ChatRoomView} from "lemmy-js-client";
 import {
     buildMessageSignature,
-    cleanupFetch, maybeHandlePresenceUpdate,
+    cleanupFetch,
+    maybeHandlePresenceUpdate,
     maybeHandleReadReceipt,
     maybeHandleStatusChange,
     parseTypingDetail,
     tryFlushAutoAck
 } from "@/modules/chat/utils";
 import {ChatTypingDetail} from "@/modules/chat/types";
+import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 
 export interface HandlerRefs {
     /** set of processed message signatures for dedupe */
@@ -86,7 +88,8 @@ export function createHandleWSMessage(deps: HandlerDeps) {
                 // Keep log lightweight; the permissive mapper below will try its best.
                 try {
                     console.debug("[ws] payload failed strict validation (chat:message); attempting permissive mapping");
-                } catch {}
+                } catch {
+                }
             }
             // Normalize once only
             const env: NormalizedEnvelope = normalizePhoenixEnvelope(payload.data, roomIdStr);
@@ -95,7 +98,7 @@ export function createHandleWSMessage(deps: HandlerDeps) {
             try {
                 // Prefer normalized env ids; fall back to raw/nested payload (e.g., chat:active_rooms → data.payload.readerId)
                 const rawSender = payload?.data?.payload?.senderId
-                  ?? payload?.data?.payload?.readerId;
+                    ?? payload?.data?.payload?.readerId;
                 const senderIdNum = rawSender != null ? Number(rawSender) : undefined;
                 const isFromPeer = senderIdNum != null && senderIdNum !== meId;
                 if (isFromPeer) {
@@ -119,41 +122,62 @@ export function createHandleWSMessage(deps: HandlerDeps) {
                 const rawEvt = payload?.data?.event;
                 if (rawEvt === 'sync:pending') {
                     // Allow immediate ack
-                    try { if (ackCooldownRef) ackCooldownRef.current = 0 as any; } catch {}
+                    try {
+                        if (ackCooldownRef) ackCooldownRef.current = 0 as any;
+                    } catch {
+                    }
                     const lastId = (handleWSMessage as any)._batchAckLastId
                         || (handleWSMessage as any)._lastDeliveredId;
                     if (lastId) {
-                        try { deliveryAckRef?.current?.(lastId); } catch {}
+                        try {
+                            deliveryAckRef?.current?.(lastId);
+                        } catch {
+                        }
                         try {
                             // Reuse auto-ack to push read receipt if applicable
                             (handleWSMessage as any)._batchAckLastId = lastId;
                             tryFlushAutoAck(handleWSMessage, roomIdStr, readAckRef, ackCooldownRef);
-                        } catch {}
+                        } catch {
+                        }
                     }
                     return null;
                 }
-            } catch {}
+            } catch {
+            }
 
             // 2.6) ack protocol events from server
             try {
-              const rawEvt2 = payload?.data?.event;
-              // A) ackReminder → mark pending locally and reply ackConfirm
-              if (rawEvt2 === 'ackReminder') {
-                const ids: string[] = payload?.data?.payload?.clientIds ?? [];
-                try { (window as any)?.chatOutbox?.markPending?.(roomIdStr, meId, ids); } catch {}
-                try { (window as any)?.chatChannel?.ackConfirm?.(ids); } catch {}
-                return;
-              }
-              // B) messageAck → mark delivered/sent for that clientId
-              if (rawEvt2 === 'messageAck') {
-                const cid: string | undefined = payload?.data?.payload?.clientId;
-                if (cid) {
-                  try { (window as any)?.chatOutbox?.markDelivered?.(roomIdStr, meId, cid); } catch {}
-                  try { (window as any)?.chatStore?.markMessageDelivered?.(roomIdStr, cid); } catch {}
+                const rawEvt2 = payload?.data?.event;
+                // A) ackReminder → mark pending locally and reply ackConfirm
+                if (rawEvt2 === 'ackReminder') {
+                    const ids: string[] = payload?.data?.payload?.clientIds ?? [];
+                    try {
+                        (window as any)?.chatOutbox?.markPending?.(roomIdStr, meId, ids);
+                    } catch {
+                    }
+                    try {
+                        (window as any)?.chatChannel?.ackConfirm?.(ids);
+                    } catch {
+                    }
+                    return;
                 }
-                return;
-              }
-            } catch {}
+                // B) messageAck → mark delivered/sent for that clientId
+                if (rawEvt2 === 'messageAck') {
+                    const cid: string | undefined = payload?.data?.payload?.clientId;
+                    if (cid) {
+                        try {
+                            (window as any)?.chatOutbox?.markDelivered?.(roomIdStr, meId, cid);
+                        } catch {
+                        }
+                        try {
+                            (window as any)?.chatStore?.markMessageDelivered?.(roomIdStr, cid);
+                        } catch {
+                        }
+                    }
+                    return;
+                }
+            } catch {
+            }
 
             // 3) typing → DOM + optional callback
 
@@ -214,7 +238,8 @@ export function createHandleWSMessage(deps: HandlerDeps) {
                         // Also send delivery ack to server to confirm we received it
                         deliveryAckRef?.current?.(lastAckId);
                         (handleWSMessage as any)._lastDeliveredId = lastAckId;
-                    } catch {}
+                    } catch {
+                    }
                 }
                 // 6) auto-ack flush (once)
                 tryFlushAutoAck(handleWSMessage, roomIdStr, readAckRef, ackCooldownRef);

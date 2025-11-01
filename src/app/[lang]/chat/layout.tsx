@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import Header from "@/components/Header";
 import {ChatLanguageProvider} from "@/contexts/ChatLanguage";
 import {LayoutProps} from "@/types/layout";
@@ -14,7 +14,8 @@ import JobFlowSidebar from "@/modules/chat/components/JobFlowSidebar";
 import {useUserStore} from "@/store/useUserStore";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 import {UserService} from "@/services";
-import ChatWrapper from "@/modules/chat/ChatWrapper";
+import ChatWrapper from "@/containers/ChatWrapper";
+import {disableBackgroundUnread, enableBackgroundUnread} from "@/modules/chat/services/backgroundUnreadWatcher";
 
 export default function ProfileLayout({children}: LayoutProps) {
     const params = useParams() as { roomId?: string };
@@ -32,7 +33,19 @@ export default function ProfileLayout({children}: LayoutProps) {
         senderId,
         roomId: normalizedRoomId
     }), [token, senderId, normalizedRoomId]);
-    console.log(" token: ", token, " senderId: ", senderId)
+
+    useEffect(() => {
+        if (!token || !user?.id) return;
+
+        // Start background unread watcher
+        enableBackgroundUnread(() => token, () => user.id);
+
+        return () => {
+            // Clean up when user leaves chat area
+            disableBackgroundUnread();
+        };
+    }, [token, user?.id]);
+
     if (!user || !token || senderId === 0) {
         return (
             <LoadingBlur text={""}/>

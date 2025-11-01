@@ -87,7 +87,7 @@ async function doSend(deps: SendMessageDeps, msg: ChatMessage): Promise<{ id: st
         const ok = await s.sendMessage('chat:message', msg);
         if(!ok) return (dbg('doSend:sendMessage failed', {id}), {id, sent: false});
         // Transport send initiated successfully → mark as 'sending'
-        try { useChatStore.getState()?.commitStatus?.(id, 'sending' as any); } catch {}
+        try { useChatStore.getState()?.commitStatus?.(msg.roomId, id, 'sending' as any); } catch {}
         // Wait for ACK, auto-extend waiting if no reply
         let totalWait = 0;
         let acked = false;
@@ -99,7 +99,7 @@ async function doSend(deps: SendMessageDeps, msg: ChatMessage): Promise<{ id: st
                 totalWait += ACK_TIMEOUT_MS;
                 dbg('doSend:auto-extend-wait', { id, totalWait });
                 if (!markedRetrying) {
-                    try { useChatStore.getState()?.commitStatus?.(id, 'retrying' as any); } catch {}
+                    try { useChatStore.getState()?.commitStatus?.(msg.roomId, id, 'retrying' as any); } catch {}
                     markedRetrying = true;
                 }
             }
@@ -163,13 +163,13 @@ export async function sendChatMessage(deps: SendMessageDeps, data: MessagePayloa
         const pid = (p as any).id;                   // preserve original type
         const rid = (res as any)?.id ?? pid;         // if server returns new id only on success
         // update status without changing identity type
-        store?.commitStatus?.(res?.sent ? rid : pid, res?.sent ? 'sent' : 'failed');
+        store?.commitStatus?.(rid, res?.sent ? rid : pid, res?.sent ? 'sent' : 'failed');
         // If send failed, allow future retries by clearing the de-dup marker
         if (!res?.sent && msgId != null) try { sentSet?.delete?.(msgId); } catch {}
         return { id: rid, sent: !!res?.sent } as any;
     } catch (err) {
         dbg('sendChatMessage: transport error', err);
-        store?.commitStatus?.((p as any).id, 'failed');
+        store?.commitStatus?.(deps.roomId, (p as any).id, 'failed');
         if (msgId != null) try { sentSet?.delete?.(msgId); } catch {}
         return { id: (p as any).id, sent: false } as any;
     }

@@ -297,11 +297,6 @@ export async function handleIncomingPayload(
 
         // NEW MESSAGE (canonical)
         if (eventName === 'chat:message') {
-            const api = require('@/modules/chat/store/roomsStore');
-            const { incrementUnread, getUnread } = api.useRoomsStore.getState?.() || {};
-            incrementUnread(ctx.roomId);
-            console.log("handleIncomingPayload: chat:message", ctx.roomId)
-            console.log("unread", getUnread(ctx.roomId))
             const mapped = await mapOne(env);
             return mapped ? [mapped] : [];
         }

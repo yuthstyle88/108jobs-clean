@@ -27,8 +27,8 @@ export interface ChatStorePort {
 
     upsertRetryMeta: (id: string, meta: { retry: number; next: number }) => void
     dropRetryMeta: (id: string) => void
-    markFailed: (id: string) => void
-    promoteToSent: (id: string) => void
+    markFailed: (roomId: string, id: string) => void;
+    promoteToSent: (roomId: string, id: string) => void;
 }
 
 export class ResendManager {
@@ -123,7 +123,7 @@ export class ResendManager {
                 const serverId = await this.sender.sendMessage("chat:message", draft)
                 if (typeof serverId === 'string' && serverId.length > 0) {
                     // ส่งสำเร็จ → promote และล้าง retry meta
-                    this.store.promoteToSent(msg.id)
+                    this.store.promoteToSent(msg.roomId, msg.id)
                     this.store.dropRetryMeta(msg.id)
                 } else {
                     // ส่งไม่สำเร็จ → เพิ่มรอบ retry และตั้ง next ใหม่
@@ -131,7 +131,7 @@ export class ResendManager {
                     const prev = metaNow[msg.id] ?? {retry: 0, next: now}
                     const nextRetry = prev.retry + 1
                     if (nextRetry >= 3) {
-                        this.store.markFailed(msg.id)
+                        this.store.markFailed(msg.roomId, msg.id)
                         this.store.upsertRetryMeta(msg.id, {retry: nextRetry, next: now + this.backoffDelay(nextRetry)})
                     } else {
                         this.store.upsertRetryMeta(msg.id, {retry: nextRetry, next: now + this.backoffDelay(nextRetry)})
@@ -143,7 +143,7 @@ export class ResendManager {
                 const prev = metaNow[msg.id] ?? {retry: 0, next: now}
                 const nextRetry = prev.retry + 1
                 if (nextRetry >= 3) {
-                    this.store.markFailed(msg.id)
+                    this.store.markFailed(msg.roomId, msg.id)
                 }
                 this.store.upsertRetryMeta(msg.id, {retry: nextRetry, next: now + this.backoffDelay(nextRetry)})
             } finally {

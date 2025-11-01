@@ -6,11 +6,12 @@ import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 // Debug toggle: set window.__DEBUG_BG_UNREAD = true or localStorage.DEBUG_BG_UNREAD = '1' to enable logs
 const DEBUG_KEY = 'DEBUG_BG_UNREAD';
 const dbg = (...args: any[]) => {
-  try {
-    const w: any = typeof window !== 'undefined' ? window : {};
-    const on = !!(w.__DEBUG_BG_UNREAD || (typeof localStorage !== 'undefined' && localStorage.getItem(DEBUG_KEY)));
-    if (on) console.log('[bg-unread]', ...args);
-  } catch {}
+    try {
+        const w: any = typeof window !== 'undefined' ? window : {};
+        const on = !!(w.__DEBUG_BG_UNREAD || (typeof localStorage !== 'undefined' && localStorage.getItem(DEBUG_KEY)));
+        if (on) console.log('[bg-unread]', ...args);
+    } catch {
+    }
 };
 
 // Global singleton state (เพื่อกัน HMR/remount ซ้ำ)
@@ -31,7 +32,14 @@ type BGState = {
 
 function ensureState(): BGState {
     if (!W[KEY]) {
-        W[KEY] = { count: 0, tokenGetter: null, userIdGetter: null, stopFns: [], adapters: new Map(), seenByRoom: new Map() } as BGState;
+        W[KEY] = {
+            count: 0,
+            tokenGetter: null,
+            userIdGetter: null,
+            stopFns: [],
+            adapters: new Map(),
+            seenByRoom: new Map()
+        } as BGState;
     }
     return W[KEY] as BGState;
 }
@@ -44,7 +52,7 @@ export function enableBackgroundUnread(tokenGetter: TokenGetter, userIdGetter?: 
 
     st.tokenGetter = tokenGetter;
     st.userIdGetter = userIdGetter || null;
-    dbg('start watcher', { hasToken: !!st.tokenGetter?.(), userId: st.userIdGetter?.() });
+    dbg('start watcher', {hasToken: !!st.tokenGetter?.(), userId: st.userIdGetter?.()});
     const unsub = useRoomsStore.subscribe(() => reconcileRooms(st));
     st.stopFns.push(unsub);
     dbg('initial reconcile');
@@ -59,10 +67,26 @@ export function disableBackgroundUnread() {
     if (st.count > 0) return;
     dbg('stopped -> cleaning resources');
 
-    try { st.stopFns.forEach(fn => { try { fn(); } catch {} }); } catch {}
+    try {
+        st.stopFns.forEach(fn => {
+            try {
+                fn();
+            } catch {
+            }
+        });
+    } catch {
+    }
     st.stopFns = [];
 
-    try { st.adapters.forEach(ad => { try { ad.close(); } catch {} }); } catch {}
+    try {
+        st.adapters.forEach(ad => {
+            try {
+                ad.close();
+            } catch {
+            }
+        });
+    } catch {
+    }
     st.adapters.clear();
     st.seenByRoom.clear();
     st.userIdGetter = null;
@@ -82,17 +106,20 @@ function reconcileRooms(st: BGState) {
         const selfIdRaw = st.userIdGetter?.();
         const selfId = selfIdRaw == null ? null : String(selfIdRaw);
 
-        dbg('reconcile', { rooms: (rooms || []).map((r: any) => String(r.id)), active, selfId });
+        dbg('reconcile', {rooms: (rooms || []).map((r: any) => String(r.id)), active, selfId});
 
         const want = new Set<string>((rooms || []).map(r => String(r.room.id)));
 
         // ปิด adapter ที่ไม่ใช้แล้วหรือห้อง active
         for (const [roomId, ad] of Array.from(st.adapters.entries())) {
             if (!want.has(roomId) || String(active ?? '') === roomId) {
-                try { ad.close(); } catch {}
+                try {
+                    ad.close();
+                } catch {
+                }
                 st.adapters.delete(roomId);
                 st.seenByRoom.delete(roomId);
-                dbg('close adapter', { roomId, reason: (!want.has(roomId) ? 'not-wanted' : 'active') });
+                dbg('close adapter', {roomId, reason: (!want.has(roomId) ? 'not-wanted' : 'active')});
             }
         }
 
@@ -104,10 +131,10 @@ function reconcileRooms(st: BGState) {
             // reset seen cache on (re)subscribe
             st.seenByRoom.delete(id);
 
-            dbg('open adapter', { roomId: id });
+            dbg('open adapter', {roomId: id});
             const topic = `room:${id}`;
             const senderIdNum = selfId != null ? Number(selfId) : undefined;
-            const adapter = getChannelAdapter(token, topic,id, Number(senderIdNum) ?? 0) as any;
+            const adapter = getChannelAdapter(token, topic, id, Number(senderIdNum) ?? 0) as any;
 
             if (!st.seenByRoom.has(id)) st.seenByRoom.set(id, new Set<string>());
             const seen = st.seenByRoom.get(id)!;
@@ -117,35 +144,59 @@ function reconcileRooms(st: BGState) {
                     const env = JSON.parse(evt.data);
                     const isMsg = env?.event === 'chat:message'
                         || env?.payload?.event === 'chat:message';
-                    if (!isMsg) { dbg('skip non-message event', env?.event || env?.payload?.event); return; }
+                    if (!isMsg) {
+                        dbg('skip non-message event', env?.event || env?.payload?.event);
+                        return;
+                    }
                     const payload = env.payload || env;
                     const roomId = String((env.topic ?? payload.topic ?? id) || id);
                     const messageId = String(payload.id ?? payload.message_id ?? '');
-                    if (!messageId) { dbg('skip: no messageId', { roomId, payload }); return; }
+                    if (!messageId) {
+                        dbg('skip: no messageId', {roomId, payload});
+                        return;
+                    }
 
-                    if (seen.has(messageId)) { dbg('skip: duplicate', { roomId, messageId }); return; }
+                    if (seen.has(messageId)) {
+                        dbg('skip: duplicate', {roomId, messageId});
+                        return;
+                    }
                     seen.add(messageId);
 
                     const sender = payload.senderId;
-                    if (selfId != null && sender != null && String(sender) === selfId) { dbg('skip: from self', { roomId, messageId, sender }); return; }
+                    if (selfId != null && sender != null && String(sender) === selfId) {
+                        dbg('skip: from self', {roomId, messageId, sender});
+                        return;
+                    }
 
                     const stRooms = useRoomsStore.getState();
                     const activeRoom = stRooms.getActiveRoom();
                     const activeFlag = typeof stRooms.isActive === 'function' ? stRooms.isActive(roomId) : (String(activeRoom ?? '') === roomId);
-                    if (activeFlag) { dbg('skip: active room', { roomId, messageId }); return; }
+                    if (activeFlag) {
+                        dbg('skip: active room', {roomId, messageId});
+                        return;
+                    }
 
-                    dbg('increment', { roomId, messageId });
-                    try { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('bg-unread:increment', { detail: { roomId, messageId } })); } catch {}
+                    dbg('increment', {roomId, messageId});
+                    try {
+                        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('bg-unread:increment', {
+                            detail: {
+                                roomId,
+                                messageId
+                            }
+                        }));
+                    } catch {
+                    }
 
                     try {
-                      const inc = useRoomsStore.getState().incrementUnread as unknown as ((roomId: string, payload: { messageId: string }) => void) | undefined;
-                      if (typeof inc === 'function') {
-                        inc(roomId, { messageId });
-                      } else {
-                        dbg('store action missing: incrementUnread', { roomId, messageId });
-                      }
+                        const {incrementUnread, bumpRoomToTop, wasUnreadPerRoom} = useRoomsStore.getState();
+                        if (typeof incrementUnread === 'function') {
+                            incrementUnread(roomId);
+                            bumpRoomToTop(roomId);
+                        } else {
+                            dbg('store action missing: incrementUnread', {roomId, messageId});
+                        }
                     } catch (err) {
-                      console.error('[bg-unread] incrementUnread failed', err);
+                        console.error('[bg-unread] incrementUnread failed', err);
                     }
 
                 } catch (e) {
