@@ -16,9 +16,8 @@ interface ChatRoomListProps {
 }
 
 function ChatRoomListComponent({room, currentLang, localUser}: ChatRoomListProps) {
-    const { markRoomRead, activeRoomId } = useChatRoomsContext();
+    const { markRoomRead, activeRoomId , setActiveRoomId} = useChatRoomsContext();
     const { roomId } = (useParams?.() ?? {}) as { roomId?: string };
-    const setActiveRoomId = useRoomsStore((s) => s.setActiveRoomId);
     const isActive = String(room.id) === String(activeRoomId || roomId);
 
     const didSetRef = React.useRef(false);

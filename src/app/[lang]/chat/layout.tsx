@@ -21,7 +21,6 @@ import ChatWrapper from "@/containers/ChatWrapper";
 
 export default function ProfileLayout({children}: LayoutProps) {
   const storeActiveRoomId = useActiveRoom();
-  const rooms = useRooms();
   const params = useParams() as { roomId?: string };
   const {user, } = useUserStore();
   const activeRoomId = params?.roomId ?? null;
@@ -36,13 +35,7 @@ export default function ProfileLayout({children}: LayoutProps) {
   const token = UserService.Instance.auth();
 
   const wsOptions = React.useMemo(() => ({ token, senderId, roomId: normalizedRoomId }), [token, senderId, normalizedRoomId]);
-  // Sync URL param -> store (one-way). If a roomId is present in the URL, reflect it into the store.
-  React.useEffect(() => {
-    const setActive = (rooms as any)?.setActiveRoomId as ((id: string | null) => void) | undefined;
-    if (setActive && activeRoomId) {
-      setActive(activeRoomId);
-    }
-  }, [activeRoomId, rooms]);
+
   // Keep store in sync with URL param (no-op if action is missing)
   if(!user || !token || senderId === 0) {
     return (
