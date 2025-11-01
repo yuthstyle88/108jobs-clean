@@ -5,6 +5,9 @@ import {useRouter} from "next/navigation";
 import {dmRoomId} from "@/utils/helpers";
 import {MessageCircle} from "lucide-react";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";
+import {useRoomsStore} from "@/modules/chat/store/roomsStore";
+import {REQUEST_STATE} from "@/services/HttpService";
+import {RoomView} from "@/modules/chat/types";
 
 interface ChatNoWorkButtonProps {
     profile: Person;
@@ -14,21 +17,25 @@ interface ChatNoWorkButtonProps {
 const ChatNoWorkButton: React.FC<ChatNoWorkButtonProps> = ({profile, currentUserId}) => {
     const {t} = useTranslation();
     const router = useRouter();
+    const {upsertRoom} = useRoomsStore();
     const {execute: createChatRoom} = useHttpPost("createChatRoom");
     const handleChatClick = async () => {
         try {
             if (!currentUserId || !profile?.id || currentUserId === profile.id) return;
             const roomId = dmRoomId(currentUserId, profile.id, undefined);
             try {
-                await createChatRoom({partnerPersonId: profile.id, roomId});
+                const res = await createChatRoom({partnerPersonId: profile.id, roomId});
+                if (res.state === REQUEST_STATE.SUCCESS) {
+                    upsertRoom(res.data.room as RoomView);
+                }
             } catch (e) {
                 // If room already exists or API fails, proceed to navigate anyway
             }
-            router.push(`/chat/message/${roomId}`);
+            router.push(`/chat/message/${roomId}?t=${Date.now()}`);
         } catch (err) {
             try {
                 const fallbackId = dmRoomId(currentUserId, profile.id, undefined);
-                router.push(`/chat/message/${fallbackId}`);
+                router.push(`/chat/message/${fallbackId}?t=${Date.now()}`);
             } catch {
             }
         }

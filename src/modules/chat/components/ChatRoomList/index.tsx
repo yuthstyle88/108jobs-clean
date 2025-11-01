@@ -42,8 +42,12 @@ function ChatRoomListComponent({room, currentLang, localUser}: ChatRoomListProps
             onClick={handleClick}
         >
             <div
-                className={`flex items-center gap-3 p-3 rounded-lg border-b border-blue-950 border-l-4 ${
-                    isActive ? "bg-blue-50 border-blue-500" : "bg-white hover:bg-gray-50 border-transparent"
+                className={`flex items-center gap-3 p-3 rounded-lg border-b border-blue-950 border-l-4 relative ${
+                    isActive
+                        ? "bg-blue-50 border-blue-500"
+                        : !room.lastMessage
+                            ? "bg-yellow-50 border-yellow-500" // NEW room highlight
+                            : "bg-white hover:bg-gray-50 border-transparent"
                 }`}
             >
                 <AvatarBadge
@@ -78,6 +82,15 @@ function ChatRoomListComponent({room, currentLang, localUser}: ChatRoomListProps
                         className="ml-auto text-xs bg-blue-500 text-white rounded-full px-2 py-0.5 pointer-events-none"
                     >
                         {unreadCount}
+                    </span>
+                )}
+                {/* NEW Badge - Top Right Corner */}
+                {!room.lastMessage && (
+                    <span
+                        className="absolute top-2 right-2 text-xs bg-yellow-400 text-primary rounded-full px-2 py-0.5 pointer-events-none text-center min-w-[36px]"
+                        style={{ fontSize: '0.65rem', lineHeight: '1' }}
+                    >
+                        New
                     </span>
                 )}
             </div>

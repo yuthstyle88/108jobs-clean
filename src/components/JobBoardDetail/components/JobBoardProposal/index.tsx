@@ -14,6 +14,9 @@ import {getLocale} from "@/utils/date";
 import {useTranslation} from "react-i18next";
 import LoadingMultiCircle from "@/components/Common/Loading/LoadingMultiCircle";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";
+import {useRoomsStore} from "@/modules/chat/store/roomsStore";
+import {REQUEST_STATE} from "@/services/HttpService";
+import {RoomView} from "@/modules/chat/types";
 
 type JobBoardProposalProps = {
     postId?: number;
@@ -24,7 +27,7 @@ const JobBoardProposal = ({postId, jobCreatorId}: JobBoardProposalProps) => {
     const {t} = useTranslation();
     const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined);
     const [startingChatFor, setStartingChatFor] = useState<number | null>(null);
-
+    const {upsertRoom} = useRoomsStore();
     const {data: proposals, pagination, isMutating: isLoading} = useHttpGet("getComments", {
         pageCursor: currentCursor,
         ...(postId ? {postId} : {}),
@@ -52,17 +55,20 @@ const JobBoardProposal = ({postId, jobCreatorId}: JobBoardProposalProps) => {
         try {
             setStartingChatFor(partnerPersonId);
             try {
-                await createChatRoom({
+                const res = await createChatRoom({
                     partnerPersonId,
                     roomId,
                     ...(cv.post.id ? {postId: cv.post.id} : {}),
                     ...(cv?.comment?.id ? {currentCommentId: cv.comment.id} : {}),
                     roomName,
                 });
+                if (res.state === REQUEST_STATE.SUCCESS) {
+                    upsertRoom(res.data.room as RoomView);
+                }
             } catch (e) {
                 // If room already exists or API fails, proceed to navigate anyway
             }
-            route.push(`/${currentLang}/chat/message/${roomId}`);
+            route.push(`/${currentLang}/chat/message/${roomId}?t=${Date.now()}`);
         } finally {
             setStartingChatFor(null);
         }

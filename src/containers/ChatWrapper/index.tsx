@@ -11,7 +11,6 @@ import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 const ChatWrapper = () => {
     const {t} = useTranslation();
     const {rooms} = useRoomsStore();
-    console.log("ChatWrapper rendered", rooms)
     const {lang: currentLang} = useLanguage();
     const {localUser} = useMyUser();
     const [searchQuery, setSearchQuery] = useState("");
