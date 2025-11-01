@@ -1,3 +1,3 @@
 export * from './common';
-export * from './chat';
 export * from './workflow';
+export * from './chatRoom';

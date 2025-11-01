@@ -27,11 +27,9 @@ import {useTranslation} from "react-i18next";
 import {v4 as uuidv4} from "uuid";
 import {ProfileImage} from "@/constants/images";
 import type {
-    ChatMessage,
-    ChatRoomData,
+    ChatMessage, ChatParticipantView,
+    ChatRoomView,
     LocalUser,
-    LocalUserId,
-    PersonId,
     Post,
     SubmitUserReviewForm
 } from "lemmy-js-client";
@@ -66,6 +64,8 @@ import {REQUEST_STATE} from "@/services/HttpService";
 import {isBrowser} from "@/utils";
 import {useUserStore} from "@/store/useUserStore";
 import {useJobFlowSidebar} from "@/modules/chat/contexts/JobFlowSidebarContext";
+import {RoomView} from "@/modules/chat/types";
+import {User} from "@/types/job";
 
 
 /** Shape of the form submitted by ChatInput. */
@@ -75,32 +75,24 @@ type MessageForm = { message: string };
 /**
  * Props for ChatRoomView
  * @property post               (Optional) Post record tied to this room; used for employer/freelancer role checks.
- * @property partnerName        Display name for the chat partner.
- * @property partnerAvatar      URL for the partner avatar (fallbacks applied at render).
- * @property partnerId          Numeric partner ID used by quotation modal and workflow actions.
+ * @property partner            Display data for the chat partner.
  * @property roomData           Full room data object (server-sourced). Used to seed currentRoom and workflow.
  * @property localUser          Current logged-in user record.
  * @property peerPublicKeyHex   Public key used for peer activity/typing via channel hook.
  */
 interface ChatRoomViewProps {
     post?: Post;
-    partnerName: string;
-    partnerAvatar?: string;
-    partnerId: LocalUserId;
-    roomData: ChatRoomData;
+    partner: ChatParticipantView;
+    roomData: RoomView;
     localUser: LocalUser;
-    partnerPersonId: PersonId;
 }
 
 
 const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                                                        post,
-                                                       partnerName,
-                                                       partnerAvatar,
-                                                       partnerId,
+                                                       partner,
                                                        roomData,
-                                                       localUser,
-                                                       partnerPersonId
+                                                       localUser
                                                    }) => {
     const {t} = useTranslation();
     const {person, userInfo} = useUserStore();
@@ -109,13 +101,18 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     // Treat undefined availability as "available". Block sending if either side is unavailable.
     const isSubmittingRef = useRef(false);
     const myAvailable = person!.available;
-    const canSend =  myAvailable;
+    const canSend = myAvailable;
     const disabledReason = !myAvailable
         ? (t("profileChat.youAreNotAvailable") || "You are currently unavailable. Enable availability in your profile to send messages.")
         : (t("profileChat.userNotAvailable") || "This user is currently not accepting messages. You can read history but cannot send new messages.");
     // Set of message IDs received during this session, used by history hook to deduplicate pages.
     const receivedIds = useMemo(() => new Set<string>(), []);
-    const roomId = String(roomData?.room?.room?.id ?? "");
+    const roomId = String(roomData?.room?.id ?? "");
+    // Partner here
+    const partnerId = partner.participant.memberId;
+    const partnerPersonId = partner.memberPerson.id;
+    const partnerName = partner.memberPerson.name;
+    const partnerAvatar = partner.memberPerson.avatar;
     // Hydrate UI from the local store (messages + pending) so leftover local data shows immediately
     const {send, canGo, ORDER} = useWorkflowStepper();
     const [showReviewDeliveryModal, setShowReviewDeliveryModal] = useState<boolean>(false);
@@ -124,8 +121,8 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     const [showJobDetailModal, setShowJobDetailModal] = useState<boolean>(false);
     const [hasStarted, setHasStarted] = useState<boolean>(false);
     // Flow sidebar is now managed globally via JobFlowSidebarProvider
-    const { isOpen: isFlowOpen, setOpen: setIsFlowOpen, setContent } = useJobFlowSidebar();
-    const [currentRoom, setCurrentRoom] = useState<ChatRoomData>(roomData);
+    const {isOpen: isFlowOpen, setOpen: setIsFlowOpen, setContent} = useJobFlowSidebar();
+    const [currentRoom, setCurrentRoom] = useState<ChatRoomView>(roomData);
     // Store selector pinned to the current room. Guarantees stable ascending order and dedup at selector level.
     const roomSelector = React.useMemo(() => (s: any) => selectRoomMessages(s, String(roomId)), [roomId]);
     const messages = useChatStore(useShallow(roomSelector)) as ChatMessage[];
@@ -135,20 +132,15 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     const {setActiveRoomId, markRoomRead} = useRoomsStore();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [scrollParentEl, setScrollParentEl] = useState<HTMLElement | null>(null);
-    const _rawPostId: unknown = (currentRoom as any)?.room?.post?.id;
-    const roomPostId: number | undefined = typeof _rawPostId === 'number'
-        ? _rawPostId
-        : (typeof _rawPostId === 'string' && _rawPostId.trim() !== '' && !Number.isNaN(Number(_rawPostId))
-            ? Number(_rawPostId)
-            : undefined);
-    const roomCommentId = currentRoom?.room?.currentComment?.id;
+    const roomPostId = post?.id;
+    const roomCommentId = currentRoom?.currentComment?.id;
     const postCreatorId = post?.creatorId;
     const isEmployer = postCreatorId != null && person?.id != null ? String(postCreatorId) === String(person?.id) : undefined;
     const lastClientUpdateRef = useRef<{ status: StatusKey | null; timestamp: number }>({status: null, timestamp: 0});
     const currentStatus = useStateMachineStore((s) => s.state);
     const statusBeforeCancel = useStateMachineStore((s) => s.statusBeforeCancel);
     // Determine latest quotation amount and whether employer has sufficient balance to approve
-    const latestQuoteAmount = currentRoom?.room?.post?.budget ?? 0;
+    const latestQuoteAmount = currentRoom?.post?.budget ?? 0;
 
     // --- Quotation & balance helpers ---
     // Compute available wallet balance and whether it is insufficient to approve the latest quotation.
@@ -580,10 +572,6 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
         t,
         goToStatus,
         setShowQuotationModal,
-        setShowReviewDeliveryModal,
-        handleFileUpload: (ev: any) => handleFileUpload(ev as any),
-        scrollContainerRef,
-        currentRoom,
         roomId,
         localUser,
         setError,
@@ -656,7 +644,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                 setIsFlowOpen={setIsFlowOpen}
                 renderFlowContent={renderFlowContent}
                 setShowJobDetailModal={setShowJobDetailModal}
-                currentRoom={currentRoom?.room ?? ""}
+                currentRoom={currentRoom}
             />
         );
         return () => setContent(null);
@@ -781,7 +769,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                 <JobDetailModal
                     showJobDetailModal={showJobDetailModal}
                     setShowJobDetailModal={setShowJobDetailModal}
-                    currentRoom={currentRoom.room}
+                    post={post}
                 />
             )}
             {/* Quotation modal (propose/approve quotation for current job) */}
@@ -792,8 +780,8 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                 postId={roomPostId as number}
                 commentId={roomCommentId as number}
                 partnerId={partnerId as number}
-                projectName={currentRoom?.room?.post?.name || t("profileChat.noJobTitle")}
-                amount={currentRoom?.room?.post?.budget}
+                projectName={post?.name || t("profileChat.noJobTitle")}
+                amount={post?.budget}
             />
         </>
     );

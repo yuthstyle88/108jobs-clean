@@ -1,11 +1,12 @@
 import {useTranslation} from 'react-i18next';
 import React from "react";
+import {ChatRoomView} from "lemmy-js-client";
 
 interface JobFlowContentProps {
     setIsFlowOpen: (open: boolean) => void;
     renderFlowContent: () => React.ReactNode;
     setShowJobDetailModal: (show: boolean) => void;
-    currentRoom: any;
+    currentRoom: ChatRoomView;
 }
 
 export const JobFlowContent: React.FC<JobFlowContentProps> = ({

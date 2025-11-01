@@ -1,50 +1,51 @@
 "use client";
 import React from "react";
-import type {ChatRoom} from "@/modules/chat/types/chat";
 import type {LocalUser} from "lemmy-js-client";
 import Link from "next/link";
-import {useChatRoomsContext} from "@/modules/chat/contexts/ChatRoomsContext";
 import AvatarBadge from "@/components/AvatarBadge";
 import {usePeerOnline} from "@/modules/chat/store/presenceStore";
+import {useRoomsStore} from "@/modules/chat/store/roomsStore";
+import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
+import {RoomView} from "@/modules/chat/types";
 
 interface ChatRoomListProps {
-    room: ChatRoom;
+    room: RoomView;
     currentLang: string;
     localUser?: Pick<LocalUser, "id"> | null;
 }
 
 function ChatRoomListComponent({room, currentLang, localUser}: ChatRoomListProps) {
-    const {markRoomRead, activeRoomId} = useChatRoomsContext();
-    const isActive = String(room.id) === String(activeRoomId || "");
+    const {findPartner, getUnread, markRoomRead, getActiveRoomId} = useRoomsStore();
+    const activeRoomId = getActiveRoomId();
+    const isActive = String(room.room.id) === String(activeRoomId || "");
+    const partner = findPartner(room.room.id, localUser?.id);
+    const jobId = room.post?.id;
+    const unreadCount = getUnread(room.room.id);
 
-    // Derive peer user id (the other participant, not me)
-    const peerUserId = React.useMemo(() => {
-        if (!room.participants || room.participants.length === 0) return 0;
-        const peer = room.participants.find((p: any) => {
-            const participantId = typeof p === 'object' ? p.id : p;
-            return String(participantId) !== String(localUser?.id);
-        });
-        return peer ? (typeof peer === 'object' ? Number(peer.id) : Number(peer)) : 0;
-    }, [room.participants, localUser?.id]);
+    if (!partner) return <LoadingBlur text={""}/>;
 
-    const online = usePeerOnline(peerUserId);
+    const partnerName = partner.memberPerson.name || "Unknown";
+    const online = usePeerOnline(partner.participant.memberId);
     const handleClick = () => {
         try {
             // fire-and-forget after click so Link navigation is never blocked
-            setTimeout(() => { try { void markRoomRead(String(room.id)); } catch {} }, 0);
-        } catch {}
+            setTimeout(() => {
+                try {
+                    void markRoomRead(String(room.room.id));
+                } catch {
+                }
+            }, 0);
+        } catch {
+        }
     };
-
-    // Parse room name to extract partner name and job ID
-    const [partnerName = "Unknown", jobId = ""] = (room.name || "?").split(":Job ");
 
     return (
         <Link
             prefetch={false}
-            key={room.id}
-            href={`/${currentLang || "th"}/chat/message/${room.id}`}
+            key={room.room.id}
+            href={`/${currentLang || "th"}/chat/message/${room.room.id}`}
             className="block mx-2 my-1 transition-colors duration-200 focus:outline-none focus:bg-gray-100"
-            aria-label={`Open chat with ${partnerName} about Job ${jobId}`}
+            aria-label={`Open chat with ${partner?.memberPerson.name} about Job ${jobId}`}
             onClick={handleClick}
         >
             <div
@@ -53,7 +54,7 @@ function ChatRoomListComponent({room, currentLang, localUser}: ChatRoomListProps
                 }`}
             >
                 <AvatarBadge
-                    avatarUrl={room.partnerAvatar}
+                    avatarUrl={partner.memberPerson.avatar}
                     name={partnerName}
                     online={online}
                     isActive
@@ -73,17 +74,17 @@ function ChatRoomListComponent({room, currentLang, localUser}: ChatRoomListProps
                                 className="text-xs text-gray-500 truncate max-w-[200px]"
                                 title={`Job ${jobId}`}
                             >
-                                {(jobId || "").length > 30 ? (jobId || "").slice(0, 30) + ".." : jobId}
+                                {(room.post?.name || "").length > 30 ? (room.post?.name || "").slice(0, 30) + ".." : jobId}
                             </p>
                         )}
                     </div>
                 </div>
                 {/* Unread Badge: Do not show for the active room */}
-                {room.unreadCount > 0 && !isActive && (
+                {unreadCount > 0 && !isActive && (
                     <span
                         className="ml-auto text-xs bg-blue-500 text-white rounded-full px-2 py-0.5 pointer-events-none"
                     >
-                        {room.unreadCount}
+                        {unreadCount}
                     </span>
                 )}
             </div>

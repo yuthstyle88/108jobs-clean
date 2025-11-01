@@ -1,5 +1,6 @@
 import {create} from "zustand";
 import {isBrowser} from "@/utils/browser";
+import {RoomView} from "@/modules/chat/types";
 
 // -----------------------------
 // Minimal unread store: counts only
@@ -151,23 +152,43 @@ export function clearAllUnread() {
  * Prune unread counts to only those rooms currently present.
  * Call this when the room list changes.
  */
-export function pruneUnreadByRooms(rooms: Array<{ id: string | number }>) {
-  const allowed = new Set<string>(Array.isArray(rooms) ? rooms.map((r: any) => String(r?.id ?? '')) : []);
-  const st = useUnreadStore.getState();
-  const before = st.perRoom || {};
-  let changed = false;
-  const perRoom: Record<string, number> = {};
-  let total = 0;
-  for (const [id, val] of Object.entries(before)) {
-    if (allowed.has(String(id))) {
-      const v = Math.max(0, Number(val) || 0);
-      perRoom[id] = v;
-      total += v;
-    } else {
-      changed = true;
+export function pruneUnreadByRooms(rooms: RoomView[]) {
+    // Collect allowed room IDs from nested `room.id`
+    const allowed = new Set<string>(
+        Array.isArray(rooms)
+            ? rooms.map((r) => String(r?.room?.id ?? ""))
+            : []
+    );
+
+    const st = useUnreadStore.getState();
+    const before = st.perRoom || {};
+    let changed = false;
+
+    const perRoom: Record<string, number> = {};
+    let total = 0;
+
+    for (const [id, val] of Object.entries(before)) {
+        if (allowed.has(String(id))) {
+            const v = Math.max(0, Number(val) || 0);
+            perRoom[id] = v;
+            total += v;
+        } else {
+            changed = true;
+        }
     }
-  }
-  if (!changed) return;
-  useUnreadStore.setState((s) => ({ ...s, perRoom, total }));
-  try { persist({ perRoom }); } catch {}
+
+    if (!changed) return;
+
+    useUnreadStore.setState((s) => ({
+        ...s,
+        perRoom,
+        total,
+    }));
+
+    try {
+        persist({ perRoom });
+    } catch {
+        // ignore persist errors
+    }
 }
+

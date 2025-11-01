@@ -75,7 +75,7 @@ function reconcileRooms(st: BGState) {
         const token = st.tokenGetter?.();
         if (!token) return;
 
-        const rooms = useRoomsStore.getState().rooms as Array<{ id: string }>;
+        const rooms = useRoomsStore.getState().rooms;
 
         const active = useRoomsStore.getState().getActiveRoom();
 
@@ -84,7 +84,7 @@ function reconcileRooms(st: BGState) {
 
         dbg('reconcile', { rooms: (rooms || []).map((r: any) => String(r.id)), active, selfId });
 
-        const want = new Set<string>((rooms || []).map(r => String(r.id)));
+        const want = new Set<string>((rooms || []).map(r => String(r.room.id)));
 
         // ปิด adapter ที่ไม่ใช้แล้วหรือห้อง active
         for (const [roomId, ad] of Array.from(st.adapters.entries())) {
@@ -131,7 +131,7 @@ function reconcileRooms(st: BGState) {
 
                     const stRooms = useRoomsStore.getState();
                     const activeRoom = stRooms.getActiveRoom();
-                    const activeFlag = typeof stRooms.isActive === 'function' ? !!stRooms.isActive(roomId) : (String(activeRoom ?? '') === roomId);
+                    const activeFlag = typeof stRooms.isActive === 'function' ? stRooms.isActive(roomId) : (String(activeRoom ?? '') === roomId);
                     if (activeFlag) { dbg('skip: active room', { roomId, messageId }); return; }
 
                     dbg('increment', { roomId, messageId });

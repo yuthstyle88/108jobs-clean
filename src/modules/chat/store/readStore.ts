@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { ChatRoomId, LocalUserId } from "lemmy-js-client";
 import {toMsNormalized} from "@/modules/chat/utils";
+import {RoomView} from "@/modules/chat/types";
 
 // Helper to normalize room id (string/number)
 function normRoom(roomId: string | number): string {
@@ -76,19 +77,30 @@ export const useReadLastIdStore = create<ReadStoreState>((set, get) => ({
     clearAll: () => set({ byRoomUser: {} }),
 }));
 
-export function pruneReadLastByRooms(rooms: Array<{ id: string | number }>) {
-    const allowed = new Set<string>(Array.isArray(rooms) ? rooms.map((r: any) => String(normRoom(r?.id ?? ''))) : []);
-    const st = useReadLastIdStore.getState();
+export function pruneReadLastByRooms(rooms: RoomView[]) {
+    // Normalize all room IDs from nested `room.id`
+    const allowed = new Set<string>(
+        Array.isArray(rooms)
+            ? rooms.map((r) => String(normRoom(r?.room?.id ?? "")))
+            : []
+    );
 
+    const st = useReadLastIdStore.getState();
     const next: Record<string, { lastReadAt?: string; lastReadMsgId?: string }> = {};
     let changed = false;
 
     for (const [k, v] of Object.entries(st.byRoomUser)) {
-        const [rk] = k.split(":");
-        if (allowed.has(String(rk))) next[k] = v; else changed = true;
+        const [rk] = k.split(":"); // rk = room key
+        if (allowed.has(String(rk))) {
+            next[k] = v;
+        } else {
+            changed = true;
+        }
     }
 
-    if (changed) useReadLastIdStore.setState({ byRoomUser: next });
+    if (changed) {
+        useReadLastIdStore.setState({ byRoomUser: next });
+    }
 }
 
 export async function clearRoom(roomId: string) {

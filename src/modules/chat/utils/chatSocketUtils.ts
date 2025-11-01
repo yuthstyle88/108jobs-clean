@@ -297,6 +297,11 @@ export async function handleIncomingPayload(
 
         // NEW MESSAGE (canonical)
         if (eventName === 'chat:message') {
+            const api = require('@/modules/chat/store/roomsStore');
+            const { incrementUnread, getUnread } = api.useRoomsStore.getState?.() || {};
+            incrementUnread(ctx.roomId);
+            console.log("handleIncomingPayload: chat:message", ctx.roomId)
+            console.log("unread", getUnread(ctx.roomId))
             const mapped = await mapOne(env);
             return mapped ? [mapped] : [];
         }
@@ -516,22 +521,6 @@ export function broadcastToListeners(payload: unknown): void {
     for (const {fn} of __roomListeners.values()) fn(event);
 }
 
-// Utility to wait for sharedKey with a timeout
-const waitForSharedKey = (timeoutMs: number = 5000): Promise<CryptoKey | undefined> => {
-    return new Promise((resolve) => {
-        const startTime = Date.now();
-        const interval = setInterval(() => {
-            const sharedKey = UserService.Instance.authInfo?.sharedKey;
-            if (sharedKey) {
-                clearInterval(interval);
-                resolve(sharedKey);
-            } else if (Date.now() - startTime >= timeoutMs) {
-                clearInterval(interval);
-            }
-        }, 500);
-    });
-};
-
 /**
  * Fetch one page of chat history via HTTP and map each item to ChatMessage.
  * The caller can decide how to broadcast the mapped messages.
@@ -544,8 +533,6 @@ export async function fetchHistoryPage(
         broadcast?: (m: import("lemmy-js-client").ChatMessage) => void;
     }
 ) {
-
-    console.log("fetchHistoryPage", params, deps)
 
     const res = await HttpService.client.getChatHistory({
         roomId: params.roomId,

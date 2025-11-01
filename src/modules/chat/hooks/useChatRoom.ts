@@ -11,7 +11,7 @@ import {
     sendDeliveryAck,
 } from "@/modules/chat/events/sendEvents";
 import { useTypingIndicator } from '@/modules/chat/hooks/useTypingIndicator';
-import {ChatRoomData, ChatRoomId, LocalUser, LocalUserId} from "lemmy-js-client";
+import {ChatRoomView, LocalUser, LocalUserId} from "lemmy-js-client";
 import {useChatStore} from "@/modules/chat/store/chatStore"
 import {makeReadAckEmitter} from "@/modules/chat/utils/socket-emitter";
 import {emitWsReconnected} from "@/modules/chat/events";
@@ -40,7 +40,7 @@ export interface UseChatRoomParams {
     roomId: string;
     onRemoteTyping?: (detail: { roomId: string; senderId: number; typing: boolean }) => void;
     localUser: LocalUser,
-    roomData: ChatRoomData;
+    roomData: ChatRoomView;
 }
 
 export function useChatRoom({
@@ -61,10 +61,10 @@ export function useChatRoom({
 
     // Extract peer userId from roomData
     const peerUserId = React.useMemo(() => {
-        const participants = roomData?.room?.participants || [];
+        const participants = roomData?.participants || [];
         const peer = participants.find((p: any) => String(p.memberId) !== String(localUser?.id));
         return peer ? Number(peer.participant.memberId) : 0;
-    }, [roomData?.room?.participants, localUser?.id]);
+    }, [roomData?.participants, localUser?.id]);
     // Bind presence watcher (HTTP + focus/visibility + heartbeat). Safe for 0/undefined.
     useRoomPresence((peerUserId || undefined) as any);
 
@@ -108,7 +108,7 @@ export function useChatRoom({
     }, [roomId, peerUserId]);
 
     const isE2EMock = process.env.NEXT_PUBLIC_E2E_MODE === 'mock';
-    const [refreshRoomData, setRefreshRoomData] = useState<ChatRoomData>(roomData);
+    const [refreshRoomData, setRefreshRoomData] = useState<ChatRoomView>(roomData);
 
     const sentMessagesRef = useRef<Set<string>>(new Set());
     const processedMsgRef = useRef<Set<string>>(new Set());
@@ -119,7 +119,6 @@ export function useChatRoom({
     const readAckRef = useRef<((id: number | string) => void) | null>(null);
     const deliveryAckRef = useRef<((id: number | string) => void) | null>(null);
     // Partner typing state handled by usePartnerTyping hook below
-    const [connectionError, setConnectionError] = useState(false);
     const localSenderRef = useRef<any>(null);
     const ws = useWebSocketContext();
     const adapterAny: any = (ws as any)?.adapter ?? ws;
@@ -207,7 +206,6 @@ export function useChatRoom({
             }
 
             // Clear transient UI flags only on new join
-            setConnectionError(false);
             if(pageCursor !== null) setPageCursor(null);
             try {
                 emitWsReconnected?.();

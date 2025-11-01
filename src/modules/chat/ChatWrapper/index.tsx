@@ -1,64 +1,43 @@
 "use client";
 
 import {useLanguage} from "@/contexts/LanguageContext";
-import React, {useMemo, useState, useEffect} from "react";
+import React, {useCallback, useMemo, useState, useEffect} from "react";
 import {useMyUser} from "@/hooks/api/profile/useMyUser";
-import {useChatRoomsContext} from "@/modules/chat/contexts/ChatRoomsContext";
-import type {ChatRoom} from "@/modules/chat/types/chat";
-import debounce from "lodash/debounce";
+import {debounce} from "lodash";
 import ChatListItem from "@/modules/chat/components/ChatRoomList";
 import {useTranslation} from "react-i18next";
+import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 
-const ChatWrapper = ({
-                         isSidebarOpen,
-                         onToggleSidebar,
-                         setIsSidebarOpen,
-                     }:
-                     {
-                         isSidebarOpen: boolean;
-                         onToggleSidebar: () => void;
-                         setIsSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
-                     }) => {
+const ChatWrapper = () => {
     const {t} = useTranslation();
+    const {rooms} = useRoomsStore();
     const {lang: currentLang} = useLanguage();
     const {localUser} = useMyUser();
-    const { rooms, isLoading, error, setActiveRoomId, activeRoomId: activeCtxRoomId } = useChatRoomsContext();
     const [searchQuery, setSearchQuery] = useState("");
 
-
     // Debounce search input to prevent excessive re-renders
-    const debouncedSetSearchQuery = useMemo(
-      () => debounce((value: string) => setSearchQuery(value), 300),
-      []
+    const debouncedSetSearchQuery = useCallback(
+        debounce((value: string) => setSearchQuery(value), 300),
+        []
     );
+
     useEffect(() => {
         return () => {
             debouncedSetSearchQuery.cancel();
         };
     }, [debouncedSetSearchQuery]);
 
-    // React to active room changes from store only (URL is ignored)
-    useEffect(() => {
-      if (isSidebarOpen) setIsSidebarOpen(false);
-    }, [activeCtxRoomId, isSidebarOpen, setIsSidebarOpen]);
-
-    // Reset active room on logout/login (only if needed)
-    useEffect(() => {
-      if (!localUser && activeCtxRoomId !== null) {
-        try { setActiveRoomId(null); } catch {}
-      }
-    }, [localUser?.id, activeCtxRoomId, setActiveRoomId]);
-
     // Memoized filtered rooms to optimize search performance
     const filteredRooms = useMemo(() => {
-        const list = rooms || [];
+        if (!rooms || rooms.length === 0) return [];
+        // Filter out any transient undefined/null or malformed entries
+        const validRooms = rooms.filter((r: any) => r && r.room && r.room.id);
         const q = searchQuery.trim().toLowerCase();
         return q
-            ? list.filter(
-                (r) =>
-                    (r.name ?? '').toLowerCase().includes(q)
+            ? validRooms.filter(
+                (r: any) => (r.room.roomName ?? '').toLowerCase().includes(q)
             )
-            : list;
+            : validRooms;
     }, [rooms, searchQuery]);
 
     // Handle search input change
@@ -66,11 +45,11 @@ const ChatWrapper = ({
         debouncedSetSearchQuery(e.target.value);
     };
 
-
     return (
         <>
             {/* Sidebar */}
-            <div className="flex flex-col bg-white border-r border-gray-200 h-full w-full md:w-64 lg:w-80 xl:w-96 md:max-w-none md:flex-[0_0_20%] lg:flex-[0_0_25%] overflow-y-auto">
+            <div
+                className="flex flex-col bg-white border-r border-gray-200 h-full w-full md:w-64 lg:w-80 xl:w-96 md:max-w-none md:flex-[0_0_20%] lg:flex-[0_0_25%] overflow-y-auto">
                 {/* Header with Search */}
                 <div className="p-3 sm:p-4 border-b text-primary border-gray-200 bg-gray-50">
                     <input
@@ -85,7 +64,7 @@ const ChatWrapper = ({
 
                 {/* Chat List */}
                 <div className="flex-1 overflow-y-auto">
-                    {isLoading && filteredRooms.length === 0 && (
+                    {filteredRooms.length === 0 && (
                         <div className="p-3 sm:p-4 space-y-3" aria-live="polite" aria-busy="true">
                             {Array.from({length: 6}).map((_, i) => (
                                 <div key={i} className="mx-2 p-3 flex items-center gap-3 animate-pulse">
@@ -99,15 +78,15 @@ const ChatWrapper = ({
                             ))}
                         </div>
                     )}
-                    {filteredRooms.map((room: ChatRoom) => (
+                    {filteredRooms.map((room) => (
                         <ChatListItem
-                            key={room.id}
+                            key={room.room.id}
                             room={room}
                             currentLang={currentLang || "th"}
                             localUser={localUser}
                         />
                     ))}
-                    {filteredRooms.length === 0 && !isLoading && !error && (
+                    {filteredRooms.length === 0 && (
                         <div className="p-6 text-center text-gray-500">
                             <div
                                 className="mx-auto mb-3 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
@@ -117,8 +96,8 @@ const ChatWrapper = ({
                                           d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/>
                                 </svg>
                             </div>
-                            <p className="text-sm">No chats found</p>
-                            <p className="text-xs mt-1">Start a conversation to see it here.</p>
+                            <p className="text-sm">{t("profileChat.noChatsFound")}</p>
+                            <p className="text-xs mt-1">{t("profileChat.startConversation")}</p>
                         </div>
                     )}
                 </div>

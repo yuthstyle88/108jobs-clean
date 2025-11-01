@@ -1,16 +1,17 @@
 import {useTranslation} from 'react-i18next';
 import React from "react";
+import {Post} from "lemmy-js-client";
 
 interface JobDetailModalProps {
     showJobDetailModal: boolean;
     setShowJobDetailModal: (show: boolean) => void;
-    currentRoom?: any;
+    post?: Post;
 }
 
 export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                                                                   showJobDetailModal,
                                                                   setShowJobDetailModal,
-                                                                  currentRoom,
+                                                                  post,
                                                               }) => {
     const { t } = useTranslation();
 
@@ -45,12 +46,12 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                 <div className="space-y-3">
                     <div>
                         <h4 className="text-sm sm:text-base font-medium text-gray-800">
-                            {currentRoom?.post?.name || t("profileChat.noJobTitle")}
+                            {post?.name || t("profileChat.noJobTitle")}
                         </h4>
                     </div>
                     <div className="max-h-[60vh] overflow-auto">
                         <p className="text-sm sm:text-base text-gray-700 whitespace-pre-wrap">
-                            {currentRoom?.post?.body || t("profileChat.noJobDescription")}
+                            {post?.body || t("profileChat.noJobDescription")}
                         </p>
                     </div>
                 </div>

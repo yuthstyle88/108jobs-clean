@@ -174,6 +174,8 @@ export const th = {
             ratingRequired: "กรุณาเลือกคะแนน (1-5)",
             submitReviewError: "ไม่สามารถส่งรีวิวได้ กรุณาลองใหม่",
             reviewSubmitted: "ส่งรีวิวสำเร็จ",
+            noChatsFound: "ไม่พบแชท",
+            startConversation: "เริ่มการสนทนาเพื่อดูที่นี่",
         },
         allCategories: {
             allJobCategories: "หมวดหมู่งานทั้งหมด",

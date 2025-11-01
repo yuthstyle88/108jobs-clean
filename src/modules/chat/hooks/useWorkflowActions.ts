@@ -2,7 +2,14 @@ import {useCallback} from 'react';
 import {HttpService, REQUEST_STATE} from '@/services/HttpService';
 import {useWorkflow} from '@/modules/chat/hooks/useWorkflow';
 import {getLatestProposedQuoteSeq} from '@/modules/chat/utils/message';
-import type {ApproveQuotationForm, ChatRoomData, CreateInvoiceForm, LocalUser, PostId} from 'lemmy-js-client';
+import type {
+    ApproveQuotationForm,
+    ChatRoomData,
+    ChatRoomView,
+    CreateInvoiceForm,
+    LocalUser,
+    PostId
+} from 'lemmy-js-client';
 import type {WsMessageSender} from '@/modules/chat/types';
 import type {StatusKey} from '@/modules/chat/components/FreelanceChatFlow';
 import {sendStructuredMessage} from '@/modules/chat/utils/structured';
@@ -23,7 +30,7 @@ function extractErr(res: any, fallback: string) {
 // Deps the hook requires. Keep it flexible and explicit.
 export type UseWorkflowActionsDeps = {
     messages: any[];
-    roomData: ChatRoomData;
+    roomData: ChatRoomView;
     localUser: LocalUser;
     roomId: string;
     selectedFile: { fileUrl: string; fileType: string; fileName: string } | null;

@@ -1,36 +1,30 @@
 "use client";
 
 import ChatRoomView from "@/modules/chat/components/ChatRoomView";
-import { UserService } from "@/services";
-import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
-import { RoomNotFound } from "@/components/RoomNotFound";
-import { useMyUser } from "@/hooks/api/profile/useMyUser";
-import {useChatSession} from "@/modules/chat/hooks/useChatSession";
+import {UserService} from "@/services";
+import {RoomNotFound} from "@/components/RoomNotFound";
+import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {PhoenixChatBridgeProvider} from "@/modules/chat/providers/PhoenixChatBridgeProvider";
+import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 
-export default function MessageClient({ roomId }: { roomId: string }) {
+export default function MessageClient({roomId}: { roomId: string }) {
     const isLoggedIn = UserService.Instance.isLoggedIn;
-    const { localUser } = useMyUser();
-    const state = useChatSession(roomId, localUser!.id, isLoggedIn);
+    const {localUser} = useMyUser();
+    const {getRoom, findPartner} = useRoomsStore();
+    const room = getRoom(roomId);
+    const partner = findPartner(roomId, localUser?.id);
 
-    if (state.loading || !state.currentRoom || !localUser || !state.partnerPersonId) {
-        return <LoadingBlur text="" />;
-    }
-
-    if (state.notFound || !state.partnerId) {
-        return <RoomNotFound />;
+    if (!room || !partner) {
+        return <RoomNotFound/>;
     }
 
     return (
         <PhoenixChatBridgeProvider isLoggedIn={isLoggedIn} roomId={roomId}>
             <ChatRoomView
-                post={state.post}
-                partnerName={state.partnerName}
-                partnerAvatar={state.partnerAvatar}
-                partnerId={state.partnerId}
-                roomData={state.currentRoom}
-                localUser={localUser}
-                partnerPersonId={state.partnerPersonId}
+                post={room.post}
+                partner={partner}
+                roomData={room}
+                localUser={localUser!}
             />
         </PhoenixChatBridgeProvider>
     );

@@ -175,6 +175,8 @@ export const vi = {
             ratingRequired: "Vui lòng chọn đánh giá (1-5).",
             submitReviewError: "Không thể gửi đánh giá. Vui lòng thử lại.",
             reviewSubmitted: "Đánh giá đã được gửi thành công.",
+            noChatsFound: "Không tìm thấy cuộc trò chuyện",
+            startConversation: "Bắt đầu một cuộc trò chuyện để xem ở đây.",
         },
         allCategories: {
             allJobCategories: "Tất cả danh mục công việc",

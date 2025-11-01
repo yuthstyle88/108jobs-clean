@@ -1,66 +1,74 @@
 "use client";
-import React, {createContext, useContext, useMemo} from "react";
+import React, {createContext, useContext, useEffect, useMemo} from "react";
 import {UserService} from "@/services/UserService";
 import {getIsoData} from "@/hooks/data/useIsoData";
 import {useUserStore} from "@/store/useUserStore";
+import {useRoomsStore} from "@/modules/chat/store/roomsStore";
+import {RoomView} from "@/modules/chat/types";
 
 // Instance type for the singleton user service
 type UserClient = UserService;
 
 interface UserServiceContextType {
-  user: UserClient;
+    user: UserClient;
 }
 
 const UserServiceContext = createContext<UserServiceContextType | undefined>(
-  undefined
+    undefined
 );
 
 interface UserServiceProviderProps {
-  children: React.ReactNode;
-  token?: string;
+    children: React.ReactNode;
+    token?: string;
 }
 
 export function UserServiceProvider({children, token}: UserServiceProviderProps) {
-  // Use the singleton instance
-  const iso = getIsoData()?.myUserInfo ?? null;
-  const setUser = useUserStore((s) => s.setUser);
-  const setPerson = useUserStore((s) => s.setPerson);
-  const setUserInfo = useUserStore((s) => s.setUserInfo);
-  const user = UserService.Instance;
+    // Use the singleton instance
+    const iso = getIsoData()?.myUserInfo ?? null;
+    const userChatRoomsIso = (getIsoData()?.chatRooms?.rooms ?? []).map(r => ({
+        ...r,
+        isActive: false,
+    })) as RoomView[];
+    const setUser = useUserStore((s) => s.setUser);
+    const setPerson = useUserStore((s) => s.setPerson);
+    const setUserInfo = useUserStore((s) => s.setUserInfo);
+    const setRooms = useRoomsStore((s) => s.setRooms);
+    const user = UserService.Instance;
 
-  // Seed the global store once on mount (after login redirect)
-  if(iso) {
-    setUser(iso.localUserView?.localUser ?? null);
-    setPerson(iso.localUserView?.person ?? null);
-    setUserInfo(iso ?? null);
-  }
-
-  (async () => {
-    try {
-      // If your UserService has a way to seed token, do it here (optional)
-      // e.g., user.setToken?.(token as string);
-      if(token && typeof (user as any).setToken === "function") {
-        await (user as any).setToken(token);
-        console.log("Token seeded successfully");
-      }
-    } catch (e) {
-      // no-op: token seeding is optional
+    // Seed the global store once on mount (after login redirect)
+    if (iso) {
+        setUser(iso.localUserView?.localUser ?? null);
+        setPerson(iso.localUserView?.person ?? null);
+        setUserInfo(iso ?? null);
+        setRooms(userChatRoomsIso ?? null);
     }
-  })();
-  const value = useMemo<UserServiceContextType>(() => ({user}), [user]);
 
-  return (
-    <UserServiceContext.Provider value={value}>
-      {children}
-    </UserServiceContext.Provider>
-  );
+    (async () => {
+        try {
+            // If your UserService has a way to seed token, do it here (optional)
+            // e.g., user.setToken?.(token as string);
+            if (token && typeof (user as any).setToken === "function") {
+                await (user as any).setToken(token);
+                console.log("Token seeded successfully");
+            }
+        } catch (e) {
+            // no-op: token seeding is optional
+        }
+    })();
+    const value = useMemo<UserServiceContextType>(() => ({user}), [user]);
+
+    return (
+        <UserServiceContext.Provider value={value}>
+            {children}
+        </UserServiceContext.Provider>
+    );
 }
 
 // Hook สำหรับใช้งานใน component อื่น ๆ
 export function useUserService(): UserClient {
-  const ctx = useContext(UserServiceContext);
-  if(!ctx) {
-    throw new Error("useUserService must be used within UserServiceProvider");
-  }
-  return ctx.user;
+    const ctx = useContext(UserServiceContext);
+    if (!ctx) {
+        throw new Error("useUserService must be used within UserServiceProvider");
+    }
+    return ctx.user;
 }

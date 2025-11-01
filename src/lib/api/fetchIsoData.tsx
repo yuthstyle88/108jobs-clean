@@ -18,7 +18,13 @@ import {routes} from "@/utils/routes";
 import {ErrorPageData, IsoData, RouteData} from "@/utils/types";
 import {parsePath} from "history";
 import {IncomingHttpHeaders} from "http";
-import {GetSiteResponse, LemmyHttp, ListCommunitiesResponse, MyUserInfo} from "lemmy-js-client";
+import {
+    GetSiteResponse,
+    LemmyHttp,
+    ListCommunitiesResponse,
+    ListUserChatRoomsResponse,
+    MyUserInfo
+} from "lemmy-js-client";
 import {getHttpBase} from "@/utils";
 import {getJwtCookieFromServer, setForwardedHeaders} from "@/utils/helper-server";
 
@@ -81,6 +87,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
     let errorPageData: ErrorPageData | undefined = undefined;
     let match: Match<any> | null | undefined;
     let communities: ListCommunitiesResponse | undefined = undefined;
+    let chatRooms: ListUserChatRoomsResponse | undefined = undefined;
     let activeRoute;
     try {
 
@@ -93,22 +100,25 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
 
         // Check authentication for protected routes
         if (!jwt && isAuthPath(url)) {
-            return createIsoDataResponse(jwt, url, undefined, undefined, undefined, {}, {
+            return createIsoDataResponse(jwt, url, undefined, undefined, undefined, undefined, {}, {
                 code: 302,
                 redirectTo: `/login?prev=${encodeURIComponent(url)}`,
             } as any);
         }
 
         // Fetch site data and profile info in parallel for better performance
-        const [trySite, tryUser, tryCommunities] = await Promise.all([
+        const [trySite, tryUser, tryCommunities, tryChatRooms] = await Promise.all([
             (tempClient as any).getSite(),
             (tempClient as any).getMyUser(),
-            (tempClient as any).listCommunities()
+            (tempClient as any).listCommunities(),
+            (tempClient as any).listChatRooms()
         ]);
         // Process profile data with improved error handling
         await processUserData(tryUser);
 
         await processCommunitiesData(tryCommunities)
+
+        await processChatRoomsData(tryChatRooms)
 
         // Process site data and fetch route-specific data
         if (!await processSiteData(trySite,
@@ -121,6 +131,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
                 siteRes,
                 myUserInfo,
                 communities,
+                chatRooms,
                 routeData,
                 errorPageData);
         }
@@ -133,6 +144,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
                 siteRes,
                 myUserInfo,
                 communities,
+                chatRooms,
                 {},
                 errorPageData);
         }
@@ -144,6 +156,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
             siteRes,
             myUserInfo,
             communities,
+            chatRooms,
             routeData,
             errorPageData);
     } catch (err) {
@@ -155,6 +168,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
         return createIsoDataResponse(
             undefined,
             url,
+            undefined,
             undefined,
             undefined,
             undefined,
@@ -177,6 +191,15 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
     async function processCommunitiesData(tryCommunities: RequestState<ListCommunitiesResponse>): Promise<void> {
         if (tryCommunities.state === REQUEST_STATE.SUCCESS) {
             communities = tryCommunities.data;
+        }
+    }
+
+    /**
+     * Process chat rooms data and handle fetch list errors
+     */
+    async function processChatRoomsData(tryChatRooms: RequestState<ListUserChatRoomsResponse>): Promise<void> {
+        if (tryChatRooms.state === REQUEST_STATE.SUCCESS) {
+            chatRooms = tryChatRooms.data;
         }
     }
 
@@ -270,6 +293,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
         siteRes?: GetSiteResponse,
         myUserInfo?: MyUserInfo,
         communities?: ListCommunitiesResponse,
+        chatRooms?: ListUserChatRoomsResponse,
         routeData: RouteData = {},
         errorPageData?: ErrorPageData
     ): IsoData {
@@ -279,6 +303,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
             siteRes,
             myUserInfo,
             communities,
+            chatRooms,
             routeData,
             errorPageData,
             appUrl: process.env.NEXT_PUBLIC_APP_URL ?? "https://staging.108jobs.com",

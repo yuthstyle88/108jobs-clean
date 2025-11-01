@@ -175,6 +175,8 @@ export const en = {
             ratingRequired: "Please select a rating (1-5).",
             submitReviewError: "Failed to submit review. Please try again.",
             reviewSubmitted: "Review submitted successfully.",
+            noChatsFound: "No chats found",
+            startConversation: "Start a conversation to see it here.",
         },
         allCategories: {
             allJobCategories: "All Job Categories",

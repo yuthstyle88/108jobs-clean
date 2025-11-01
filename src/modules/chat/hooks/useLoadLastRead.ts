@@ -1,23 +1,23 @@
 import {useEffect} from "react";
-import {HttpService, REQUEST_STATE} from "@/services/HttpService";
+import {isSuccess} from "@/services/HttpService";
 import {ChatRoomId, LocalUserId} from "lemmy-js-client";
 import {useReadLastIdStore} from "@/modules/chat/store/readStore";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 
 export function useLoadLastRead(roomId: ChatRoomId, peerId: LocalUserId) {
+    // Only call the API when both IDs are valid
+    const {state: lastReadState} = useHttpGet(
+        "getLastRead",
+        {roomId: roomId, peerId: peerId}
+    );
+
     useEffect(() => {
         if (!roomId || !peerId) return;
 
-        let active = true;
-
-        HttpService.client.getLastRead({roomId, peerId}).then((res) => {
-            if (!active || !res || res.state !== REQUEST_STATE.SUCCESS || !res.data?.lastRead) return;
-            const lastRead = res.data.lastRead ?? new Date(new Date().setFullYear(new Date().getFullYear() - 1)).toISOString();
+        if (isSuccess(lastReadState) && lastReadState.data?.lastRead) {
+            const lastRead = lastReadState.data.lastRead;
             const {setPeerLastReadAt} = useReadLastIdStore.getState();
             setPeerLastReadAt(roomId, lastRead.localUserId, lastRead.updatedAt);
-        });
-
-        return () => {
-            active = false;
-        };
-    }, [roomId, peerId]);
+        }
+    }, [roomId, peerId, lastReadState]);
 }

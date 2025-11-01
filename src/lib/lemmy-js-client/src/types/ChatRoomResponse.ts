@@ -5,8 +5,6 @@ import type {Workflow} from "./Workflow";
 // Matches backend ChatRoomResponse with camelCase fields
 export type ChatRoomResponse = {
     room: ChatRoomView;
-    lastMessage?: LastMessage;
-    workflow?: Workflow;
 };
 
 export type ChatRoomData = ChatRoomResponse;

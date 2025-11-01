@@ -22,6 +22,7 @@ export function useChatSession(roomId: string, localUserId: number, isLoggedIn: 
         "getChatRoom",
         [roomId ?? ""]
     );
+    console.log("chatState", chatState)
 
     // Reset external state when switching rooms
     useEffect(() => {

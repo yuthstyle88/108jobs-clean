@@ -9,7 +9,7 @@ import {
     unwrapPhoenixFrame,
 } from "@/modules/chat/utils/chatSocketUtils";
 import {emitChatTyping,} from "@/modules/chat/events/index";
-import type {ChatMessage, ChatRoomData} from "lemmy-js-client";
+import type {ChatMessage, ChatRoomView} from "lemmy-js-client";
 import {
     buildMessageSignature,
     cleanupFetch, maybeHandlePresenceUpdate,
@@ -44,7 +44,7 @@ export interface HandlerDeps extends HandlerRefs {
     /** current user id */
     localUserId: number;
     /** inform UI that room data has been refreshed */
-    setRefreshRoomData: (data: ChatRoomData) => void;
+    setRefreshRoomData: (data: ChatRoomView) => void;
     /** inform that peer is active (UI hint) */
     markPeerActive: () => void;
     /** optional: push typing state directly to UI in addition to DOM event */
