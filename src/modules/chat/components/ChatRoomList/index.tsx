@@ -6,6 +6,8 @@ import Link from "next/link";
 import {useChatRoomsContext} from "@/modules/chat/contexts/ChatRoomsContext";
 import AvatarBadge from "@/components/AvatarBadge";
 import {usePeerOnline} from "@/modules/chat/store/presenceStore";
+import { useParams } from 'next/navigation';
+import { useRoomsStore } from "@/modules/chat/store/roomsStore";
 
 interface ChatRoomListProps {
     room: ChatRoom;
@@ -14,8 +16,22 @@ interface ChatRoomListProps {
 }
 
 function ChatRoomListComponent({room, currentLang, localUser}: ChatRoomListProps) {
-    const {markRoomRead, activeRoomId} = useChatRoomsContext();
-    const isActive = String(room.id) === String(activeRoomId || "");
+    const { markRoomRead, activeRoomId } = useChatRoomsContext();
+    const { roomId } = (useParams?.() ?? {}) as { roomId?: string };
+    const setActiveRoomId = useRoomsStore((s) => s.setActiveRoomId);
+    const isActive = String(room.id) === String(activeRoomId || roomId);
+
+    const didSetRef = React.useRef(false);
+
+    React.useEffect(() => {
+        if (didSetRef.current) return; // prevent re-run
+        if (!roomId) return;
+        if (typeof setActiveRoomId === 'function') {
+           //set active room id from url params
+            setActiveRoomId(String(roomId));
+            didSetRef.current = true;
+        }
+    }, [roomId, setActiveRoomId]);
 
     // Derive peer user id (the other participant, not me)
     const peerUserId = React.useMemo(() => {

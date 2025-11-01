@@ -6,7 +6,7 @@ import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 import { RoomNotFound } from "@/components/RoomNotFound";
 import { useMyUser } from "@/hooks/api/profile/useMyUser";
 import {useChatSession} from "@/modules/chat/hooks/useChatSession";
-import {PhoenixChatBridgeProvider} from "@/modules/chat/providers/PhoenixChatBridgeProvider";
+import {PhoenixChatBridgeProvider} from "@/modules/chat/contexts/PhoenixChatBridgeProvider";
 
 export default function MessageClient({ roomId }: { roomId: string }) {
     const isLoggedIn = UserService.Instance.isLoggedIn;

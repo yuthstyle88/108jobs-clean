@@ -17,7 +17,7 @@ import {ChatRoomsProvider} from "@/modules/chat/providers/ChatRoomsProvider";
 import {UserService} from "@/services";
 import {useActiveRoom} from "@/modules/chat/store/roomsStore";
 import {useRooms} from "@/modules/chat/store/roomsStore";
-import ChatWrapper from "@/modules/chat/ChatWrapper";
+import ChatWrapper from "@/containers/ChatWrapper";
 
 export default function ProfileLayout({children}: LayoutProps) {
   const storeActiveRoomId = useActiveRoom();
@@ -44,7 +44,6 @@ export default function ProfileLayout({children}: LayoutProps) {
     }
   }, [activeRoomId, rooms]);
   // Keep store in sync with URL param (no-op if action is missing)
-  console.log("wsOptions", wsOptions);
   if(!user || !token || senderId === 0) {
     return (
       <LoadingBlur text={""}/>

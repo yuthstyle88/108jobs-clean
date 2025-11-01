@@ -41,7 +41,6 @@ export function UserServiceProvider({children, token}: UserServiceProviderProps)
       // e.g., user.setToken?.(token as string);
       if(token && typeof (user as any).setToken === "function") {
         await (user as any).setToken(token);
-        console.log("Token seeded successfully");
       }
     } catch (e) {
       // no-op: token seeding is optional
