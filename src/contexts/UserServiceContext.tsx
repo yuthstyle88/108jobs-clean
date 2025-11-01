@@ -1,5 +1,5 @@
 "use client";
-import React, {createContext, useContext, useEffect, useMemo} from "react";
+import React, {createContext, useContext, useMemo} from "react";
 import {UserService} from "@/services/UserService";
 import {getIsoData} from "@/hooks/data/useIsoData";
 import {useUserStore} from "@/store/useUserStore";
@@ -43,19 +43,18 @@ export function UserServiceProvider({children, token}: UserServiceProviderProps)
         setRooms(userChatRoomsIso ?? null);
     }
 
-    (async () => {
-        try {
-            // If your UserService has a way to seed token, do it here (optional)
-            // e.g., user.setToken?.(token as string);
-            if (token && typeof (user as any).setToken === "function") {
-                await (user as any).setToken(token);
-                console.log("Token seeded successfully");
-            }
-        } catch (e) {
-            // no-op: token seeding is optional
-        }
-    })();
-    const value = useMemo<UserServiceContextType>(() => ({user}), [user]);
+  (async () => {
+    try {
+      // If your UserService has a way to seed token, do it here (optional)
+      // e.g., user.setToken?.(token as string);
+      if(token && typeof (user as any).setToken === "function") {
+        await (user as any).setToken(token);
+      }
+    } catch (e) {
+      // no-op: token seeding is optional
+    }
+  })();
+  const value = useMemo<UserServiceContextType>(() => ({user}), [user]);
 
     return (
         <UserServiceContext.Provider value={value}>

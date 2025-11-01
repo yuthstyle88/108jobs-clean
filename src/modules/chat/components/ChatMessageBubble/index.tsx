@@ -13,7 +13,7 @@ import {isSameOrAfter, isApproxSame} from "@/modules/chat/utils/helpers";
 import {useReadLastIdStore} from "@/modules/chat/store/readStore";
 import {usePeerOnline} from "@/modules/chat/store/presenceStore";
 import {Stars} from "@/components/RatingDisplay";
-import {useChatServices} from "@/modules/chat/providers/PhoenixChatBridgeProvider";
+import {useChatServices} from "@/modules/chat/contexts/PhoenixChatBridgeProvider";
 
 interface ChatMessageItemProps {
     message: ChatMessage;
