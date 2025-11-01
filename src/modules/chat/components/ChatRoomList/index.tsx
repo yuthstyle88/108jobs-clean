@@ -7,7 +7,6 @@ import {useChatRoomsContext} from "@/modules/chat/contexts/ChatRoomsContext";
 import AvatarBadge from "@/components/AvatarBadge";
 import {usePeerOnline} from "@/modules/chat/store/presenceStore";
 import { useParams } from 'next/navigation';
-import { useRoomsStore } from "@/modules/chat/store/roomsStore";
 
 interface ChatRoomListProps {
     room: ChatRoom;

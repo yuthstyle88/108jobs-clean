@@ -132,7 +132,6 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     const initialFetchRef = useRef(false);
     const markSeen = useUnreadStore((s) => s.markSeen);
     const [error, setError] = useState<string | null>(null);
-    const {setActiveRoomId, markRoomRead} = useRoomsStore();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [scrollParentEl, setScrollParentEl] = useState<HTMLElement | null>(null);
     const _rawPostId: unknown = (currentRoom as any)?.room?.post?.id;
@@ -317,16 +316,6 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
 
     // Mark active + read, and notify peer on join/leave (single source of truth)
     useEffect(() => {
-        try {
-            setActiveRoomId(roomId);
-            markRoomRead(roomId);
-            markSeen(roomId);
-            // announce enter immediately on join
-            if (isBrowser()) {
-                window.dispatchEvent(new CustomEvent('chat:status-change', {detail: {roomId, status: 'room:enter'}}));
-            }
-        } catch {
-        }
         return () => {
             try {
                 // announce leave on unmount / room change
@@ -340,12 +329,8 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                 }
             } catch {
             }
-            try {
-                setActiveRoomId('');
-            } catch {
-            }
         };
-    }, [roomId, setActiveRoomId, markRoomRead, markSeen]);
+    }, [roomId]);
 
     useEffect(() => {
         if (initialFetchRef.current) return;
@@ -683,18 +668,6 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                         onTopReached={handleOnTopReached}
                         hasMore={hasMore}
                         isFetching={isFetching}
-                        onAtBottomChange={(isAtBottom) => {
-                            if (isAtBottom) {
-                                try {
-                                    markRoomRead(roomId);
-                                } catch {
-                                }
-                                try {
-                                    markSeen(roomId);
-                                } catch {
-                                }
-                            }
-                        }}
                         partnerId={partnerId}
                     />
                     <div ref={inputContainerRef} className="border-t px-3 py-2 sm:px-4 sm:py-3 bg-white">
