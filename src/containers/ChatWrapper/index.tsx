@@ -8,7 +8,7 @@ import {useTranslation} from "react-i18next";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 import ChatRoomItem from "@/modules/chat/components/ChatRoomItem";
 
-const ChatWrapper: React.FC<{ activeRoomId?: string | null }> = ({ activeRoomId }) => {
+const ChatWrapper: React.FC = () => {
     const {t} = useTranslation();
     const rooms = useRoomsStore((s) => s.rooms);
     // const storeActiveRoomId = useRoomsStore((s) => s.activeRoomId);
@@ -89,7 +89,6 @@ const ChatWrapper: React.FC<{ activeRoomId?: string | null }> = ({ activeRoomId 
                             room={room}
                             currentLang={currentLang || "th"}
                             localUser={localUser}
-                            activeRoomId={activeRoomId || ""}
                         />
                     ))}
                     {filteredRooms.length === 0 && (

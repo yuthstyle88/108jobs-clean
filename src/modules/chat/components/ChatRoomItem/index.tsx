@@ -12,13 +12,11 @@ interface ChatRoomListProps {
     room: RoomView;
     currentLang: string;
     localUser?: Pick<LocalUser, "id"> | null;
-    activeRoomId?: string;
 }
 
-const ChatRoomItem = ({room, currentLang, localUser, activeRoomId}: ChatRoomListProps) => {
+const ChatRoomItem = ({room, currentLang, localUser}: ChatRoomListProps) => {
     const {findPartner, getUnread, markRoomRead} = useRoomsStore();
-    const storeActiveRoomId = useRoomsStore((s) => s.activeRoomId);
-    const isActive = String(storeActiveRoomId ?? '') === String(activeRoomId);
+    const isActive = room.isActive;
 
     const partner = findPartner(room.room.id, localUser?.id);
     const jobId = room.post?.id;

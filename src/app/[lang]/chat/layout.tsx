@@ -105,7 +105,7 @@ export default function ProfileLayout({children}: LayoutProps) {
                                             border-r border-gray-200 bg-white h-full overflow-y-auto
                                         `}
                             >
-                                <ChatWrapper activeRoomId={normalizedRoomId}/>
+                                <ChatWrapper />
                             </aside>
 
                             <JobFlowSidebarProvider>
