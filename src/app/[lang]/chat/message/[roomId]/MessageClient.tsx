@@ -13,10 +13,11 @@ export default function MessageClient({roomId}: { roomId: string }) {
     const isLoggedIn = UserService.Instance.isLoggedIn;
     const {localUser} = useMyUser();
 
-    const { room, ready } = useRoomsStore((s) => ({
-      room: s.rooms.find((rv) => String(rv.room.id) === String(roomId)),
-      ready: s.activeRoomId != null || s.rooms.length > 0,
-    }));
+    const room = useRoomsStore((s) =>
+      s.rooms.find((rv) => String(rv.room.id) === String(roomId))
+    );
+    // Use explicit hydration flag to avoid false positives while data is loading
+    const ready = useRoomsStore((s) => s.isHydrated);
 
     const findPartnerFn = useRoomsStore((s) => s.findPartner);
     const partner = useMemo(

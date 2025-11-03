@@ -90,6 +90,8 @@ export type RoomsState = {
     // state
     rooms: RoomView[];
     activeRoomId: string | null;
+    isHydrated: boolean;
+    markHydrated: () => void;
     wasUnreadPerRoom: Record<string, boolean>;
 
     // basic mutators (kept for backward compatibility)
@@ -142,6 +144,7 @@ export type RoomsState = {
 export const useRoomsStore = create<RoomsState>((set, get) => ({
     rooms: [],
     activeRoomId: null,
+    isHydrated: false,
     wasUnreadPerRoom: {},
 
     // ——— Basic mutators (BC) ———
@@ -192,6 +195,8 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
                 ? s.rooms.map((r) => (r.room.id === room.room.id ? {...r, ...room} : r))
                 : [...s.rooms, room],
         })),
+
+    markHydrated: () => set(() => ({ isHydrated: true })),
 
     getRooms: () => get().rooms.slice(),
 
