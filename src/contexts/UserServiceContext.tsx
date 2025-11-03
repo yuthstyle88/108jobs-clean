@@ -1,5 +1,5 @@
 "use client";
-import React, {createContext, useContext, useMemo} from "react";
+import React, {createContext, useContext, useMemo, useEffect, useRef} from "react";
 import {UserService} from "@/services/UserService";
 import {getIsoData} from "@/hooks/data/useIsoData";
 import {useUserStore} from "@/store/useUserStore";
@@ -23,38 +23,50 @@ interface UserServiceProviderProps {
 }
 
 export function UserServiceProvider({children, token}: UserServiceProviderProps) {
-    // Use the singleton instance
-    const iso = getIsoData()?.myUserInfo ?? null;
-    const userChatRoomsIso = (getIsoData()?.chatRooms?.rooms ?? []).map(r => ({
-        ...r,
-        isActive: false,
-    })) as RoomView[];
+    // Snapshot ISO data once per mount
+    const isoMyUser = useMemo(() => getIsoData()?.myUserInfo ?? null, []);
+    const isoRooms: RoomView[] = useMemo(
+      () => ((getIsoData()?.chatRooms?.rooms ?? []).map(r => ({ ...r, isActive: false })) as RoomView[]),
+      []
+    );
+
     const setUser = useUserStore((s) => s.setUser);
     const setPerson = useUserStore((s) => s.setPerson);
     const setUserInfo = useUserStore((s) => s.setUserInfo);
     const setRooms = useRoomsStore((s) => s.setRooms);
+    const markHydrated = useRoomsStore((s) => s.markHydrated);
+    const hydrateRooms = useRoomsStore((s) => s.hydrateRooms);
     const user = UserService.Instance;
 
-    // Seed the global store once on mount (after login redirect)
-    if (iso) {
-        setUser(iso.localUserView?.localUser ?? null);
-        setPerson(iso.localUserView?.person ?? null);
-        setUserInfo(iso ?? null);
-        setRooms(userChatRoomsIso ?? null);
-    }
+    const seededRef = useRef(false);
+    useEffect(() => {
+      if (seededRef.current) return;
+      seededRef.current = true;
 
-  (async () => {
-    try {
-      // If your UserService has a way to seed token, do it here (optional)
-      // e.g., user.setToken?.(token as string);
-      if(token && typeof (user as any).setToken === "function") {
-        await (user as any).setToken(token);
+      if (isoMyUser) {
+        setUser(isoMyUser.localUserView?.localUser ?? null);
+        setPerson(isoMyUser.localUserView?.person ?? null);
+        setUserInfo(isoMyUser);
       }
-    } catch (e) {
-      // no-op: token seeding is optional
-    }
-  })();
-  const value = useMemo<UserServiceContextType>(() => ({user}), [user]);
+
+      // Seed rooms from ISO (fallback to empty array)
+      hydrateRooms(Array.isArray(isoRooms) ? isoRooms : []);
+      markHydrated();
+    }, [isoMyUser, isoRooms, setUser, setPerson, setUserInfo, setRooms, markHydrated, hydrateRooms]);
+
+    useEffect(() => {
+      let cancelled = false;
+      (async () => {
+        try {
+          if (token && typeof (user as any).setToken === "function" && !cancelled) {
+            await (user as any).setToken(token);
+          }
+        } catch {}
+      })();
+      return () => { cancelled = true; };
+    }, [token, user]);
+
+    const value = useMemo<UserServiceContextType>(() => ({user}), [user]);
 
     return (
         <UserServiceContext.Provider value={value}>
