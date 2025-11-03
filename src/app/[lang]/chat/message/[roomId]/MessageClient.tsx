@@ -6,17 +6,12 @@ import {RoomNotFound} from "@/components/RoomNotFound";
 import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 import {PhoenixChatBridgeProvider} from "@/modules/chat/contexts/PhoenixChatBridgeProvider";
-import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 
 export default function MessageClient({roomId}: { roomId: string }) {
   const isLoggedIn = UserService.Instance.isLoggedIn;
   const {localUser} = useMyUser();
   const getRoom = useRoomsStore(s => s.getRoom);
   const findPartner = useRoomsStore(s => s.findPartner);
-  const isHydrated = useRoomsStore((s) => s.isHydrated);
-  if(!isHydrated) {
-    return <LoadingBlur text="Preparing chat..."/>;
-  }
 
   const room = getRoom(roomId);
   const partner = findPartner(roomId, localUser?.id);
