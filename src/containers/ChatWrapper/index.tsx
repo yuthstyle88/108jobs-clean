@@ -4,9 +4,9 @@ import {useLanguage} from "@/contexts/LanguageContext";
 import React, {useMemo, useState, useEffect} from "react";
 import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {debounce} from "lodash";
-import ChatListItem from "@/modules/chat/components/ChatRoomList";
 import {useTranslation} from "react-i18next";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
+import ChatRoomItem from "@/modules/chat/components/ChatRoomItem";
 
 const ChatWrapper = () => {
     const {t} = useTranslation();
@@ -75,7 +75,7 @@ const ChatWrapper = () => {
                 {/* Chat List */}
                 <div className="flex-1 overflow-y-auto">
                     {filteredRooms.map((room) => (
-                        <ChatListItem
+                        <ChatRoomItem
                             key={room.room.id}
                             room={room}
                             currentLang={currentLang || "th"}
