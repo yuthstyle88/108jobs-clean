@@ -11,8 +11,6 @@ import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 export default function MessageClient({roomId}: { roomId: string }) {
   const isLoggedIn = UserService.Instance.isLoggedIn;
   const {localUser} = useMyUser();
-  const markHydrated = useRoomsStore((s) => s.markHydrated);
-  markHydrated();
   const getRoom = useRoomsStore(s => s.getRoom);
   const findPartner = useRoomsStore(s => s.findPartner);
   const isHydrated = useRoomsStore((s) => s.isHydrated);
