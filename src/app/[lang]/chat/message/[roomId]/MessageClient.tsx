@@ -6,16 +6,23 @@ import {RoomNotFound} from "@/components/RoomNotFound";
 import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 import {PhoenixChatBridgeProvider} from "@/modules/chat/contexts/PhoenixChatBridgeProvider";
-import {getIsoData} from "@/hooks/data/useIsoData";
-import {RoomView} from "@/modules/chat/types";
+import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 
 export default function MessageClient({roomId}: { roomId: string }) {
     const isLoggedIn = UserService.Instance.isLoggedIn;
     const {localUser} = useMyUser();
-    const {getRoom, findPartner} = useRoomsStore();
-    const room = getRoom(roomId);
-    const roomData = room ? room : getIsoData()?.chatRooms?.rooms.find( room => room.room.id = roomId) as RoomView;
-    const partner = findPartner(roomId, localUser?.id);
+    const { room, ready } = useRoomsStore((s) => ({
+      room: s.rooms.find((rv) => String(rv.room.id) === String(roomId)),
+      ready: s.activeRoomId != null || s.rooms.length > 0,
+    }));
+
+    const store = useRoomsStore();
+
+    if (!ready) {
+      return <LoadingBlur text="Preparing chat..." />;
+    }
+
+    const partner = store.findPartner(roomId, localUser?.id);
 
     if (!room || !partner) {
         return <RoomNotFound/>;
@@ -26,7 +33,7 @@ export default function MessageClient({roomId}: { roomId: string }) {
             <ChatRoomView
                 post={room.post}
                 partner={partner}
-                roomData={roomData}
+                roomData={room}
                 localUser={localUser!}
             />
         </PhoenixChatBridgeProvider>
