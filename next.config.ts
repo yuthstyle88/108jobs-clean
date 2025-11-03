@@ -129,7 +129,6 @@ const nextConfig: NextConfig = {
             },
         ];
     },
-
     // Rewrites to backend/CDN (replace env as needed)
     async rewrites() {
         const apiBase = process.env.API_INTERNAL_URL ?? 'https://api-staging.108jobs.com';
