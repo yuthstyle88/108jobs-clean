@@ -23,11 +23,12 @@ const ChatRoomItem = ({room, currentLang, localUser}: ChatRoomListProps) => {
     const partner = findPartner(room.room.id, localUser?.id);
     const jobId = room.post?.id;
     const unreadCount = getUnread(room.room.id);
+    const memberId = partner?.participant?.memberId ?? 0;
+    const online = usePeerOnline(memberId);
 
     if (!partner) return <RoomNotFound/>;
 
     const partnerName = partner.memberPerson.name || "Unknown";
-    const online = usePeerOnline(partner.participant.memberId);
     const handleClick = () => {
         markRoomRead(room.room.id);
     };

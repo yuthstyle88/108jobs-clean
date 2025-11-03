@@ -246,15 +246,26 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
         return unreadStoreUtils.getUnreadCount(roomId);
     },
 
-    findByParticipant: (participantId) =>
-        get().rooms.find((r) =>
-            r.participants?.some((p) => p.participant?.memberId === participantId)
-        ),
+    findByParticipant: (participantId) => {
+        const pid = Number(participantId);
+        if (!Number.isFinite(pid)) return undefined;
+        return get().rooms.find((r) => {
+            const participants = r.participants ?? [];
+            return participants.some((p) => {
+                const mid = p?.participant?.memberId;
+                return mid != null && Number(mid) === pid;
+            });
+        });
+    },
 
     findPartner: (roomId: string, currentUserId?: LocalUserId) => {
         const room = get().rooms.find(r => r.room.id === roomId);
         if (!room) return undefined;
-        return room.participants.find(p => p.participant.memberId !== currentUserId);
+        const participants = room.participants ?? [];
+        return participants.find((p) => {
+          const memberId = p?.participant?.memberId;
+          return memberId != null && memberId !== currentUserId;
+        });
     },
 
     markWasUnread: (roomId) =>
