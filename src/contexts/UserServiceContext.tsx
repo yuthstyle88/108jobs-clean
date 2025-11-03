@@ -33,6 +33,7 @@ export function UserServiceProvider({children, token}: UserServiceProviderProps)
   const setUser = useUserStore((s) => s.setUser);
   const setPerson = useUserStore((s) => s.setPerson);
   const setUserInfo = useUserStore((s) => s.setUserInfo);
+  const setRoom = useRoomsStore((s) => s.setRooms);
   const markHydrated = useRoomsStore((s) => s.markHydrated);
   const user = UserService.Instance;
 
@@ -49,6 +50,7 @@ export function UserServiceProvider({children, token}: UserServiceProviderProps)
       setUser(isoMyUser.localUserView?.localUser ?? null);
       setPerson(isoMyUser.localUserView?.person ?? null);
       setUserInfo(isoMyUser);
+      setRoom(isoRooms);
     }
 
     // Apply token as early as possible; fire-and-forget if async
