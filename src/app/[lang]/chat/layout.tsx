@@ -16,6 +16,7 @@ import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 import {UserService} from "@/services";
 import ChatWrapper from "@/containers/ChatWrapper";
 import {disableBackgroundUnread, enableBackgroundUnread} from "@/modules/chat/services/backgroundUnreadWatcher";
+import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 
 export default function ProfileLayout({children}: LayoutProps) {
     const params = useParams() as { roomId?: string };
@@ -33,6 +34,16 @@ export default function ProfileLayout({children}: LayoutProps) {
         senderId,
         roomId: normalizedRoomId
     }), [token, senderId, normalizedRoomId]);
+    const getActiveRoom = useRoomsStore((s) => s.getActiveRoom);
+    const setActiveRoomId = useRoomsStore((s) => s.setActiveRoomId);
+    const currentActiveId = (getActiveRoom()?.room?.id ?? null) as string | null;
+    useEffect(() => {
+        if (!normalizedRoomId) return;
+        if (String(currentActiveId ?? '') === String(normalizedRoomId)) return;
+        if (typeof setActiveRoomId === "function") {
+            setActiveRoomId(String(normalizedRoomId));
+        }
+    }, [normalizedRoomId, getActiveRoom, setActiveRoomId]);
 
     useEffect(() => {
         if (!token || !user?.id) return;

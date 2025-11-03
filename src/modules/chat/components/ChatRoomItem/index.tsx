@@ -6,7 +6,6 @@ import AvatarBadge from "@/components/AvatarBadge";
 import {usePeerOnline} from "@/modules/chat/store/presenceStore";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 import {RoomView} from "@/modules/chat/types";
-import {useParams} from "next/navigation";
 import {RoomNotFound} from "@/components/RoomNotFound";
 
 interface ChatRoomListProps {
@@ -15,11 +14,12 @@ interface ChatRoomListProps {
     localUser?: Pick<LocalUser, "id"> | null;
 }
 
-function ChatRoomListComponent({room, currentLang, localUser}: ChatRoomListProps) {
-    const params = useParams() as { roomId?: string };
-    const activeRoomId = params?.roomId ?? null;
+const ChatRoomItem = ({room, currentLang, localUser}: ChatRoomListProps) => {
     const {findPartner, getUnread, markRoomRead} = useRoomsStore();
-    const isActive = room.room.id === String(activeRoomId);
+    const getActiveRoom = useRoomsStore((s) => s.getActiveRoom);
+    const currentActiveId = (getActiveRoom()?.room?.id ?? null) as string | null;
+    const isActive = String(currentActiveId ?? '') === String(room.room.id);
+
     const partner = findPartner(room.room.id, localUser?.id);
     const jobId = room.post?.id;
     const unreadCount = getUnread(room.room.id);
@@ -46,7 +46,7 @@ function ChatRoomListComponent({room, currentLang, localUser}: ChatRoomListProps
                     isActive
                         ? "bg-blue-50 border-blue-500"
                         : !room.lastMessage
-                            ? "bg-yellow-50 border-yellow-500" // NEW room highlight
+                            ? "bg-white border-yellow-500" // NEW room highlight
                             : "bg-white hover:bg-gray-50 border-transparent"
                 }`}
             >
@@ -87,8 +87,8 @@ function ChatRoomListComponent({room, currentLang, localUser}: ChatRoomListProps
                 {/* NEW Badge - Top Right Corner */}
                 {!room.lastMessage && (
                     <span
-                        className="absolute top-2 right-2 text-xs bg-yellow-400 text-primary rounded-full px-2 py-0.5 pointer-events-none text-center min-w-[36px]"
-                        style={{ fontSize: '0.65rem', lineHeight: '1' }}
+                        className="absolute top-2 right-2 text-xs text-primary rounded-full px-2 py-0.5 pointer-events-none text-center min-w-[36px]"
+                        style={{fontSize: '0.65rem', lineHeight: '1'}}
                     >
                         New
                     </span>
@@ -98,8 +98,4 @@ function ChatRoomListComponent({room, currentLang, localUser}: ChatRoomListProps
     );
 }
 
-ChatRoomListComponent.displayName = "ChatListItem";
-
-const ChatRoomList = React.memo(ChatRoomListComponent);
-
-export default ChatRoomList;
+export default ChatRoomItem;
