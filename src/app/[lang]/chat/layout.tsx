@@ -34,16 +34,14 @@ export default function ProfileLayout({children}: LayoutProps) {
         senderId,
         roomId: normalizedRoomId
     }), [token, senderId, normalizedRoomId]);
-    const getActiveRoom = useRoomsStore((s) => s.getActiveRoom);
+    const storeActiveRoomId = useRoomsStore((s) => s.activeRoomId);
     const setActiveRoomId = useRoomsStore((s) => s.setActiveRoomId);
-    const currentActiveId = (getActiveRoom()?.room?.id ?? null) as string | null;
+
     useEffect(() => {
         if (!normalizedRoomId) return;
-        if (String(currentActiveId ?? '') === String(normalizedRoomId)) return;
-        if (typeof setActiveRoomId === "function") {
-            setActiveRoomId(String(normalizedRoomId));
-        }
-    }, [normalizedRoomId, getActiveRoom, setActiveRoomId]);
+        if (String(storeActiveRoomId ?? "") === String(normalizedRoomId)) return;
+        setActiveRoomId(String(normalizedRoomId));
+    }, [normalizedRoomId, storeActiveRoomId, setActiveRoomId]);
 
     useEffect(() => {
         if (!token || !user?.id) return;
@@ -107,7 +105,7 @@ export default function ProfileLayout({children}: LayoutProps) {
                                             border-r border-gray-200 bg-white h-full overflow-y-auto
                                         `}
                             >
-                                <ChatWrapper/>
+                                <ChatWrapper activeRoomId={normalizedRoomId}/>
                             </aside>
 
                             <JobFlowSidebarProvider>

@@ -68,11 +68,11 @@ const readLastIdStoreUtils = {
         } catch {
         }
     },
-    clearRoom: (roomId: string) => {
+    clearRoom: async (roomId: string) => {
         try {
-            const {clearRoom} = require('@/modules/chat/store/readStore');
+            const {clearRoom} = await import('@/modules/chat/store/readStore');
             if (typeof clearRoom === 'function') {
-                clearRoom(roomId);
+                await clearRoom(roomId);
             }
         } catch {
         }
@@ -89,6 +89,7 @@ const readLastIdStoreUtils = {
 export type RoomsState = {
     // state
     rooms: RoomView[];
+    activeRoomId: string | null;
     wasUnreadPerRoom: Record<string, boolean>;
 
     // basic mutators (kept for backward compatibility)
@@ -140,6 +141,7 @@ export type RoomsState = {
 
 export const useRoomsStore = create<RoomsState>((set, get) => ({
     rooms: [],
+    activeRoomId: null,
     wasUnreadPerRoom: {},
 
     // ——— Basic mutators (BC) ———
@@ -168,11 +170,11 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
     },
     setActiveRoomId: (roomId) =>
         set((s) => ({
-            rooms: s.rooms.map((roomView) =>
-                roomId && roomView.room.id === roomId
-                    ? {...roomView, isActive: true}
-                    : {...roomView, isActive: false}
-            ),
+            activeRoomId: roomId,
+            rooms: s.rooms.map((roomView) => ({
+                ...roomView,
+                isActive: roomView.room.id === roomId,
+            })),
         })),
     bumpRoomToTop: (roomId: string) => {
         set((s) => {
@@ -201,9 +203,12 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
         return get().rooms.filter((r) => r.room.roomName?.toLowerCase().includes(q));
     },
 
-    getActiveRoomId: () => get().rooms.find((r) => r.isActive)?.room.id ?? null,
+    getActiveRoomId: () => get().activeRoomId,
 
-    getActiveRoom: () => get().rooms.find((r) => r.isActive),
+    getActiveRoom: () => {
+        const id = get().activeRoomId;
+        return id ? get().rooms.find((r) => r.room.id === id) : undefined;
+    },
 
     isActive: (roomId) => !!get().rooms.find((r) => r.room.id === roomId && r.isActive),
 

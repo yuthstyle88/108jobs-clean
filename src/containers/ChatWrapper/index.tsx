@@ -8,9 +8,11 @@ import {useTranslation} from "react-i18next";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 import ChatRoomItem from "@/modules/chat/components/ChatRoomItem";
 
-const ChatWrapper = () => {
+const ChatWrapper: React.FC<{ activeRoomId?: string | null }> = ({ activeRoomId }) => {
     const {t} = useTranslation();
     const rooms = useRoomsStore((s) => s.rooms);
+    // const storeActiveRoomId = useRoomsStore((s) => s.activeRoomId);
+    // const setActiveRoomId = useRoomsStore((s) => s.setActiveRoomId);
     const {lang: currentLang} = useLanguage();
     const {localUser} = useMyUser();
     const [searchQuery, setSearchQuery] = useState("");
@@ -26,6 +28,13 @@ const ChatWrapper = () => {
             debouncedSetSearchQuery.cancel();
         };
     }, [debouncedSetSearchQuery]);
+
+    // Sync prop activeRoomId -> store (one-way)
+    // useEffect(() => {
+    //     if (!activeRoomId) return;
+    //     if (String(storeActiveRoomId ?? "") === String(activeRoomId)) return;
+    //     setActiveRoomId(String(activeRoomId));
+    // }, [activeRoomId, storeActiveRoomId, setActiveRoomId]);
 
     // Memoized filtered rooms to optimize search performance
     const filteredRooms = useMemo(() => {
@@ -80,6 +89,7 @@ const ChatWrapper = () => {
                             room={room}
                             currentLang={currentLang || "th"}
                             localUser={localUser}
+                            activeRoomId={activeRoomId || ""}
                         />
                     ))}
                     {filteredRooms.length === 0 && (
