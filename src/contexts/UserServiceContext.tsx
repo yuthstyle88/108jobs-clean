@@ -52,15 +52,13 @@ export function UserServiceProvider({children, token}: UserServiceProviderProps)
     }
 
     // Apply token as early as possible; fire-and-forget if async
-    if (token) {
-      const maybeSetToken = (user as any)?.setToken;
-      if (typeof maybeSetToken === "function") {
-        const r = maybeSetToken(token);
-        void r;
-      } else {
-        (user as any).token = token;
-      }
-    }
+    (async () => {
+      try {
+        if (token && typeof (user as any).setToken === "function") {
+          await (user as any).setToken(token);
+        }
+      } catch {}
+    })();
 
     // Mark chat store hydrated (rooms seeding can be added here if needed)
     markHydrated();
