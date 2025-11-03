@@ -62,7 +62,7 @@ useEffect(() => {
         if (token) await HttpService.client.setHeaders({Authorization: `Bearer ${token}`});
         // Do not remove here; onSubmit will remove after successful login
       }
-      HttpService.client.setBaseUrl(process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080');
+      // HttpService.client.setBaseUrl(process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080');
     } catch (e) {
       console.warn('[AcceptTermsForm] init failed', e);
     }
