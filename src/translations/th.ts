@@ -176,6 +176,8 @@ export const th = {
             reviewSubmitted: "ส่งรีวิวสำเร็จ",
             noChatsFound: "ไม่พบแชท",
             startConversation: "เริ่มการสนทนาเพื่อดูที่นี่",
+            jobFlowBlocked: "สมาชิกบางคนในแชทนี้ยังไม่เปิดรับงานในขณะนี้ กรุณารอจนกว่าทุกคนจะเปิดรับงานเพื่อใช้ฟีเจอร์งาน",
+            jobFlowHint: "ลองเปิด “กำลังรับงาน” ในตั้งค่าบัญชีเพื่อใช้ฟีเจอร์งาน",
         },
         allCategories: {
             allJobCategories: "หมวดหมู่งานทั้งหมด",

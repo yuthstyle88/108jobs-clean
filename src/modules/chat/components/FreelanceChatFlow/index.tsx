@@ -83,6 +83,7 @@ export type FreelanceChatFlowProps = {
     statusBeforeCancel?: StatusKey;
     availableBalance: number;
     requiredAmount: number;
+    canBeUsed?: boolean;
 } & FlowActions;
 
 // =============================================================================
@@ -146,6 +147,7 @@ const FreelanceChatFlow: React.FC<FreelanceChatFlowProps> = ({
                                                                  statusBeforeCancel,
                                                                  availableBalance,
                                                                  requiredAmount,
+                                                                 canBeUsed = true,
                                                              }) => {
     const [showApproveConfirm, setShowApproveConfirm] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
@@ -228,7 +230,7 @@ const FreelanceChatFlow: React.FC<FreelanceChatFlowProps> = ({
 
     // -- Dynamic actions via current status (ensures Cancelled → ["restart"]) --------
     const actionsAll: WorkFlowAction[] = (workflowActionsMap as Record<StatusKey, WorkFlowAction[]>)[currentStatus] || [];
-    const dynamicActions: WorkFlowAction[] = filterByRole(actionsAll, !!isEmployer, !isEmployer);
+    const dynamicActions: WorkFlowAction[] = filterByRole(actionsAll, isEmployer, !isEmployer);
 
     const handlePanelAction = (key: string, payload?: any) => {
         switch (key) {
@@ -262,6 +264,21 @@ const FreelanceChatFlow: React.FC<FreelanceChatFlowProps> = ({
                 console.warn('Unknown action from WorkflowActionPanel', key, payload);
         }
     };
+
+    if (!canBeUsed) {
+        return (
+            <aside
+                className={`flex flex-col items-center justify-center w-full h-full bg-gray-50 rounded-lg border border-gray-200 p-6 text-center text-gray-700 ${className}`}
+            >
+                <p className="text-sm font-medium">
+                    🚫 {t("profileChat.jobFlowBlocked")}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                    {t("profileChat.jobFlowHint")}
+                </p>
+            </aside>
+        );
+    }
 
     // =============================================================================
     // Render
@@ -385,7 +402,6 @@ const FreelanceChatFlow: React.FC<FreelanceChatFlowProps> = ({
                         onClose={() => setShowCancelConfirm(false)}
                         onConfirm={async () => {
                             setShowCancelConfirm(false);
-                            console.log('FreelanceChatFlow onCancel:', {currentStatus, currentStatusBeforeCancel});
                             if (isControlled) {
                                 onChangeStatus?.('Cancelled', currentStatus);
                                 onCancel?.(currentStatus);

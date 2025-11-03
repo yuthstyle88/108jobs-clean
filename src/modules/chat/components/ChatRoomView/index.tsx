@@ -98,10 +98,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     // Treat undefined availability as "available". Block sending if either side is unavailable.
     const isSubmittingRef = useRef(false);
     const myAvailable = person!.available;
-    const canSend = myAvailable;
-    const disabledReason = !myAvailable
-        ? (t("profileChat.youAreNotAvailable") || "You are currently unavailable. Enable availability in your profile to send messages.")
-        : (t("profileChat.userNotAvailable") || "This user is currently not accepting messages. You can read history but cannot send new messages.");
+    const canBeUsed = myAvailable && partner.memberPerson.available;
     // Set of message IDs received during this session, used by history hook to deduplicate pages.
     const receivedIds = useMemo(() => new Set<string>(), []);
     const roomId = String(roomData?.room?.id ?? "");
@@ -415,8 +412,6 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
         setHasStarted,
         setShowQuotationModal,
         setSelectedFile,
-        canSend,
-        disabledReason,
         createInvoice,
         startWorkflow,
         approveQuotationApi,
@@ -446,10 +441,6 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     }, [approveWork, isEmployer]);
 
     const submitReview = useCallback(async (form: SubmitUserReviewForm) => {
-        if (!canSend) {
-            setError(disabledReason);
-            return false;
-        }
         try {
             const response = await submitReviewApi({
                 revieweeId: form.revieweeId,
@@ -485,7 +476,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
             setError(t('profileChat.submitReviewError') || 'Failed to submit review. Please try again.');
             return false;
         }
-    }, [canSend, disabledReason, submitReviewApi, roomId, localUser.id, sendMessage, setError, t, emitChatNewMessage]);
+    }, [submitReviewApi, roomId, localUser.id, sendMessage, setError, t, emitChatNewMessage]);
 
     /**
      * Handle message submit from ChatInput.
@@ -497,10 +488,6 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
      */
     const onSubmit = useCallback(
         async (data: MessageForm) => {
-            if (!canSend) {
-                setError(disabledReason);
-                return;
-            }
             if (isSubmittingRef.current) {
                 return;
             }
@@ -612,6 +599,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                 statusBeforeCancel={statusBeforeCancel}
                 availableBalance={availableBalance}
                 requiredAmount={latestQuoteAmount}
+                canBeUsed={canBeUsed}
             />
         </>
     );
@@ -656,12 +644,6 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                         <div className="flex items-center gap-2">
                             <div className="flex-1">
                                 {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
-                                {!canSend && (
-                                    <div
-                                        className="mb-2 p-2 rounded bg-yellow-50 text-yellow-800 text-xs border border-yellow-200">
-                                        {(!myAvailable ? (t("profileChat.youAreNotAvailable") || "You are currently unavailable. Enable availability in your profile to send messages.") : (t("profileChat.userNotAvailable") || "This user is currently not accepting messages. You can read history but cannot send new messages."))}
-                                    </div>
-                                )}
                                 {selectedFile && (
                                     <div
                                         className="mb-2 flex items-center justify-between rounded-md border border-blue-200 bg-blue-50 px-3 py-2">
@@ -689,7 +671,6 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                                 )}
                                 <ChatInput
                                     onSubmit={onSubmit}
-                                    disabled={!canSend}
                                     disabledHint=""
                                     onFileUpload={(ev: any) => handleFileUpload(ev as any)}
                                     onTyping={(v) => {
@@ -712,9 +693,6 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                     showReviewDeliveryModal={showReviewDeliveryModal}
                     setShowReviewDeliveryModal={setShowReviewDeliveryModal}
                     goToStatus={goToStatus}
-                    canSend={canSend}
-                    setError={setError}
-                    disabledReason={disabledReason}
                     sendMessage={sendMessage}
                     requestRevisionAction={requestRevision}
                     roomId={roomId}

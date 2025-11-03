@@ -177,6 +177,8 @@ export const en = {
             reviewSubmitted: "Review submitted successfully.",
             noChatsFound: "No chats found",
             startConversation: "Start a conversation to see it here.",
+            jobFlowBlocked: "Some members in this chat aren’t accepting jobs right now. Please wait until everyone turns on job acceptance to use the job flow.",
+            jobFlowHint: "Try turning on “Accepting Jobs” in Account Settings to use the job flow.",
         },
         allCategories: {
             allJobCategories: "All Job Categories",

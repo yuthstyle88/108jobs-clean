@@ -9,9 +9,6 @@ interface ReviewDeliveryModalProps {
     showReviewDeliveryModal: boolean;
     setShowReviewDeliveryModal: (show: boolean) => void;
     goToStatus: (status: StatusKey) => void;
-    canSend: boolean;
-    setError: (error: string) => void;
-    disabledReason: string;
     sendMessage: (message: { message: string; senderId: number; secure: boolean; id: string }) => void;
     requestRevisionAction: () => Promise<boolean>;
     roomId: string;
@@ -22,9 +19,6 @@ export const ReviewDeliveryModal: React.FC<ReviewDeliveryModalProps> = ({
                                                                             showReviewDeliveryModal,
                                                                             setShowReviewDeliveryModal,
                                                                             goToStatus,
-                                                                            canSend,
-                                                                            setError,
-                                                                            disabledReason,
                                                                             sendMessage,
                                                                             requestRevisionAction,
                                                                             roomId,
@@ -50,10 +44,6 @@ export const ReviewDeliveryModal: React.FC<ReviewDeliveryModalProps> = ({
                         onClick={() => {
                             setShowReviewDeliveryModal(false);
                             goToStatus("Completed");
-                            if (!canSend) {
-                                setError(disabledReason);
-                                return;
-                            }
                             sendMessage({
                                 message: JSON.stringify({ type: 'delivery-accepted' }),
                                 senderId: Number(localUser?.id) || 0,

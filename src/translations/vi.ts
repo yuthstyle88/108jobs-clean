@@ -177,6 +177,8 @@ export const vi = {
             reviewSubmitted: "Đánh giá đã được gửi thành công.",
             noChatsFound: "Không tìm thấy cuộc trò chuyện",
             startConversation: "Bắt đầu một cuộc trò chuyện để xem ở đây.",
+            jobFlowBlocked: "Một số thành viên trong cuộc trò chuyện này hiện không nhận công việc. Vui lòng đợi cho đến khi mọi người bật nhận việc để sử dụng luồng công việc.",
+            jobFlowHint: "Hãy thử bật “Đang nhận việc” trong Cài đặt tài khoản để sử dụng luồng công việc.",
         },
         allCategories: {
             allJobCategories: "Tất cả danh mục công việc",

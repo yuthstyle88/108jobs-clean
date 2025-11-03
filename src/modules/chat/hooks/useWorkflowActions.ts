@@ -42,8 +42,6 @@ export type UseWorkflowActionsDeps = {
     setHasStarted: (v: boolean) => void;
     setShowQuotationModal: (v: boolean) => void;
     setSelectedFile: (v: any) => void;
-    canSend: boolean;
-    disabledReason?: string | null;
     createInvoice: (form: CreateInvoiceForm) => Promise<any>;
     startWorkflow: (form: { postId: number; seqNumber: number; roomId: string }) => Promise<any>;
     approveQuotationApi: (form: ApproveQuotationForm) => Promise<any>;
@@ -69,8 +67,6 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
         setHasStarted,
         setShowQuotationModal,
         setSelectedFile,
-        canSend,
-        disabledReason,
         createInvoice,
         startWorkflow,
         approveQuotationApi,
@@ -158,11 +154,6 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
     }, [postId, roomData, startWorkflow, roomId, setHasStarted, goToStatusAndBroadcast, t, sendMessage, localUser.id, roomData]);
 
     const quotationSubmit = useCallback(async (data: any) => {
-        if (!canSend) {
-            setError(disabledReason || null);
-            setShowQuotationModal(false);
-            return false;
-        }
         setError(null);
         try {
             const form: CreateInvoiceForm = {
@@ -205,7 +196,7 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(t('profileChat.quotationError') || 'Failed to send quotation. Please try again.');
             return false;
         }
-    }, [canSend, disabledReason, createInvoice, goToStatusAndBroadcast, localUser.id, roomId, setShowQuotationModal, t, sendMessage, roomData]);
+    }, [createInvoice, goToStatusAndBroadcast, localUser.id, roomId, setShowQuotationModal, t, sendMessage, roomData]);
 
     const approveQuotation = useCallback(async () => {
         try {
@@ -288,10 +279,6 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
     const submitDelivery = useCallback(async () => {
         try {
             setError(null);
-            if (!canSend) {
-                setError(disabledReason || null);
-                return false;
-            }
             if (!selectedFile || !selectedFile.fileUrl) {
                 setError(t('profileChat.attachFileFirst') || 'Please attach a file before submitting delivery.');
                 return false;
@@ -331,15 +318,11 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [canSend, disabledReason, messages, selectedFile, localUser?.id, roomId, t, setSelectedFile, sendMessage, goToStatusAndBroadcast, validateWorkflowId, roomData]);
+    }, [messages, selectedFile, localUser?.id, roomId, t, setSelectedFile, sendMessage, goToStatusAndBroadcast, validateWorkflowId, roomData]);
 
     const requestRevision = useCallback(async () => {
         try {
             setError(null);
-            if (!canSend) {
-                setError(disabledReason || t('profileChat.cannotPerformAction') || 'You cannot perform this action right now.');
-                return false;
-            }
             const workflowId = validateWorkflowId('requestRevision');
             if (!workflowId) return false;
 
@@ -363,15 +346,11 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [canSend, disabledReason, messages, t, roomId, localUser?.id, sendMessage, goToStatusAndBroadcast, validateWorkflowId, roomData]);
+    }, [messages, t, roomId, localUser?.id, sendMessage, goToStatusAndBroadcast, validateWorkflowId, roomData]);
 
     const approveWork = useCallback(async () => {
         try {
             setError(null);
-            if (!canSend) {
-                setError(disabledReason || t('profileChat.cannotPerformAction') || 'You cannot perform this action right now.');
-                return false;
-            }
             const workflowId = validateWorkflowId('approveWork');
             if (!workflowId) return false;
 
@@ -400,14 +379,10 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [canSend, disabledReason, messages, approveWorkApi, t, roomId, localUser?.id, sendMessage, goToStatusAndBroadcast, validateWorkflowId, billingId, roomData]);
+    }, [messages, approveWorkApi, t, roomId, localUser?.id, sendMessage, goToStatusAndBroadcast, validateWorkflowId, billingId, roomData]);
 
     const cancelJob = useCallback(async () => {
         try {
-            if (!canSend) {
-                setError(disabledReason || t('profileChat.cannotPerformAction') || 'You cannot perform this action right now.');
-                return false;
-            }
             const workflowId = validateWorkflowId('cancelJob');
             if (!workflowId) return false;
 
@@ -430,7 +405,7 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [canSend, disabledReason, messages, roomId, localUser?.id, t, sendMessage, goToStatusAndBroadcast, validateWorkflowId, currentStatus, roomData]);
+    }, [messages, roomId, localUser?.id, t, sendMessage, goToStatusAndBroadcast, validateWorkflowId, currentStatus, roomData]);
 
     return {
         startWorkflowAction,
