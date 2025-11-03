@@ -1,7 +1,7 @@
 "use client";
 
 import {useLanguage} from "@/contexts/LanguageContext";
-import React, {useCallback, useMemo, useState, useEffect} from "react";
+import React, {useMemo, useState, useEffect} from "react";
 import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {debounce} from "lodash";
 import ChatListItem from "@/modules/chat/components/ChatRoomList";
@@ -10,14 +10,14 @@ import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 
 const ChatWrapper = () => {
     const {t} = useTranslation();
-    const {rooms} = useRoomsStore();
+    const rooms = useRoomsStore((s) => s.rooms);
     const {lang: currentLang} = useLanguage();
     const {localUser} = useMyUser();
     const [searchQuery, setSearchQuery] = useState("");
 
     // Debounce search input to prevent excessive re-renders
-    const debouncedSetSearchQuery = useCallback(
-        debounce((value: string) => setSearchQuery(value), 300),
+    const debouncedSetSearchQuery = useMemo(
+        () => debounce((value: string) => setSearchQuery(value), 300),
         []
     );
 
@@ -65,7 +65,7 @@ const ChatWrapper = () => {
                     <input
                         type="text"
                         placeholder={t("profileChat.searchChat")}
-                        defaultValue={searchQuery}
+                        value={searchQuery}
                         onChange={handleSearchChange}
                         className="w-full mt-2 sm:mt-3 p-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow bg-white"
                         aria-label="Search chat rooms"
