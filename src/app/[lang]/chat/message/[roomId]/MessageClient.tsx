@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from 'react';
 import ChatRoomView from "@/modules/chat/components/ChatRoomView";
 import {UserService} from "@/services";
 import {RoomNotFound} from "@/components/RoomNotFound";
@@ -8,6 +9,10 @@ import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 import {PhoenixChatBridgeProvider} from "@/modules/chat/contexts/PhoenixChatBridgeProvider";
 
 export default function MessageClient({roomId}: { roomId: string }) {
+  useEffect(() => {
+    // ensure parent hydration happens first
+  }, []);
+
   const isLoggedIn = UserService.Instance.isLoggedIn;
   const {localUser} = useMyUser();
   const getRoom = useRoomsStore(s => s.getRoom);
