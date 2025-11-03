@@ -90,9 +90,6 @@ export type RoomsState = {
     // state
     rooms: RoomView[];
     activeRoomId: string | null;
-    isHydrated: boolean;
-    markHydrated: () => void;
-    hydrateRooms: (rooms: RoomView[]) => void;
     wasUnreadPerRoom: Record<string, boolean>;
 
     // basic mutators (kept for backward compatibility)
@@ -149,13 +146,6 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
     wasUnreadPerRoom: {},
 
     // ——— Basic mutators (BC) ———
-    hydrateRooms: (rooms) => {
-        const next = Array.isArray(rooms) ? rooms : [];
-        set({ rooms: next, isHydrated: true });
-        // Prune child stores to keep them consistent with current rooms snapshot
-        unreadStoreUtils.pruneByRooms(next);
-        readLastIdStoreUtils.pruneByRooms(next);
-    },
     setRooms: (rooms) => {
         const next = Array.isArray(rooms) ? rooms : [];
         set({rooms: next});
@@ -203,8 +193,6 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
                 ? s.rooms.map((r) => (r.room.id === room.room.id ? {...r, ...room} : r))
                 : [...s.rooms, room],
         })),
-
-    markHydrated: () => set(() => ({ isHydrated: true })),
 
     getRooms: () => get().rooms.slice(),
 
@@ -298,5 +286,5 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
 
     wasUnread: (roomId) => get().wasUnreadPerRoom?.[roomId],
 
-    reset: () => set({ rooms: [], wasUnreadPerRoom: {}, activeRoomId: null, isHydrated: false }),
+    reset: () => set({ rooms: [], wasUnreadPerRoom: {}, activeRoomId: null}),
 }));

@@ -34,7 +34,6 @@ export function UserServiceProvider({children, token}: UserServiceProviderProps)
   const setPerson = useUserStore((s) => s.setPerson);
   const setUserInfo = useUserStore((s) => s.setUserInfo);
   const setRoom = useRoomsStore((s) => s.setRooms);
-  const markHydrated = useRoomsStore((s) => s.markHydrated);
   const user = UserService.Instance;
 
   const seededRef = useRef(false);
@@ -62,12 +61,9 @@ export function UserServiceProvider({children, token}: UserServiceProviderProps)
       } catch {}
     })();
 
-    // Mark chat store hydrated (rooms seeding can be added here if needed)
-    markHydrated();
-
     // Now allow children to render after parent has seeded everything
     setReady(true);
-  }, [isoMyUser, token, user, setUser, setPerson, setUserInfo, markHydrated]);
+  }, [isoMyUser, token, user, setUser, setPerson, setUserInfo]);
 
   const value = useMemo<UserServiceContextType>(() => ({user}), [user]);
 
