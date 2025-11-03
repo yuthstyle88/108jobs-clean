@@ -79,29 +79,48 @@ const JobBoard = () => {
 
     const handleFilterChange = useCallback(
         (key: keyof FilterState, value: unknown) => {
+            let updatedFilters: FilterState;
+
             setFilters((prev) => {
-                const newFilters = {
+                updatedFilters = {
                     ...prev,
-                    [key]: key === "community" ? (typeof value === "string" && value ? parseInt(value) : undefined) : value
+                    [key]:
+                        key === "community"
+                            ? typeof value === "string" && value
+                                ? parseInt(value)
+                                : undefined
+                            : value,
                 };
-                const params = new URLSearchParams(searchParams);
-                if (newFilters.community) params.set("community", newFilters.community.toString());
-                else params.delete("community");
-                if (newFilters.jobType) params.set("jobType", newFilters.jobType);
-                else params.delete("jobType");
-                if (newFilters.intendedUse) params.set("intendedUse", newFilters.intendedUse);
-                else params.delete("intendedUse");
-                if (newFilters.budgetMin) params.set("budgetMin", newFilters.budgetMin.toString());
-                else params.delete("budgetMin");
-                if (newFilters.budgetMax) params.set("budgetMax", newFilters.budgetMax.toString());
-                else params.delete("budgetMax");
-                router.push(`?${params.toString()}`, {scroll: false});
-                return newFilters;
+                return updatedFilters;
             });
-            if (key === "budgetMin") setBudgetError(null);
+
+            // Use a microtask to ensure updatedFilters is available
+            queueMicrotask(() => {
+                const params = new URLSearchParams(searchParams);
+
+                if (updatedFilters.community)
+                    params.set("community", updatedFilters.community.toString());
+                else params.delete("community");
+                if (updatedFilters.jobType) params.set("jobType", updatedFilters.jobType);
+                else params.delete("jobType");
+                if (updatedFilters.intendedUse)
+                    params.set("intendedUse", updatedFilters.intendedUse);
+                else params.delete("intendedUse");
+                if (updatedFilters.budgetMin)
+                    params.set("budgetMin", updatedFilters.budgetMin.toString());
+                else params.delete("budgetMin");
+                if (updatedFilters.budgetMax)
+                    params.set("budgetMax", updatedFilters.budgetMax.toString());
+                else params.delete("budgetMax");
+
+                router.push(`?${params.toString()}`, { scroll: false });
+
+                if (key === "budgetMin") setBudgetError(null);
+            });
         },
         [router, searchParams]
     );
+
 
     const debouncedHandleBudgetInput = useCallback(
         debounce((type: 'min' | 'max', value: string) => {
