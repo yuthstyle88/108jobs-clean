@@ -1,5 +1,5 @@
 "use client";
-import React, {createContext, useContext, useMemo, useRef, useLayoutEffect} from "react";
+import React, {createContext, useContext, useMemo, useRef, useLayoutEffect, useState} from "react";
 import {UserService} from "@/services/UserService";
 import {getIsoData} from "@/hooks/data/useIsoData";
 import {useUserStore} from "@/store/useUserStore";
@@ -37,6 +37,7 @@ export function UserServiceProvider({children, token}: UserServiceProviderProps)
   const user = UserService.Instance;
 
   const seededRef = useRef(false);
+  const [ready, setReady] = useState(false);
 
   // Run-once hydration: useLayoutEffect so it happens before paint (earlier than useEffect)
   useLayoutEffect(() => {
@@ -50,30 +51,29 @@ export function UserServiceProvider({children, token}: UserServiceProviderProps)
       setUserInfo(isoMyUser);
     }
 
+    // Apply token as early as possible; fire-and-forget if async
+    if (token) {
+      const maybeSetToken = (user as any)?.setToken;
+      if (typeof maybeSetToken === "function") {
+        const r = maybeSetToken(token);
+        void r;
+      } else {
+        (user as any).token = token;
+      }
+    }
+
     // Mark chat store hydrated (rooms seeding can be added here if needed)
     markHydrated();
-  }, [isoMyUser, setUser, setPerson, setUserInfo, markHydrated]);
 
-  // Apply token as early as possible in the same commit cycle
-  useLayoutEffect(() => {
-    if (!token) return;
-    const maybeSetToken = (user as any)?.setToken;
-    // Prefer a synchronous setter if available; otherwise, fire-and-forget
-    if (typeof maybeSetToken === "function") {
-      const r = maybeSetToken(token);
-      // If it returns a Promise, we intentionally do not await to avoid delaying paint
-      void r;
-    } else {
-      // Fallback: attach directly if the service supports it
-      (user as any).token = token;
-    }
-  }, [token, user]);
+    // Now allow children to render after parent has seeded everything
+    setReady(true);
+  }, [isoMyUser, token, user, setUser, setPerson, setUserInfo, markHydrated]);
 
   const value = useMemo<UserServiceContextType>(() => ({user}), [user]);
 
   return (
     <UserServiceContext.Provider value={value}>
-      {children}
+      {ready ? children : null}
     </UserServiceContext.Provider>
   );
 }
