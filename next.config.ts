@@ -12,7 +12,6 @@ const nextConfig: NextConfig = {
     poweredByHeader: false,
     compress: true,
     // Reduce client bundle size and improve runtime perf
-
     // Prefer modern optimizations
     // Next.js 16: use SWC-based modularizeImports for reliable per-module transforms
     modularizeImports: {
