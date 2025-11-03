@@ -12,7 +12,6 @@ import {useRouter} from "next/navigation";
 import {useState} from "react";
 import {VerifyOTPForm} from "@/components/Authentication/VerifyOTP";
 import {useTranslation} from "react-i18next";
-import {DotLottieReact} from "@lottiefiles/dotlottie-react";
 
 type ViewState = "register" | "verify-otp"  | "resend-otp";
 

@@ -106,31 +106,29 @@ export const handleLogin = async (i: LoginFormClass, data: any) => {
 };
 
 export async function handleLoginSuccess(i: LoginFormClass, loginRes: LoginResponse) {
-    UserService.Instance.login({
-        res: loginRes,
+    await UserService.Instance.login({
+      res: loginRes,
     });
 
-    const site = await HttpService.client.getSite();
+    // Redirect immediately after login so the new cookie is seen by server/middleware
+    const target = i.props.redirectUrl ?? "/";
+    if (isBrowser()) {
+        window.location.replace(target); // replace to avoid going back to login page
+        return; // stop executing below logic on client
+    }
 
-    if (isSuccess(site)) {
-        try {
+    // (Optional, non-blocking on server) Best-effort site refresh
+    try {
+        const site = await HttpService.client.getSite();
+        if (isSuccess(site)) {
             const isoData = setIsoData(i.context);
             if (isoData && isoData.siteRes) {
                 isoData.siteRes.oauthProviders = site.data.oauthProviders;
                 isoData.siteRes.adminOauthProviders = site.data.adminOauthProviders;
             }
-        } catch (error) {
-            console.error("Error updating isoData:",
-                error);
         }
-    }
-
-    // ใช้ redirectUrl จาก props แทน prev
-    const {redirectUrl} = i.props;
-
-    // ทำแค่ redirect แบบ full reload เพื่อให้ server/middleware เห็นคุกกี้ใหม่ทันที
-    if (isBrowser() && redirectUrl) {
-      window.location.assign(redirectUrl || '/');
+    } catch (error) {
+        console.error("Error updating isoData:", error);
     }
 }
 

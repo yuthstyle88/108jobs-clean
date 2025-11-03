@@ -8,9 +8,8 @@ import {CategoriesImage} from "@/constants/images";
 import {RegisterDataProps} from "@/types/register-data";
 import Image from "next/image";
 import {useRouter, useSearchParams} from "next/navigation";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {useTranslation} from "react-i18next";
-import {DotLottieReact} from "@lottiefiles/dotlottie-react";
 
 type ViewState = "login" | "forgot-password" | "verify-forgot-password";
 
@@ -20,15 +19,8 @@ export default function LoginPage() {
   const params = useSearchParams();
   const viewParam = params.get("view") as ViewState | null;
 
-  // Set currentView from viewParam only once on mount
-  useEffect(() => {
-      if (viewParam) {
-        setCurrentView(viewParam);
-      }
-    },
-    []);
-
-  const [currentView, setCurrentView] = useState<ViewState>("login");
+  const [currentView, setCurrentView] = useState<ViewState>(() => viewParam ?? "login");
+  // We intentionally avoid updating state inside an effect here; the initial value is derived once from the URL.
 
   const [forgotEmail, setForgotEmail] = useState<RegisterDataProps>();
   // Load singUpData from sessionStorage if available, only on client
