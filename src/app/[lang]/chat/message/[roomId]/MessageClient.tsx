@@ -11,14 +11,17 @@ import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 export default function MessageClient({roomId}: { roomId: string }) {
   const isLoggedIn = UserService.Instance.isLoggedIn;
   const {localUser} = useMyUser();
-  const {getRoom, findPartner} = useRoomsStore();
-  const room = getRoom(roomId);
-  const partner = findPartner(roomId, localUser?.id);
+  const markHydrated = useRoomsStore((s) => s.markHydrated);
+  markHydrated();
+  const getRoom = useRoomsStore(s => s.getRoom);
+  const findPartner = useRoomsStore(s => s.findPartner);
   const isHydrated = useRoomsStore((s) => s.isHydrated);
-
   if(!isHydrated) {
     return <LoadingBlur text="Preparing chat..."/>;
   }
+
+  const room = getRoom(roomId);
+  const partner = findPartner(roomId, localUser?.id);
   if(!room || !partner) {
     return <RoomNotFound/>;
   }

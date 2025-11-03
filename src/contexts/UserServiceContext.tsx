@@ -35,6 +35,7 @@ export function UserServiceProvider({children, token}: UserServiceProviderProps)
     const setUserInfo = useUserStore((s) => s.setUserInfo);
     const setRooms = useRoomsStore((s) => s.setRooms);
     const markHydrated = useRoomsStore((s) => s.markHydrated);
+    const hydrateRooms = useRoomsStore((s) => s.hydrateRooms);
     const user = UserService.Instance;
 
     const seededRef = useRef(false);
@@ -49,9 +50,9 @@ export function UserServiceProvider({children, token}: UserServiceProviderProps)
       }
 
       // Seed rooms from ISO (fallback to empty array)
-      setRooms(Array.isArray(isoRooms) ? isoRooms : []);
+      hydrateRooms(Array.isArray(isoRooms) ? isoRooms : []);
       markHydrated();
-    }, [isoMyUser, isoRooms, setUser, setPerson, setUserInfo, setRooms, markHydrated]);
+    }, [isoMyUser, isoRooms, setUser, setPerson, setUserInfo, setRooms, markHydrated, hydrateRooms]);
 
     useEffect(() => {
       let cancelled = false;
