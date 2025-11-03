@@ -17,10 +17,8 @@ interface ChatRoomListProps {
 
 const ChatRoomItem = ({room, currentLang, localUser, activeRoomId}: ChatRoomListProps) => {
     const {findPartner, getUnread, markRoomRead} = useRoomsStore();
-    const getActiveRoom = useRoomsStore((s) => s.getActiveRoom);
-    const currentActiveId = (getActiveRoom()?.room?.id ?? null) as string | null;
-    const isActive = String(currentActiveId ?? '') === String(activeRoomId);
-    console.log("currentActiveId", currentActiveId , "activeRoomId", activeRoomId, "isActive", isActive);
+    const storeActiveRoomId = useRoomsStore((s) => s.activeRoomId);
+    const isActive = String(storeActiveRoomId ?? '') === String(activeRoomId);
 
     const partner = findPartner(room.room.id, localUser?.id);
     const jobId = room.post?.id;
