@@ -6,6 +6,8 @@ import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 import {RoomView} from "@/modules/chat/types";
 import {useGlobalLoader} from "@/hooks/ui/GlobalLoaderContext";
 import {IsoData} from "@/utils";
+import {useSiteStore} from "@/store/useSiteStore";
+import {useCommunitiesStore} from "@/store/useCommunitiesStore";
 
 // Instance type for the singleton user service
 type UserClient = UserService;
@@ -36,6 +38,8 @@ export function UserServiceProvider({children, isoData}: UserServiceProviderProp
   const setPerson = useUserStore((s) => s.setPerson);
   const setUserInfo = useUserStore((s) => s.setUserInfo);
   const setRoom = useRoomsStore((s) => s.setRooms);
+  const setSiteRes = useSiteStore((s) => s.setSiteRes);
+  const setCommunities = useCommunitiesStore((s) => s.setCommunities);
   const user = UserService.Instance;
 
   const seededRef = useRef(false);
@@ -48,12 +52,20 @@ export function UserServiceProvider({children, isoData}: UserServiceProviderProp
     if (seededRef.current) return;
     seededRef.current = true;
 
-    // Seed user/person/userInfo from ISO snapshot
+    // Seed stores from ISO snapshot
     if (isoMyUser) {
+      // user-related
       setUser(isoMyUser?.myUserInfo?.localUserView?.localUser ?? null);
       setPerson(isoMyUser?.myUserInfo?.localUserView?.person ?? null);
       setUserInfo(isoMyUser.myUserInfo ?? null);
       setRoom(isoRooms);
+      // site + communities
+      if (isoMyUser.siteRes) {
+        setSiteRes(isoMyUser.siteRes);
+      }
+      if (isoMyUser.communities) {
+        setCommunities(isoMyUser.communities);
+      }
     }
 
     showLoader();

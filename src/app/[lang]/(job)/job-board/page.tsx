@@ -55,7 +55,7 @@ const JobBoard = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [budgetError, setBudgetError] = useState<string | null>(null);
     const communitiesResponse = useCommunities();
-    const catalogData = getCommunitiesAtLevel(communitiesResponse.communities, 3);
+    const catalogData = getCommunitiesAtLevel(communitiesResponse.communities ?? undefined, 3);
 
     const {
         state: searchState,

@@ -27,7 +27,7 @@ export default function Home() {
     useUserService();
     const [activeCatalogIndex, setActiveCatalogIndex] = useState<number>(0);
     const catalogData = useCommunities();
-    const serviceCatalogs = buildCommunitiesTree(catalogData.communities) || [];
+    const serviceCatalogs = buildCommunitiesTree(catalogData?.communities ?? undefined) ?? [];
     const activeCatalog = serviceCatalogs[activeCatalogIndex];
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 

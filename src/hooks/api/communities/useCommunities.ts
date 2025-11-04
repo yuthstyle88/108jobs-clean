@@ -1,9 +1,8 @@
-import {getIsoData} from "@/hooks/data/useIsoData";
 import {REQUEST_STATE} from "@/services/HttpService";
+import {useCommunitiesStore} from "@/store/useCommunitiesStore";
 
 export const useCommunities = () => {
-    const isoData = getIsoData();
-    const communities = isoData?.communities;
+    const communities = useCommunitiesStore((s) => s.communities);
     const state = REQUEST_STATE.SUCCESS;
     return {
         state,

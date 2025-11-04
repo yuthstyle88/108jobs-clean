@@ -88,7 +88,7 @@ export const PostForm: React.FC<PostFormProps> = ({
     const {successMessage, errorMessage} = useNotification();
     const [postId, setPostId] = useState<PostId>(0);
     const communitiesResponse = useCommunities();
-    const catalogData = getCommunitiesAtLevel(communitiesResponse.communities, 3);
+    const catalogData = getCommunitiesAtLevel(communitiesResponse.communities ?? undefined, 3);
 
     // Create schema with translations
     const jobSchema = postJobSchema(t);

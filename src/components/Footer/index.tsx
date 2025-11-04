@@ -15,7 +15,7 @@ import {getCommunitiesAtLevel, toCamelCaseLastSegment} from "@/utils/helpers";
 const Footer = () => {
     const {t} = useTranslation();
     const communitiesResponse = useCommunities();
-    const catalogData = getCommunitiesAtLevel(communitiesResponse.communities, 3);
+    const catalogData = getCommunitiesAtLevel(communitiesResponse.communities ?? undefined, 3);
     return (
         <footer className="bg-[#042A48] text-white" role="contentinfo">
             {/* Top Section */}

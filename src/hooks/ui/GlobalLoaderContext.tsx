@@ -17,16 +17,24 @@ export const GlobalLoaderProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [count, setCount] = useState(0);
+  const isLoading = count > 0;
 
-  const showLoader = () => setIsLoading(true);
-  const hideLoader = () => setIsLoading(false);
+  const showLoader = () => setCount(c => c + 1);
+  const hideLoader = () => setCount(c => Math.max(0, c - 1));
+  const setLoading = (loading: boolean) => {
+    if (loading) {
+      showLoader();
+    } else {
+      hideLoader();
+    }
+  };
 
   return (
     <GlobalLoaderContext.Provider
       value={{
         isLoading,
-        setLoading: setIsLoading,
+        setLoading,
         showLoader,
         hideLoader,
       }}

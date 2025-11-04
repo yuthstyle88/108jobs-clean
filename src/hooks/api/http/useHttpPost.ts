@@ -2,21 +2,21 @@ import {useMemo} from "react";
 import useSWRMutation from "swr/mutation";
 import {callHttp, EMPTY_REQUEST, Payload, REQUEST_STATE, RequestState, WrappedLemmyHttp,} from "@/services/HttpService";
 import {useGlobalError} from "@/contexts/GlobalErrorContext";
-import {useGlobalLoader} from "@/hooks/ui/GlobalLoaderContext"; // Import GlobalErrorContext
+import {useGlobalLoader} from "@/hooks/ui/GlobalLoaderContext";
 
 /**
- * Hook สำหรับเรียก API แบบ imperative (POST / PUT / PATCH / DELETE)
- * พร้อมการผนวก Global Loading และ Global Error
+ * Imperative HTTP mutation hook (POST / PUT / PATCH / DELETE)
+ * with integrated Global Loading and Global Error wiring.
  *
  * @example
  * const { execute, data, isMutating } = useHttpPost("uploadImage");
  * await execute({ file });
  */
 export const useHttpPost = <K extends keyof WrappedLemmyHttp>(method: K) => {
-  /** ใช้ GlobalLoaderContext */
-  const {setLoading} = useGlobalLoader();
+  /** GlobalLoaderContext */
+  const { showLoader, hideLoader } = useGlobalLoader();
 
-  /** ใช้ GlobalErrorContext */
+  /** GlobalErrorContext */
   const {setError} = useGlobalError();
 
   /** SWR Mutation */
@@ -30,34 +30,34 @@ export const useHttpPost = <K extends keyof WrappedLemmyHttp>(method: K) => {
     string, // Key ที่เป็น string
     Parameters<WrappedLemmyHttp[K]> // Argument (Tuple) ที่จะส่งไป
   >(
-    `${String(method)}-http-post`, // ใช้ชื่อเมธอดเป็น Key เพื่อไม่ชน Cache ของตัวอื่น
+    `${String(method)}-http-post`, // Use method name as SWR key to avoid collisions
     async(_key, {arg}) => {
-      setLoading(true); // เริ่มแสดง Global Loader
-      setError(null); // ล้างข้อผิดพลาดเก่าก่อนเริ่มคำขอใหม่
+      showLoader(); // turn on Global Loader
+      setError(null); // clear previous error before new request
       try {
-        // เรียก API ผ่าน callHttp
+        // Delegate to callHttp
         return await (callHttp(method,
           ...arg) as Promise<
           RequestState<Payload<K>>
         >);
       } catch (e) {
-        // ดักจับและแสดงข้อผิดพลาดไปยัง Global Error
+        // Capture and forward error to GlobalErrorContext
         const errorMessage = e instanceof Error ? e.message : "Unknown error occurred.";
-        setError(errorMessage); // ส่งข้อผิดพลาดไปยัง GlobalErrorContext
+        setError(errorMessage); // forward message to GlobalErrorContext
         return {
           state: REQUEST_STATE.FAILED,
           err: e instanceof Error ? e : new Error("Unknown error"),
         } as RequestState<Payload<K>>;
       } finally {
-        setLoading(false); // ซ่อน Global Loader
+        hideLoader(); // turn off Global Loader
       }
     },
     {
-      revalidate: false, // ไม่ต้อง revalidate อัตโนมัติหลัง mutation
+      revalidate: false, // no automatic revalidation after mutation
     },
   );
 
-  /** data ที่สกัดจาก SUCCESS State */
+  /** data extracted only when state === SUCCESS */
   const data = useMemo(
     () =>
       state.state === REQUEST_STATE.SUCCESS
@@ -66,14 +66,14 @@ export const useHttpPost = <K extends keyof WrappedLemmyHttp>(method: K) => {
     [state],
   );
 
-  /** Execute Function (Trigger API) */
+  /** Execute Function (triggers API) */
   const execute = (...args: Parameters<WrappedLemmyHttp[K]>) => {
     if (args.length === 0) {
-      /* ❱ ใช้ trigger แบบไม่มี Argument */
+      /* trigger without arguments */
       return (trigger as () => Promise<RequestState<Payload<K>>>)();
     }
 
-    /* ❱ ใช้ trigger แบบมี Argument */
+    /* trigger with arguments (tuple) */
     type TriggerWithArgs = (
       arg: Parameters<WrappedLemmyHttp[K]>,
       options?: unknown
@@ -83,9 +83,9 @@ export const useHttpPost = <K extends keyof WrappedLemmyHttp>(method: K) => {
   };
 
   return {
-    state, // เก็บ State ทั้งหมด (empty / loading / failed / success)
-    data, // Data ที่แปะออกเมื่อ Success
-    execute, // ฟังก์ชันที่ใช้ยิง Request
-    isMutating, // กำลังยิง Request อยู่หรือไม่
+    state, // entire RequestState (empty / loading / failed / success)
+    data, // payload only when SUCCESS
+    execute, // function to trigger request
+    isMutating, // whether a mutation is in-flight
   };
 };

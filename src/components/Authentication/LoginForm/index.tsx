@@ -14,8 +14,8 @@ import {OAuthButtons} from "@/components/Authentication/LoginForm/oauth-provider
 import TotpModal from "@/components/Common/Modal/TotpModal";
 import {useTranslation} from "react-i18next";
 import {t} from "i18next";
-import {getIsoData} from "@/hooks/data/useIsoData";
 import {EMPTY_REQUEST} from "@/services/HttpService";
+import {useSiteStore} from "@/store/useSiteStore";
 
 
 const withHooks = (Component: any) => {
@@ -91,8 +91,8 @@ export class LoginFormClass extends Component<
         hasFetchedSite: false
     };
 
-    private isoData = getIsoData();
     private hasFetchedSite = false;
+    private unsubscribeSite?: () => void;
 
     constructor(props: any, context: any) {
         super(props,
@@ -102,23 +102,32 @@ export class LoginFormClass extends Component<
     }
 
     async componentDidMount() {
-
-        if (this.isoData?.siteRes) {
+        // Seed from store immediately if available
+        const { siteRes, oauthProviders } = useSiteStore.getState();
+        if (siteRes) {
             this.setState({
-                siteRes: this.isoData.siteRes,
-                oauthProviders: this.isoData.siteRes.oauthProviders ?? [],
+                siteRes,
+                oauthProviders: oauthProviders ?? [],
                 hasFetchedSite: true,
             });
-            if (this.props.initialEmail) {
-                this.props.formMethods.setValue("usernameOrEmail", this.props.initialEmail);
-                this.props.setApiError(t("error.emailAlreadyExists"));
-            }
-            return;
         }
+        // Subscribe to future updates from store
+        this.unsubscribeSite = useSiteStore.subscribe((state) => {
+            if (!state.siteRes) return;
+            this.setState({
+                siteRes: state.siteRes,
+                oauthProviders: state.oauthProviders ?? [],
+                hasFetchedSite: true,
+            });
+        });
+
+        if (this.props.initialEmail) {
+            this.props.formMethods.setValue("usernameOrEmail", this.props.initialEmail);
+            this.props.setApiError(t("error.emailAlreadyExists"));
+        }
+
         if (this.hasFetchedSite || this.state.hasFetchedSite) return;
-
         this.hasFetchedSite = true;
-
     }
 
     toggleShowPassword = () => {

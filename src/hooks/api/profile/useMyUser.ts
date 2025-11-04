@@ -1,20 +1,12 @@
 import {REQUEST_STATE} from "@/services/HttpService";
-import {getIsoData} from "@/hooks/data/useIsoData";
-import {useEffect, useState} from "react";
+import {useUserStore} from "@/store/useUserStore";
 
 /**
- * Custom Hook สำหรับดึง MyUserInfo จาก isoData
- * แก้ปัญหา SSR: ระหว่าง SSR จะได้ค่า null จึงต้องอัปเดตหลัง mount เพื่อให้เกิด re-render
+ * Custom Hook สำหรับดึง MyUserInfo จาก store (แทนที่ getIsoData)
+ * รองรับ SSR โดย store จะถูก seed ใน UserServiceProvider เมื่อ mount แล้ว
  */
 export const useMyUser = () => {
-    const [user, setUser] = useState(() => getIsoData()?.myUserInfo ?? null);
-
-    useEffect(() => {
-        // อัปเดตหลัง hydration; เลื่อน setState ออกจาก body ของ effect เพื่อลด cascading renders
-        const next = getIsoData()?.myUserInfo ?? null;
-        queueMicrotask(() => setUser(next));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    const user = useUserStore((s) => s.userInfo);
 
     const profileState = user ? REQUEST_STATE.SUCCESS : REQUEST_STATE.FAILED;
     return {

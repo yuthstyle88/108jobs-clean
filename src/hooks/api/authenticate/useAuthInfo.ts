@@ -1,9 +1,9 @@
-import {getIsoData} from "@/hooks/data/useIsoData";
+import {useUserStore} from "@/store/useUserStore";
 
 export function useAuthInfo() {
-  const auth = getIsoData();
-  const isLoggedIn = !!auth?.myUserInfo;
-  const lang = auth?.myUserInfo?.localUserView.localUser.interfaceLanguage;
+  const userInfo = useUserStore((s) => s.userInfo);
+  const isLoggedIn = !!userInfo;
+  const lang = userInfo?.localUserView.localUser.interfaceLanguage;
 
   return {
     isLoggedIn,
