@@ -4,15 +4,17 @@ import {faCoins} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useState} from "react";
 import {useTranslation} from "react-i18next";
-import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import TopUpModal from "@/components/Common/Modal/TopUpModal";
+import {useUserStore} from "@/store/useUserStore";
 
 const Coins108Jobs = () => {
     const [amount, setAmount] = useState<string>("");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
     const { t } = useTranslation();
-    const { wallet } = useMyUser();
+    const { userInfo } = useUserStore();
+
+    const wallet = userInfo?.wallet;
 
     // Check if amount is a valid number
     const isValidAmount = !isNaN(parseFloat(amount)) && amount.trim() !== "";

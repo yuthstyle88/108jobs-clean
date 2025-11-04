@@ -2,25 +2,22 @@
 import {ProfileIcon} from "@/constants/icons";
 import {ProfileImage} from "@/constants/images";
 import {useLanguage} from "@/contexts/LanguageContext";
-import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {UserService} from "@/services";
-import {faHeart} from "@fortawesome/free-regular-svg-icons";
 import {
     faBriefcase,
-    faCoins,
-    faGift,
-    faMoneyBill1,
-    faMoneyBillTrendUp,
-    faTicket,
 } from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {ChevronRight} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import {useTranslation} from "react-i18next";
+import {useUserStore} from "@/store/useUserStore";
 
 const SpProfile = () => {
-    const {person, localUser, contact, wallet} = useMyUser();
+    const {userInfo} = useUserStore();
+    const wallet = userInfo?.wallet;
+    const contact = userInfo?.profile.contact;
+    const {person, localUser} = userInfo?.localUserView ?? {};
 
     const {lang: currentLang} = useLanguage();
     const {t} = useTranslation();
@@ -42,7 +39,7 @@ const SpProfile = () => {
                 </svg>
                 <div
                     className="grid grid-cols-1 z-10 text-center absolute left-1/2 -translate-x-1/2 top-0 pt-6 justify-center">
-                    <strong className="text-[1.125rem] text-white">My Profile</strong>
+                    <strong className="text-[1.125rem] text-white">{t("spPrivacy.myProfile")}</strong>
                     <Link prefetch={false} href={`/${currentLang}/user/${person?.name}`}>
                         <Image
                             src={person?.avatar || ProfileImage.avatar}

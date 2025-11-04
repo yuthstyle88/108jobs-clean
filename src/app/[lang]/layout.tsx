@@ -15,57 +15,57 @@ import {UserServiceProvider} from "@/contexts/UserServiceContext";
 import {GlobalLoaderProvider} from "@/hooks/ui/GlobalLoaderContext";
 
 const kanit = Kanit({
-  subsets: ["latin", "vietnamese", "thai"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
-  display: "swap",
-  preload: true,
-  fallback: ['system-ui', 'arial', 'sans-serif'],
-  adjustFontFallback: true,
+    subsets: ["latin", "vietnamese", "thai"],
+    weight: ["400", "500", "600"],
+    style: ["normal", "italic"],
+    display: "swap",
+    preload: true,
+    fallback: ['system-ui', 'arial', 'sans-serif'],
+    adjustFontFallback: true,
 })
 
 export default async function RootLayout({
-  children,
-  params,
-}: Readonly<{
-  children: React.ReactNode;
-  params: Promise<{ lang: string }>;
+                                             children,
+                                             params,
+                                         }: Readonly<{
+    children: React.ReactNode;
+    params: Promise<{ lang: string }>;
 }>) {
-  const {lang} = await params;
-  const isoData = await isoDataInitializer();
-  const langCookie = await getLangCookies();
-  const userLang = isoData?.myUserInfo?.localUserView?.localUser?.interfaceLanguage as string | undefined;
-  const initialLang = langCookie || lang || userLang;
-  return (
-    <html lang={initialLang} suppressHydrationWarning>
-    <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1"/>
-      <link rel="preconnect" href="https://fonts.googleapis.com"/>
-      <link rel="dns-prefetch" href="https://fonts.googleapis.com"/>
-      <FontAwesomeConfig/>
-      <title>
-        {process.env.NEXT_PUBLIC_SITE_NAME}
-      </title>
-    </head>
-    <body suppressHydrationWarning className={`${kanit.className} antialiased bg-white`}>
-    <LanguageProvider initialLang={initialLang!}>
-    <GlobalLoaderProvider>
-      <GlobalErrorProvider>
-          <UserServiceProvider
-            isoData={isoData ?? null}
-          >
-            <AnnouncementProvider>
-              <Toaster richColors closeButton position="bottom-right"/>
-              <AccessibleAnnouncements/>
-              <GlobalError/>
-              <GlobalLoader/>
-              {children}
-            </AnnouncementProvider>
-          </UserServiceProvider>
-      </GlobalErrorProvider>
-    </GlobalLoaderProvider>
-    </LanguageProvider>
-    </body>
-    </html>
-  );
+    const {lang} = await params;
+    const isoData = await isoDataInitializer();
+    const langCookie = await getLangCookies();
+    const userLang = isoData?.myUserInfo?.localUserView?.localUser?.interfaceLanguage as string | undefined;
+    const initialLang = langCookie || lang || userLang;
+    return (
+        <html lang={initialLang} suppressHydrationWarning>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="dns-prefetch" href="https://fonts.googleapis.com"/>
+            <FontAwesomeConfig/>
+            <title>
+                {process.env.NEXT_PUBLIC_SITE_NAME}
+            </title>
+        </head>
+        <body suppressHydrationWarning className={`${kanit.className} antialiased bg-white`}>
+        <LanguageProvider initialLang={initialLang!}>
+            <GlobalLoaderProvider>
+                <GlobalErrorProvider>
+                    <UserServiceProvider
+                        isoData={isoData ?? null}
+                    >
+                        <AnnouncementProvider>
+                            <Toaster richColors closeButton position="bottom-right"/>
+                            <AccessibleAnnouncements/>
+                            <GlobalError/>
+                            <GlobalLoader/>
+                            {children}
+                        </AnnouncementProvider>
+                    </UserServiceProvider>
+                </GlobalErrorProvider>
+            </GlobalLoaderProvider>
+        </LanguageProvider>
+        </body>
+        </html>
+    );
 }

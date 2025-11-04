@@ -7,15 +7,15 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {CreatePost, IntendedUse, JobType, PostId, PostView} from "lemmy-js-client";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCoins, faExclamationCircle, faInfoCircle} from "@fortawesome/free-solid-svg-icons";
-import { z } from "zod";
+import {z} from "zod";
 import {useLanguage} from "@/contexts/LanguageContext";
 import {getCommunitiesAtLevel, toCamelCaseLastSegment} from "@/utils/helpers";
 import {useTranslation} from "react-i18next";
 import {REQUEST_STATE} from "@/services/HttpService";
-import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 import {useCommunities} from "@/hooks/api/communities/useCommunities";
 import {getNumericCode} from "@/utils/getClientCurrentLanguage";
+import {useUserStore} from "@/store/useUserStore";
 
 
 interface PostFormProps {
@@ -66,7 +66,7 @@ export const PostForm: React.FC<PostFormProps> = ({
                                                       postView,
                                                       mode
                                                   }) => {
-    const {person} = useMyUser();
+    const {person} = useUserStore();
     if (mode === "edit") {
         const isOwner = postView?.creator.id === person?.id;
         if (!isOwner) {
@@ -408,7 +408,7 @@ export const PostForm: React.FC<PostFormProps> = ({
                                 </label>
                                 <div className="relative">
                                     <div className="absolute left-3 top-1/2 -translate-y-1/2  text-yellow-500 ">
-                                        <FontAwesomeIcon icon={faCoins} />
+                                        <FontAwesomeIcon icon={faCoins}/>
                                     </div>
                                     <input
                                         type="number"
@@ -425,7 +425,7 @@ export const PostForm: React.FC<PostFormProps> = ({
                                 </div>
                                 {errors.budget && (
                                     <p className="mt-1 text-red-500 text-sm flex items-center">
-                                        <FontAwesomeIcon icon={faExclamationCircle} className="mr-1" />
+                                        <FontAwesomeIcon icon={faExclamationCircle} className="mr-1"/>
                                         {errors.budget.message}
                                     </p>
                                 )}

@@ -8,11 +8,11 @@ import * as z from "zod";
 import {HttpService, REQUEST_STATE,} from "@/services/HttpService";
 import {useTranslation} from "react-i18next";
 import {OAuthButtons} from "@/components/Authentication/LoginForm/oauth-provider";
-import {useIsoData} from "@/hooks/data/useIsoData";
 import {OAuthProvider} from "lemmy-js-client";
 import {handleUseOAuthProvider} from "@/components/Authentication/LoginForm/handlers";
 import {useSearchParams} from "next/navigation";
 import {getAppName} from "@/utils/appConfig";
+import {useSiteStore} from "@/store/useSiteStore";
 
 // Form schema definition
 const createRegisterSchema = (t: any) => z
@@ -35,7 +35,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     const {t} = useTranslation();
     // State
     const [apiErrorState, setApiErrorState] = useState<string | null>(null);
-    const {site, oauthProviders} = useIsoData();
+    const {oauthProviders} = useSiteStore();
     // Use the provided setApiError function if available, otherwise use the local state setter
     const handleApiError = useCallback((err: string) => {
             if (setApiError) {
@@ -76,7 +76,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                 case REQUEST_STATE.FAILED: {
                     const errName = registerRes.err?.name ?? "unknownError";
                     if (errName === "requireVerification" && switchToVerifyOTP) {
-                        switchToVerifyOTP({ email: data.email });
+                        switchToVerifyOTP({email: data.email});
                     } else if (errName === "emailAlreadyExists") {
                         window.location.href = `/login?email-already-exists&redirect=${encodeURIComponent(redirectUrl)}&email=${encodeURIComponent(data.email)}`;
                     } else {
@@ -87,7 +87,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                 case REQUEST_STATE.SUCCESS: {
                     if (registerRes.data.verifyEmailSent) {
                         if (switchToVerifyOTP) {
-                            switchToVerifyOTP({ email: data.email });
+                            switchToVerifyOTP({email: data.email});
                         }
                     }
                 }

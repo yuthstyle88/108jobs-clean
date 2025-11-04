@@ -7,8 +7,8 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEdit} from "@fortawesome/free-solid-svg-icons";
 import {Person} from "lemmy-js-client";
 import {ProfileImage} from "@/constants/images";
-import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import ChatNoWorkButton from "@/components/Common/Button/ChatNoWorkButton";
+import {useUserStore} from "@/store/useUserStore";
 
 interface ProfileSidebarProps {
     profile: Person;
@@ -135,7 +135,7 @@ const ContactInfoSection: React.FC<{ profile: Person; isOwnProfile: boolean }> =
 };
 
 const ProfileSidebar: React.FC<ProfileSidebarProps> = ({profile}) => {
-    const {person: currentUserProfile} = useMyUser();
+    const {person: currentUserProfile} = useUserStore();
     const isOwnProfile = currentUserProfile?.id === profile?.id;
 
     return (

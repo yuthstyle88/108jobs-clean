@@ -2,18 +2,18 @@
 
 import ImageUploadModal from '@/components/Common/Modal/AvatarUploadModal';
 import { ProfileImage } from '@/constants/images';
-import { useMyUser } from '@/hooks/api/profile/useMyUser';
 import { useHttpPost } from '@/hooks/api/http/useHttpPost';
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 import { useProfileForm } from '@/hooks/forms/useProfileForm';
 import { CustomInput } from '@/components/ui/InputField';
 import {useImagePicker} from "@/hooks/ui/useImagePicker";
+import {useUserStore} from "@/store/useUserStore";
 
 export default function BasicInformation() {
     const { t } = useTranslation();
     const { execute: uploadUserAvatar } = useHttpPost('uploadUserAvatar');
-    const { profileState, person } = useMyUser();
+    const { person } = useUserStore();
 
     // Avatar image picker
     const {
@@ -25,7 +25,7 @@ export default function BasicInformation() {
         handleSelectFile: handleSelectAvatarFile,
         handleImageUpload: handleAvatarImageUpload,
         closeImageModal: closeAvatarImageModal,
-    } = useImagePicker(profileState === 'success' ? person?.avatar : undefined);
+    } = useImagePicker(!person ? person : undefined);
 
     const {
         form,

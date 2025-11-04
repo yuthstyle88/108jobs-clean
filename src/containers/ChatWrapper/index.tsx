@@ -2,11 +2,11 @@
 
 import {useLanguage} from "@/contexts/LanguageContext";
 import React, {useMemo, useState, useEffect} from "react";
-import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {debounce} from "lodash";
 import {useTranslation} from "react-i18next";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 import ChatRoomItem from "@/modules/chat/components/ChatRoomItem";
+import {useUserStore} from "@/store/useUserStore";
 
 const ChatWrapper: React.FC = () => {
     const {t} = useTranslation();
@@ -14,7 +14,7 @@ const ChatWrapper: React.FC = () => {
     // const storeActiveRoomId = useRoomsStore((s) => s.activeRoomId);
     // const setActiveRoomId = useRoomsStore((s) => s.setActiveRoomId);
     const {lang: currentLang} = useLanguage();
-    const {localUser} = useMyUser();
+    const {user: localUser} = useUserStore();
     const [searchQuery, setSearchQuery] = useState("");
 
     // Debounce search input to prevent excessive re-renders

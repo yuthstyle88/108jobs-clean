@@ -1,6 +1,5 @@
 'use client';
 
-import {useMyUser} from '@/hooks/api/profile/useMyUser';
 import {useWorkSamplesForm} from '@/hooks/forms/useWorkSamplesForm';
 import {CustomInput} from '@/components/ui/InputField';
 import {useTranslation} from 'react-i18next';

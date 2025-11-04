@@ -7,7 +7,6 @@ import type {CommentView} from "lemmy-js-client";
 import Image from "next/image";
 import React, {useState} from "react";
 import {useParams, useRouter} from "next/navigation";
-import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {dmRoomId} from "@/utils/helpers";
 import {MessageCircleMore} from "lucide-react";
 import {getLocale} from "@/utils/date";
@@ -17,6 +16,7 @@ import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 import {REQUEST_STATE} from "@/services/HttpService";
 import {RoomView} from "@/modules/chat/types";
+import {useUserStore} from "@/store/useUserStore";
 
 type JobBoardProposalProps = {
     postId?: number;
@@ -33,7 +33,7 @@ const JobBoardProposal = ({postId, jobCreatorId}: JobBoardProposalProps) => {
         ...(postId ? {postId} : {}),
     });
     const {execute: createChatRoom} = useHttpPost("createChatRoom");
-    const {person: currentUser} = useMyUser();
+    const {person: currentUser} = useUserStore();
     const route = useRouter();
     const params = useParams();
     const currentLang = (params?.lang as string) || 'th';

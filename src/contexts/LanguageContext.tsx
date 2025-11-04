@@ -1,5 +1,5 @@
 "use client";
-import {createContext, useContext, useEffect, useState} from "react";
+import React, {createContext, useContext, useEffect, useState} from "react";
 import {VALID_LANGUAGES} from "@/constants/language";
 import {I18NextService} from "@/services/I18NextService";
 import {I18nextProvider} from "react-i18next";

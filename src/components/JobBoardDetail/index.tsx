@@ -10,12 +10,12 @@ import {Badge} from "../ui/Badge";
 import {Button} from "../ui/Button";
 import JobBoardProposal from "./components/JobBoardProposal";
 import {useParams, useRouter} from "next/navigation";
-import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {UserService} from "@/services";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useTranslation} from "react-i18next";
 import {toCamelCaseLastSegment} from "@/utils/helpers";
 import {getLocale} from "@/utils/date";
+import {useUserStore} from "@/store/useUserStore";
 
 type Props = {
     jobId: PostId;
@@ -28,7 +28,7 @@ const JobBoardDetail = ({jobId}: Props) => {
 
     const route = useRouter();
     const {data: jobDetailData} = useHttpGet("getPost", {id: jobId});
-    const {person} = useMyUser();
+    const {person} = useUserStore();
 
     const isVerify = person?.isVerified;
     // Show proposal button only for logged-in users who are NOT the job creator
@@ -163,7 +163,8 @@ const JobBoardDetail = ({jobId}: Props) => {
 
                     <div>
                         <span className="text-gray-600 font-medium">{t("jobBoardDetail.workType")}:</span>
-                        <span className="ml-2 text-gray-800">{t(`jobBoardDetail.${jobDetailData?.postView.post.jobType}`)}</span>
+                        <span
+                            className="ml-2 text-gray-800">{t(`jobBoardDetail.${jobDetailData?.postView.post.jobType}`)}</span>
                     </div>
                     <div>
                         <span className="text-gray-600 font-medium">{t("jobBoardDetail.category")}:</span>
@@ -201,7 +202,8 @@ const JobBoardDetail = ({jobId}: Props) => {
                     <h4 className="text-lg font-semibold text-gray-900 mb-3">{t("jobBoardDetail.additionInfo")}</h4>
                     <div className="text-sm">
                         <span className="text-gray-600 font-medium">{t("jobBoardDetail.intendedUse")}:</span>
-                        <span className="ml-2 text-gray-800">{t(`jobBoardDetail.${jobDetailData?.postView.post.intendedUse}`)}</span>
+                        <span
+                            className="ml-2 text-gray-800">{t(`jobBoardDetail.${jobDetailData?.postView.post.intendedUse}`)}</span>
                     </div>
                 </div>
             </div>

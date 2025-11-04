@@ -1,37 +1,32 @@
 "use client";
 
-import { useEffect } from 'react';
 import ChatRoomView from "@/modules/chat/components/ChatRoomView";
 import {UserService} from "@/services";
 import {RoomNotFound} from "@/components/RoomNotFound";
-import {useMyUser} from "@/hooks/api/profile/useMyUser";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 import {PhoenixChatBridgeProvider} from "@/modules/chat/contexts/PhoenixChatBridgeProvider";
+import {useUserStore} from "@/store/useUserStore";
 
 export default function MessageClient({roomId}: { roomId: string }) {
-  useEffect(() => {
-    // ensure parent hydration happens first
-  }, []);
+    const isLoggedIn = UserService.Instance.isLoggedIn;
+    const {user} = useUserStore();
+    const getRoom = useRoomsStore(s => s.getRoom);
+    const findPartner = useRoomsStore(s => s.findPartner);
 
-  const isLoggedIn = UserService.Instance.isLoggedIn;
-  const {localUser} = useMyUser();
-  const getRoom = useRoomsStore(s => s.getRoom);
-  const findPartner = useRoomsStore(s => s.findPartner);
+    const room = getRoom(roomId);
+    const partner = findPartner(roomId, user?.id);
+    if (!room || !partner) {
+        return <RoomNotFound/>;
+    }
 
-  const room = getRoom(roomId);
-  const partner = findPartner(roomId, localUser?.id);
-  if(!room || !partner) {
-    return <RoomNotFound/>;
-  }
-
-  return (
-    <PhoenixChatBridgeProvider isLoggedIn={isLoggedIn} roomId={roomId}>
-      <ChatRoomView
-        post={room.post}
-        partner={partner}
-        roomData={room}
-        localUser={localUser!}
-      />
-    </PhoenixChatBridgeProvider>
-  );
+    return (
+        <PhoenixChatBridgeProvider isLoggedIn={isLoggedIn} roomId={roomId}>
+            <ChatRoomView
+                post={room.post}
+                partner={partner}
+                roomData={room}
+                localUser={user!}
+            />
+        </PhoenixChatBridgeProvider>
+    );
 }
