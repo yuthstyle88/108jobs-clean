@@ -1,8 +1,8 @@
 import {useMemo} from "react";
 import useSWRMutation from "swr/mutation";
 import {callHttp, EMPTY_REQUEST, Payload, REQUEST_STATE, RequestState, WrappedLemmyHttp,} from "@/services/HttpService";
-import {useGlobalLoader} from "@/contexts/GlobalLoaderContext";
 import {useGlobalError} from "@/contexts/GlobalErrorContext";
+import {useGlobalLoader} from "@/hooks/ui/GlobalLoaderContext";
 
 export const useHttpPut = <K extends keyof WrappedLemmyHttp>(method: K) => {
   const { setLoading } = useGlobalLoader();

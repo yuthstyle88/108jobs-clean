@@ -1,8 +1,8 @@
-import {useGlobalLoader} from "@/contexts/GlobalLoaderContext";
 import {useGlobalError} from "@/contexts/GlobalErrorContext"; // Import GlobalError Context
 import useSWR, { SWRConfiguration } from "swr";
 import {callHttp, EMPTY_REQUEST, Payload, REQUEST_STATE, RequestState, WrappedLemmyHttp,} from "@/services/HttpService";
 import {UserService} from "@/services";
+import {useGlobalLoader} from "@/hooks/ui/GlobalLoaderContext";
 
 export function useHttpGet<K extends keyof WrappedLemmyHttp>(
   // ชื่อ request method

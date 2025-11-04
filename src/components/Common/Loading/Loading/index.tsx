@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import {useGlobalLoader} from "@/contexts/GlobalLoaderContext";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
+import {useGlobalLoader} from "@/hooks/ui/GlobalLoaderContext";
 
 const GlobalLoader = () => {
   const {isLoading} = useGlobalLoader();
