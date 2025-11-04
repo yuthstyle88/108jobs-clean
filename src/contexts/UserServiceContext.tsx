@@ -16,6 +16,12 @@ interface UserServiceContextType {
   user: UserClient;
 }
 
+// Narrowing helpers to avoid `as any` and keep calls type-safe
+
+function hasSetToken(x: unknown): x is { setToken: (t?: string | null) => unknown } {
+  return !!x && typeof (x as any).setToken === "function";
+}
+
 const UserServiceContext = createContext<UserServiceContextType | undefined>(
   undefined
 );
@@ -29,9 +35,9 @@ export function UserServiceProvider({children, isoData}: UserServiceProviderProp
   // Snapshot ISO data once per mount
   const isoMyUser = useMemo(() => isoData ?? null, []);
   const token = isoData?.jwt ?? null;
-  const isoRooms: RoomView[] = useMemo(
-    () => ((isoMyUser?.chatRooms?.rooms ?? []).map(r => ({...r, isActive: false})) as RoomView[]),
-    []
+  const initialRooms: RoomView[] = useMemo(
+    () => ((isoMyUser?.chatRooms?.rooms ?? []).map(r => ({ ...r, isActive: false })) as RoomView[]),
+    [isoMyUser]
   );
 
   const setUser = useUserStore((s) => s.setUser);
@@ -58,7 +64,7 @@ export function UserServiceProvider({children, isoData}: UserServiceProviderProp
       setUser(isoMyUser?.myUserInfo?.localUserView?.localUser ?? null);
       setPerson(isoMyUser?.myUserInfo?.localUserView?.person ?? null);
       setUserInfo(isoMyUser.myUserInfo ?? null);
-      setRoom(isoRooms);
+      setRoom(initialRooms);
       // site + communities
       if (isoMyUser.siteRes) {
         setSiteRes(isoMyUser.siteRes);
@@ -68,20 +74,25 @@ export function UserServiceProvider({children, isoData}: UserServiceProviderProp
       }
     }
 
-    showLoader();
-    (async () => {
-      try {
-        if (token && typeof (user as any).setToken === "function") {
-          await (user as any).setToken(token);
+    // Only block UI with loader if we actually need to apply a token
+    if (token && hasSetToken(user)) {
+      showLoader();
+      (async () => {
+        try {
+          await user.setToken(token);
+        } catch {
+          // swallow setToken errors to avoid blocking first paint
+        } finally {
+          hideLoader();
+          setReady(true);
         }
-      } catch {} finally {
-        hideLoader();
-        setReady(true);
-      }
-    })();
-  }, [isoMyUser, token, user, setUser, setPerson, setUserInfo]);
+      })();
+    } else {
+      setReady(true);
+    }
+  }, [isoMyUser, token, user, setUser, setPerson, setUserInfo, setRoom, setSiteRes, setCommunities, showLoader, hideLoader]);
 
-  const value = useMemo<UserServiceContextType>(() => ({user}), [user]);
+  const value = useMemo<UserServiceContextType>(() => ({ user }), [user]);
 
   return (
     <UserServiceContext.Provider value={value}>
