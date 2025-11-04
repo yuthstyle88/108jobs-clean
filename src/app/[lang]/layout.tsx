@@ -5,7 +5,6 @@ import FontAwesomeConfig from "../fontawesome";
 import "../globals.css";
 import React from "react";
 import {isoDataInitializer} from "@/utils";
-import {GlobalLoaderProvider} from "@/contexts/GlobalLoaderContext";
 import {GlobalErrorProvider} from "@/contexts/GlobalErrorContext";
 import {AnnouncementProvider} from "@/contexts/AnnouncementContext";
 import AccessibleAnnouncements from "@/components/AccessibleAnnouncements";
@@ -13,62 +12,60 @@ import GlobalError from "@/components/GlobalError";
 import GlobalLoader from "@/components/Common/Loading/Loading";
 import {getLangCookies} from "@/utils/getLangCookies";
 import {UserServiceProvider} from "@/contexts/UserServiceContext";
+import {GlobalLoaderProvider} from "@/hooks/ui/GlobalLoaderContext";
 
 const kanit = Kanit({
-    subsets: ["latin", "vietnamese", "thai"],
-    weight: ["400", "500", "600"],
-    style: ["normal", "italic"],
-    display: "swap",
-    preload: true,
-    fallback: ['system-ui', 'arial', 'sans-serif'],
-    adjustFontFallback: true,
+  subsets: ["latin", "vietnamese", "thai"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  display: "swap",
+  preload: true,
+  fallback: ['system-ui', 'arial', 'sans-serif'],
+  adjustFontFallback: true,
 })
 
 export default async function RootLayout({
-                                             children,
-                                             params,
-                                         }: Readonly<{
-    children: React.ReactNode;
-    params: Promise<{ lang: string }>;
+  children,
+  params,
+}: Readonly<{
+  children: React.ReactNode;
+  params: Promise<{ lang: string }>;
 }>) {
-    const {lang} = await params;
-    const isoData = await isoDataInitializer();
-    const tokenCookie = isoData?.jwt;
-    const langCookie = await getLangCookies();
-    const userLang = isoData?.myUserInfo?.localUserView?.localUser?.interfaceLanguage as string | undefined;
-    const initialLang = langCookie || lang || userLang;
-    return (
-        <html lang={initialLang} suppressHydrationWarning>
-        <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1"/>
-            <link rel="preconnect" href="https://fonts.googleapis.com"/>
-            <link rel="dns-prefetch" href="https://fonts.googleapis.com"/>
-            <FontAwesomeConfig/>
-        </head>
-        <body suppressHydrationWarning className={`${kanit.className} antialiased bg-white`}>
-        <script
-            dangerouslySetInnerHTML={{
-                __html: `window.isoData = ${JSON.stringify(isoData)};`,
-            }}
-        />
+  const {lang} = await params;
+  const isoData = await isoDataInitializer();
+  const langCookie = await getLangCookies();
+  const userLang = isoData?.myUserInfo?.localUserView?.localUser?.interfaceLanguage as string | undefined;
+  const initialLang = langCookie || lang || userLang;
+  return (
+    <html lang={initialLang} suppressHydrationWarning>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1"/>
+      <link rel="preconnect" href="https://fonts.googleapis.com"/>
+      <link rel="dns-prefetch" href="https://fonts.googleapis.com"/>
+      <FontAwesomeConfig/>
+      <title>
+        {process.env.NEXT_PUBLIC_SITE_NAME}
+      </title>
+    </head>
+    <body suppressHydrationWarning className={`${kanit.className} antialiased bg-white`}>
+    <GlobalLoaderProvider>
+      <GlobalErrorProvider>
         <LanguageProvider initialLang={initialLang!}>
-            <UserServiceProvider
-                token={tokenCookie ?? ""}
-            >
-                <GlobalErrorProvider>
-                    <GlobalLoaderProvider>
-                        <AnnouncementProvider>
-                            <Toaster richColors closeButton position="bottom-right"/>
-                            <AccessibleAnnouncements/>
-                            <GlobalError/>
-                            <GlobalLoader/>
-                            {children}
-                        </AnnouncementProvider>
-                    </GlobalLoaderProvider>
-                </GlobalErrorProvider>
-            </UserServiceProvider>
+          <UserServiceProvider
+            isoData={isoData ?? null}
+          >
+            <AnnouncementProvider>
+              <Toaster richColors closeButton position="bottom-right"/>
+              <AccessibleAnnouncements/>
+              <GlobalError/>
+              <GlobalLoader/>
+              {children}
+            </AnnouncementProvider>
+          </UserServiceProvider>
         </LanguageProvider>
-        </body>
-        </html>
-    );
+      </GlobalErrorProvider>
+    </GlobalLoaderProvider>
+    </body>
+    </html>
+  );
 }

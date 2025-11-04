@@ -1,10 +1,11 @@
 "use client";
 import React, {createContext, useContext, useMemo, useRef, useLayoutEffect, useState} from "react";
 import {UserService} from "@/services/UserService";
-import {getIsoData} from "@/hooks/data/useIsoData";
 import {useUserStore} from "@/store/useUserStore";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 import {RoomView} from "@/modules/chat/types";
+import {useGlobalLoader} from "@/hooks/ui/GlobalLoaderContext";
+import {IsoData} from "@/utils";
 
 // Instance type for the singleton user service
 type UserClient = UserService;
@@ -19,14 +20,15 @@ const UserServiceContext = createContext<UserServiceContextType | undefined>(
 
 interface UserServiceProviderProps {
   children: React.ReactNode;
-  token?: string;
+  isoData: IsoData | null
 }
 
-export function UserServiceProvider({children, token}: UserServiceProviderProps) {
+export function UserServiceProvider({children, isoData}: UserServiceProviderProps) {
   // Snapshot ISO data once per mount
-  const isoMyUser = useMemo(() => getIsoData()?.myUserInfo ?? null, []);
+  const isoMyUser = useMemo(() => isoData ?? null, []);
+  const token = isoData?.jwt ?? null;
   const isoRooms: RoomView[] = useMemo(
-    () => ((getIsoData()?.chatRooms?.rooms ?? []).map(r => ({...r, isActive: false})) as RoomView[]),
+    () => ((isoMyUser?.chatRooms?.rooms ?? []).map(r => ({...r, isActive: false})) as RoomView[]),
     []
   );
 
@@ -39,6 +41,8 @@ export function UserServiceProvider({children, token}: UserServiceProviderProps)
   const seededRef = useRef(false);
   const [ready, setReady] = useState(false);
 
+  const { showLoader, hideLoader } = useGlobalLoader();
+
   // Run-once hydration: useLayoutEffect so it happens before paint (earlier than useEffect)
   useLayoutEffect(() => {
     if (seededRef.current) return;
@@ -46,23 +50,23 @@ export function UserServiceProvider({children, token}: UserServiceProviderProps)
 
     // Seed user/person/userInfo from ISO snapshot
     if (isoMyUser) {
-      setUser(isoMyUser.localUserView?.localUser ?? null);
-      setPerson(isoMyUser.localUserView?.person ?? null);
-      setUserInfo(isoMyUser);
+      setUser(isoMyUser?.myUserInfo?.localUserView?.localUser ?? null);
+      setPerson(isoMyUser?.myUserInfo?.localUserView?.person ?? null);
+      setUserInfo(isoMyUser.myUserInfo ?? null);
       setRoom(isoRooms);
     }
 
-    // Apply token as early as possible; fire-and-forget if async
+    showLoader();
     (async () => {
       try {
         if (token && typeof (user as any).setToken === "function") {
           await (user as any).setToken(token);
         }
-      } catch {}
+      } catch {} finally {
+        hideLoader();
+        setReady(true);
+      }
     })();
-
-    // Now allow children to render after parent has seeded everything
-    setReady(true);
   }, [isoMyUser, token, user, setUser, setPerson, setUserInfo]);
 
   const value = useMemo<UserServiceContextType>(() => ({user}), [user]);
