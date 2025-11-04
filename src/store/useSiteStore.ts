@@ -1,29 +1,62 @@
 import { create } from "zustand";
-import type { GetSiteResponse, PublicOAuthProvider } from "lemmy-js-client";
+import type { GetSiteResponse, PublicOAuthProvider, SiteView, PersonView, Language, LanguageId, Tagline, OAuthProvider, LocalSiteUrlBlocklist, PluginMetadata } from "lemmy-js-client";
 
 export type SiteStore = {
   siteRes: GetSiteResponse | null;
+  siteView: SiteView | null;
+  admins: PersonView[];
+  version: string;
+  allLanguages: Language[];
+  discussionLanguages: LanguageId[];
+  tagline?: Tagline;
   oauthProviders: PublicOAuthProvider[];
+  adminOauthProviders: OAuthProvider[];
+  blockedUrls: LocalSiteUrlBlocklist[];
+  imageUploadDisabled: boolean;
+  activePlugins: PluginMetadata[];
   setSiteRes: (site: GetSiteResponse | null) => void;
   clear: () => void;
 };
 
 export const useSiteStore = create<SiteStore>((set) => ({
   siteRes: null,
+  siteView: null,
+  admins: [],
+  version: "",
+  allLanguages: [],
+  discussionLanguages: [],
+  tagline: undefined,
   oauthProviders: [],
-// Accept multiple wire shapes without breaking typing (GetSiteResponse doesn't define `data`)
-setSiteRes: (site) => set(() => {
-  const anySite = site as unknown as Record<string, any> | null;
-  const providers: PublicOAuthProvider[] =
-    anySite?.oauthProviders ??
-    anySite?.oauth_providers ??
-    anySite?.data?.oauthProviders ??
-    anySite?.data?.oauth_providers ??
-    [];
-  return {
+  adminOauthProviders: [],
+  blockedUrls: [],
+  imageUploadDisabled: false,
+  activePlugins: [],
+  setSiteRes: (site) => set(() => ({
     siteRes: site,
-    oauthProviders: providers,
-  };
-}),
-  clear: () => set({ siteRes: null, oauthProviders: [] }),
+    siteView: site?.siteView ?? null,
+    admins: site?.admins ?? [],
+    version: site?.version ?? "",
+    allLanguages: site?.allLanguages ?? [],
+    discussionLanguages: site?.discussionLanguages ?? [],
+    tagline: site?.tagline,
+    oauthProviders: site?.oauthProviders ?? [],
+    adminOauthProviders: site?.adminOauthProviders ?? [],
+    blockedUrls: site?.blockedUrls ?? [],
+    imageUploadDisabled: site?.imageUploadDisabled ?? false,
+    activePlugins: site?.activePlugins ?? [],
+  })),
+  clear: () => set({
+    siteRes: null,
+    siteView: null,
+    admins: [],
+    version: "",
+    allLanguages: [],
+    discussionLanguages: [],
+    tagline: undefined,
+    oauthProviders: [],
+    adminOauthProviders: [],
+    blockedUrls: [],
+    imageUploadDisabled: false,
+    activePlugins: [],
+  }),
 }));
