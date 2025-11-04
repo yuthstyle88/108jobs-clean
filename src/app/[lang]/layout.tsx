@@ -48,9 +48,9 @@ export default async function RootLayout({
       </title>
     </head>
     <body suppressHydrationWarning className={`${kanit.className} antialiased bg-white`}>
+    <LanguageProvider initialLang={initialLang!}>
     <GlobalLoaderProvider>
       <GlobalErrorProvider>
-        <LanguageProvider initialLang={initialLang!}>
           <UserServiceProvider
             isoData={isoData ?? null}
           >
@@ -62,9 +62,9 @@ export default async function RootLayout({
               {children}
             </AnnouncementProvider>
           </UserServiceProvider>
-        </LanguageProvider>
       </GlobalErrorProvider>
     </GlobalLoaderProvider>
+    </LanguageProvider>
     </body>
     </html>
   );
