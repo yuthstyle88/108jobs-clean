@@ -5,7 +5,7 @@ import {useUserStore} from "@/store/useUserStore";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 import {RoomView} from "@/modules/chat/types";
 import {useGlobalLoader} from "@/hooks/ui/GlobalLoaderContext";
-import {IsoData} from "@/utils";
+import {getAuthJWTCookie, IsoData} from "@/utils";
 import {useSiteStore} from "@/store/useSiteStore";
 import {useCommunitiesStore} from "@/store/useCommunitiesStore";
 
@@ -34,7 +34,7 @@ interface UserServiceProviderProps {
 export function UserServiceProvider({children, isoData}: UserServiceProviderProps) {
   // Snapshot ISO data once per mount
   const isoMyUser = useMemo(() => isoData ?? null, []);
-  const token = isoData?.jwt ?? null;
+  const token = isoData?.jwt ?? getAuthJWTCookie();
   const initialRooms: RoomView[] = useMemo(
     () => ((isoMyUser?.chatRooms?.rooms ?? []).map(r => ({ ...r, isActive: false })) as RoomView[]),
     [isoMyUser]

@@ -133,6 +133,18 @@ export function setAuthJWTCookie(jwt: string) {
   });
 }
 
+export function getAuthJWTCookie(): string | null {
+  if (!isBrowser()) return null;
+  const name = `${authCookieName}=`;
+  const parts = (document.cookie || "").split(/;\s*/);
+  for (const part of parts) {
+    if (part.startsWith(name)) {
+      return decodeURIComponent(part.slice(name.length));
+    }
+  }
+  return null;
+}
+
 export async function setThemeOverride(theme?: string) {
   if (!isBrowser()) {
     return;
