@@ -55,6 +55,58 @@ const TopUpHistory = () => {
         }
     }, [cursorHistory]);
 
+    // Helper: Get status badge style
+    const getStatusStyle = (status: string) => {
+        switch (status) {
+            case "Success":
+                return "bg-emerald-100 text-green-800";
+            case "Pending":
+                return "bg-amber-100 text-yellow-700";
+            case "Expired":
+                return "bg-red-100 text-red-700";
+            default:
+                return "bg-gray-100 text-gray-700";
+        }
+    };
+
+    // Helper: Get status icon
+    const getStatusIcon = (status: string) => {
+        switch (status) {
+            case "Success":
+                return (
+                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                        />
+                    </svg>
+                );
+            case "Pending":
+                return (
+                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.414L11 9.586V6z"
+                            clipRule="evenodd"
+                        />
+                    </svg>
+                );
+            case "Expired":
+                return (
+                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                        />
+                    </svg>
+                );
+            default:
+                return null;
+        }
+    };
+
     return (
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
             {/* Header */}
@@ -91,6 +143,7 @@ const TopUpHistory = () => {
                             <option value="">{t("profileCoins.AllStatus")}</option>
                             <option value="Pending">{t("profileCoins.Pending")}</option>
                             <option value="Success">{t("profileCoins.Success")}</option>
+                            <option value="Expired">{t("profileCoins.Expired")}</option>
                         </select>
                     </div>
 
@@ -208,7 +261,6 @@ const TopUpHistory = () => {
                 </div>
             </div>
 
-
             {/* Info Banner */}
             <div
                 className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-5 mb-8 flex items-start gap-3 shadow-sm">
@@ -282,39 +334,22 @@ const TopUpHistory = () => {
                                         {format(new Date(item.walletTopup.createdAt), "dd MMM yyyy, HH:mm")}
                                     </td>
                                     <td className="px-6 py-4">
-                      <span className="text-sm font-semibold text-gray-900">
-                        {item.walletTopup.amount.toLocaleString()}
-                      </span>{" "}
-                                        <span
-                                            className="text-xs text-gray-500 uppercase">{item.walletTopup.currencyName}</span>
+                                        <span className="text-sm font-semibold text-gray-900">
+                                            {item.walletTopup.amount.toLocaleString()}
+                                        </span>{" "}
+                                        <span className="text-xs text-gray-500 uppercase">
+                                            {item.walletTopup.currencyName}
+                                        </span>
                                     </td>
                                     <td className="px-6 py-4">
-                      <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                              item.walletTopup.status === "Success"
-                                  ? "bg-emerald-100 text-green-800"
-                                  : "bg-amber-100 text-yellow-600"
-                          }`}
-                      >
-                        {item.walletTopup.status === "Success" ? (
-                            <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                    fillRule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                    clipRule="evenodd"
-                                />
-                            </svg>
-                        ) : (
-                            <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                    fillRule="evenodd"
-                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.414L11 9.586V6z"
-                                    clipRule="evenodd"
-                                />
-                            </svg>
-                        )}
-                          {t(item.walletTopup.status)}
-                      </span>
+                                        <span
+                                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(
+                                                item.walletTopup.status
+                                            )}`}
+                                        >
+                                            {getStatusIcon(item.walletTopup.status)}
+                                            {t(`profileCoins.${item.walletTopup.status}`)}
+                                        </span>
                                     </td>
                                 </tr>
                             ))

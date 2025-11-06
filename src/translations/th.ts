@@ -1771,6 +1771,7 @@ export const th = {
             AllStatus: "ทุกสถานะ",
             Pending: "รอดำเนินการ",
             Success: "สำเร็จ",
+            Expired: "หมดอายุ",
             MinAmount: "ยอดขั้นต่ำ",
             MaxAmount: "ยอดสูงสุด",
             DateOptional: "วันที่ (ไม่บังคับ)",

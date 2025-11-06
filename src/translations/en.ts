@@ -1817,6 +1817,7 @@ export const en = {
             AllStatus: "All Status",
             Pending: "Pending",
             Success: "Success",
+            Expired: "Expired",
             MinAmount: "Min Amount",
             MaxAmount: "Max Amount",
             DateOptional: "Date (Optional)",

@@ -1823,6 +1823,7 @@ export const vi = {
             AllStatus: "Tất cả trạng thái",
             Pending: "Đang chờ",
             Success: "Thành công",
+            Expired: "Đã hết hạn",
             MinAmount: "Số tiền tối thiểu",
             MaxAmount: "Số tiền tối đa",
             DateOptional: "Ngày (Tùy chọn)",

@@ -1,351 +1,358 @@
 "use client";
-import {useState} from "react";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/Card";
-import {Button} from "@/components/ui/Button";
-import {CustomInput} from "@/components/ui/InputField";
-import {Textarea} from "@/components/ui/Textarea";
-import {Label} from "@/components/ui/Label";
-import {Badge} from "@/components/ui/Badge";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/Select";
-import {Plus, Search, History, Coins, User, Calendar, CreditCard} from "lucide-react";
+import {useState, useCallback} from "react";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
+import {ListWalletTopupsQuery, WalletTopupView} from "lemmy-js-client";
+import {format} from "date-fns";
 import {toast} from "sonner";
 import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
-
-interface TopupHistory {
-    id: string;
-    userId: string;
-    userName: string;
-    amount: number;
-    method: "admin" | "payment";
-    reason: string;
-    createdAt: string;
-    status: "completed" | "pending" | "failed";
-}
+import {Button} from "@/components/ui/Button";
+import {Badge} from "@/components/ui/Badge";
+import {ArrowRightLeft, Calendar, User, CreditCard, Hash, Clock, CheckCircle2, XCircle} from "lucide-react";
+import {TransferConfirmModal} from "@/modules/admin/components/Modal/TransferConfirmModal";
+import {PaginationControls} from "@/components/PaginationControls";
 
 const TopupCoins = () => {
-    const [selectedUser, setSelectedUser] = useState("");
-    const [amount, setAmount] = useState("");
-    const [reason, setReason] = useState("");
-    const [searchUser, setSearchUser] = useState("");
+    const [filters, setFilters] = useState<ListWalletTopupsQuery>({
+        status: undefined,
+        amountMin: undefined,
+        amountMax: undefined,
+        year: undefined,
+        month: undefined,
+        day: undefined,
+        limit: 10,
+    });
 
-    const users = [
-        {id: "user_001", name: "John Smith", email: "john.smith@email.com", balance: 5000},
-        {id: "user_002", name: "Jane Doe", email: "jane.doe@email.com", balance: 12000},
-        {id: "user_003", name: "Mike Johnson", email: "mike.johnson@email.com", balance: 8500},
-        {id: "user_004", name: "Sarah Wilson", email: "sarah.wilson@email.com", balance: 3200},
-        {id: "user_005", name: "David Brown", email: "david.brown@email.com", balance: 15000}
-    ];
+    const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined);
+    const [cursorHistory, setCursorHistory] = useState<string[]>([]);
 
-    const topupHistory: TopupHistory[] = [
-        {
-            id: "tp_001",
-            userId: "user_001",
-            userName: "John Smith",
-            amount: 5000,
-            method: "admin",
-            reason: "Top-up by request",
-            createdAt: "2024-01-15T10:30:00Z",
-            status: "completed"
-        },
-        {
-            id: "tp_002",
-            userId: "user_002",
-            userName: "Jane Doe",
-            amount: 10000,
-            method: "payment",
-            reason: "Payment via MoMo",
-            createdAt: "2024-01-14T14:20:00Z",
-            status: "completed"
-        },
-        {
-            id: "tp_003",
-            userId: "user_003",
-            userName: "Mike Johnson",
-            amount: 3000,
-            method: "admin",
-            reason: "System error compensation",
-            createdAt: "2024-01-13T09:15:00Z",
-            status: "completed"
-        },
-        {
-            id: "tp_004",
-            userId: "user_004",
-            userName: "Sarah Wilson",
-            amount: 2000,
-            method: "payment",
-            reason: "Bank transfer payment",
-            createdAt: "2024-01-12T16:45:00Z",
-            status: "pending"
+    const {data, isLoading, execute: refetch} = useHttpGet("listWalletTopupsAdmin", {
+        ...filters,
+        pageCursor: currentCursor,
+    });
+
+    const topups: WalletTopupView[] = data?.walletTopups ?? [];
+    const hasNextPage = !!data?.nextPage;
+    const hasPreviousPage = cursorHistory.length > 0;
+
+    // === Modal ===
+    const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+    const [selectedTransfer, setSelectedTransfer] = useState<WalletTopupView | null>(null);
+
+    // === Handlers ===
+    const handleFilterChange = (key: keyof ListWalletTopupsQuery, value: any) => {
+        setFilters((prev) => ({...prev, [key]: value}));
+    };
+
+    const applyFilters = () => {
+        setCurrentCursor(undefined);
+        setCursorHistory([]);
+        refetch();
+    };
+
+    const handleNextPage = useCallback(() => {
+        if (data?.nextPage) {
+            setCursorHistory((prev) => [...prev, currentCursor || ""]);
+            setCurrentCursor(data.nextPage);
         }
-    ];
+    }, [data?.nextPage, currentCursor]);
 
-    const handleTopup = () => {
-        if (!selectedUser || !amount || !reason) {
-            toast.warning(`Please fill in all coin top-up information`);
-            return;
+    const handlePrevPage = useCallback(() => {
+        if (cursorHistory.length > 0) {
+            const prevCursor = cursorHistory[cursorHistory.length - 1];
+            setCursorHistory((prev) => prev.slice(0, -1));
+            setCurrentCursor(prevCursor || undefined);
+        }
+    }, [cursorHistory]);
+
+    const openTransferModal = (topup: WalletTopupView) => {
+        setSelectedTransfer(topup);
+        setIsTransferModalOpen(true);
+    };
+
+    const confirmTransfer = async () => {
+        if (!selectedTransfer) return;
+
+        try {
+            // TODO: Replace with real API
+            // await api.adminTransferCoins(selectedTransfer.walletTopup.id);
+            toast.success(
+                `Transferred ${selectedTransfer.walletTopup.amount.toLocaleString()} coins to ${selectedTransfer.localUser.email}`
+            );
+            refetch();
+        } catch (error) {
+            toast.error("Transfer failed. Please try again.");
+        } finally {
+            setIsTransferModalOpen(false);
+            setSelectedTransfer(null);
+        }
+    };
+
+    // === Status Badge ===
+    const getStatusBadge = (status: string, transferred: boolean) => {
+        if (transferred) {
+            return (
+                <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200">
+                    <CheckCircle2 className="w-3 h-3 mr-1"/>
+                    Transferred
+                </Badge>
+            );
         }
 
-        const user = users.find(u => u.id === selectedUser);
-        toast.success(`Successfully added ${amount} coins to ${user?.name}`);
-
-        setSelectedUser("");
-        setAmount("");
-        setReason("");
+        switch (status) {
+            case "Success":
+                return (
+                    <Badge className="bg-success/10 text-success border-success/20">
+                        <CheckCircle2 className="w-3 h-3 mr-1"/>
+                        Paid
+                    </Badge>
+                );
+            case "Pending":
+                return (
+                    <Badge className="bg-warning/10 text-warning border-warning/20">
+                        <Clock className="w-3 h-3 mr-1"/>
+                        Awaiting Payment
+                    </Badge>
+                );
+            case "Expired":
+                return (
+                    <Badge className="bg-destructive/10 text-destructive border-destructive/20">
+                        <XCircle className="w-3 h-3 mr-1"/>
+                        Expired
+                    </Badge>
+                );
+            default:
+                return <Badge variant="secondary">{status}</Badge>;
+        }
     };
-
-    const filteredUsers = users.filter(user =>
-        user.name.toLowerCase().includes(searchUser.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchUser.toLowerCase())
-    );
-
-    const getStatusColor = (status: string) => {
-        const colorMap = {
-            completed: "bg-success/10 text-success border-success/20",
-            pending: "bg-warning/10 text-warning border-warning/20",
-            failed: "bg-destructive/10 text-destructive border-destructive/20"
-        };
-        return colorMap[status as keyof typeof colorMap] || colorMap.completed;
-    };
-
-    const getStatusText = (status: string) => {
-        const textMap = {
-            completed: "Successful",
-            pending: "Processing",
-            failed: "Failed"
-        };
-        return textMap[status as keyof typeof textMap] || status;
-    };
-
-    const getMethodIcon = (method: string) => {
-        return method === "admin" ? Plus : CreditCard;
-    };
-
-    const getMethodText = (method: string) => {
-        const textMap = {
-            admin: "Admin Top-up",
-            payment: "Payment"
-        };
-        return textMap[method as keyof typeof textMap] || method;
-    };
-
-    const totalCoinsToday = topupHistory
-        .filter(h => new Date(h.createdAt).toDateString() === new Date().toDateString())
-        .reduce((sum, h) => sum + h.amount, 0);
-
-    const completedTransactions = topupHistory.filter(h => h.status === "completed").length;
 
     return (
         <AdminLayout>
-            <div className="space-y-6 text-gray-600">
+            <div className="space-y-6 p-4 sm:p-6 text-gray-600 lg:p-8 max-w-7xl mx-auto">
                 <div>
                     <h1 className="text-3xl font-bold text-foreground">Top-up Coins</h1>
                     <p className="text-muted-foreground mt-2">
-                        Add coins to user accounts
+                        Review payments and transfer coins to user wallets
                     </p>
                 </div>
 
-                <div className="grid gap-6 lg:grid-cols-2">
-                    <Card className="bg-gradient-card border-border/50">
-                        <CardHeader>
-                            <CardTitle className="text-foreground flex items-center gap-2">
-                                <Plus className="w-5 h-5 text-blue"/>
-                                New Top-up
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="search-user">Search User</Label>
-                                <div className="relative">
-                                    <Search
-                                        className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground"/>
-                                    <CustomInput
-                                        name={"search-user"}
-                                        placeholder="Search by name or email..."
-                                        value={searchUser}
-                                        onChange={(e) => setSearchUser(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="user-select">Select User</Label>
-                                <Select value={selectedUser} onValueChange={setSelectedUser}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select user to top-up coins"/>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {filteredUsers.map((user) => (
-                                            <SelectItem key={user.id} value={user.id}>
-                                                <div className="flex items-center justify-between w-full">
-                                                    <div>
-                                                        <div className="font-medium">{user.name}</div>
-                                                        <div
-                                                            className="text-sm text-muted-foreground">{user.email}</div>
-                                                    </div>
-                                                    <Badge variant="secondary" className="ml-2">
-                                                        {user.balance.toLocaleString()} coins
-                                                    </Badge>
-                                                </div>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="amount">Coin Amount</Label>
-                                <CustomInput
-                                    name={"amount"}
-                                    type="number"
-                                    placeholder="Enter number of coins to add"
-                                    value={amount}
-                                    onChange={(e) => setAmount(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="reason">Top-up Reason</Label>
-                                <Textarea
-                                    id="reason"
-                                    placeholder="Enter reason for coin top-up..."
-                                    value={reason}
-                                    onChange={(e) => setReason(e.target.value)}
-                                    rows={3}
-                                />
-                            </div>
-
-                            <Button
-                                onClick={handleTopup}
-                                className="w-full bg-gradient-primary hover:bg-blue/90"
-                                disabled={!selectedUser || !amount || !reason}
+                {/* Filters */}
+                <div className="bg-card p-6 rounded-2xl border shadow-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+                        {/* Status */}
+                        <div>
+                            <label className="block text-sm font-medium mb-1.5">Status</label>
+                            <select
+                                className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-primary"
+                                value={filters.status ?? ""}
+                                onChange={(e) => handleFilterChange("status", e.target.value || undefined)}
                             >
-                                <Plus className="w-4 h-4 mr-2"/>
-                                Top-up Coins
-                            </Button>
-                        </CardContent>
-                    </Card>
+                                <option value="">All</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Success">Paid</option>
+                                <option value="Expired">Expired</option>
+                            </select>
+                        </div>
 
-                    <Card className="bg-gradient-card border-border/50">
-                        <CardHeader>
-                            <CardTitle className="text-foreground flex items-center gap-2">
-                                <Coins className="w-5 h-5 text-blue"/>
-                                Quick Stats
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="p-4 bg-muted/30 rounded-lg text-center">
-                                    <div
-                                        className="text-2xl font-bold text-blue">{totalCoinsToday.toLocaleString()}</div>
-                                    <div className="text-sm text-muted-foreground">Coins added today</div>
-                                </div>
+                        {/* Min Amount */}
+                        <div>
+                            <label className="block text-sm font-medium mb-1.5">Min Amount</label>
+                            <input
+                                type="number"
+                                placeholder="e.g. 1000"
+                                className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-primary"
+                                value={filters.amountMin ?? ""}
+                                onChange={(e) => handleFilterChange("amountMin", e.target.value ? Number(e.target.value) : undefined)}
+                            />
+                        </div>
 
-                                <div className="p-4 bg-muted/30 rounded-lg text-center">
-                                    <div className="text-2xl font-bold text-success">{completedTransactions}</div>
-                                    <div className="text-sm text-muted-foreground">Completed transactions</div>
-                                </div>
-                            </div>
+                        {/* Max Amount */}
+                        <div>
+                            <label className="block text-sm font-medium mb-1.5">Max Amount</label>
+                            <input
+                                type="number"
+                                placeholder="e.g. 50000"
+                                className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-primary"
+                                value={filters.amountMax ?? ""}
+                                onChange={(e) => handleFilterChange("amountMax", e.target.value ? Number(e.target.value) : undefined)}
+                            />
+                        </div>
 
-                            <div className="space-y-3">
-                                <h4 className="font-medium text-foreground">Top users by balance</h4>
-                                {users.slice(0, 3).map((user, index) => (
-                                    <div key={user.id}
-                                         className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center text-white text-sm font-medium">
-                                                {index + 1}
-                                            </div>
-                                            <div>
-                                                <div className="font-medium text-sm">{user.name}</div>
-                                                <div className="text-xs text-muted-foreground">{user.email}</div>
-                                            </div>
-                                        </div>
-                                        <Badge variant="secondary">
-                                            {user.balance.toLocaleString()} coins
-                                        </Badge>
-                                    </div>
+                        {/* Year */}
+                        <div>
+                            <label className="block text-sm font-medium mb-1.5">Year</label>
+                            <select
+                                className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-primary"
+                                value={filters.year ?? ""}
+                                onChange={(e) => handleFilterChange("year", e.target.value ? Number(e.target.value) : undefined)}
+                            >
+                                <option value="">Year</option>
+                                {Array.from({length: 5}, (_, i) => new Date().getFullYear() - i).map((y) => (
+                                    <option key={y} value={y}>{y}</option>
                                 ))}
-                            </div>
+                            </select>
+                        </div>
 
-                            <div className="space-y-3">
-                                <h4 className="font-medium text-foreground">Preset amounts</h4>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {[1000, 5000, 10000, 20000].map((preset) => (
-                                        <Button
-                                            key={preset}
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setAmount(preset.toString())}
-                                            className="text-xs"
-                                        >
-                                            {preset.toLocaleString()} coins
-                                        </Button>
-                                    ))}
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                        {/* Month */}
+                        <div>
+                            <label className="block text-sm font-medium mb-1.5">Month</label>
+                            <select
+                                className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-primary"
+                                value={filters.month ?? ""}
+                                onChange={(e) => handleFilterChange("month", e.target.value ? Number(e.target.value) : undefined)}
+                                disabled={!filters.year}
+                            >
+                                <option value="">Month</option>
+                                {Array.from({length: 12}, (_, i) => i + 1).map((m) => (
+                                    <option key={m} value={m}>
+                                        {new Date(2020, m - 1, 1).toLocaleString("default", {month: "short"})}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Day */}
+                        <div>
+                            <label className="block text-sm font-medium mb-1.5">Day</label>
+                            <select
+                                className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-primary"
+                                value={filters.day ?? ""}
+                                onChange={(e) => handleFilterChange("day", e.target.value ? Number(e.target.value) : undefined)}
+                                disabled={!filters.year || !filters.month}
+                            >
+                                <option value="">Day</option>
+                                {(() => {
+                                    if (!filters.year || !filters.month) return Array.from({length: 31}, (_, i) => i + 1);
+                                    const daysInMonth = new Date(filters.year, filters.month, 0).getDate();
+                                    return Array.from({length: daysInMonth}, (_, i) => i + 1);
+                                })().map((d) => (
+                                    <option key={d} value={d}>{d}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Apply Button - Full Width on Mobile */}
+                        <div className="flex items-end sm:col-span-2 lg:col-span-6">
+                            <Button onClick={applyFilters} className="w-full">
+                                Apply Filter
+                            </Button>
+                        </div>
+                    </div>
                 </div>
 
-                <Card className="bg-gradient-card border-border/50">
-                    <CardHeader>
-                        <CardTitle className="text-foreground flex items-center gap-2">
-                            <History className="w-5 h-5 text-blue"/>
-                            Top-up History
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {topupHistory.map((topup) => {
-                                const MethodIcon = getMethodIcon(topup.method);
-                                return (
-                                    <div key={topup.id}
-                                         className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
-                                        <div className="flex items-center gap-4">
-                                            <div
-                                                className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-                                                <MethodIcon className="w-5 h-5 text-white"/>
-                                            </div>
+                {/* Top-up List */}
+                <div className="space-y-4">
+                    {isLoading ? (
+                        <div className="text-center py-12">
+                            <div
+                                className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                            <p className="mt-3 text-sm text-muted-foreground">Loading top-ups...</p>
+                        </div>
+                    ) : topups.length === 0 ? (
+                        <div className="text-center py-16 bg-muted/30 rounded-lg">
+                            <p className="text-lg font-medium text-muted-foreground">No top-ups found</p>
+                            <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters</p>
+                        </div>
+                    ) : (
+                        topups.map((item) => {
+                            const t = item.walletTopup;
+                            const canTransfer = t.status === "Success" && !t.transferred;
 
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <h4 className="font-medium text-foreground">{topup.userName}</h4>
-                                                    <Badge className={getStatusColor(topup.status)}>
-                                                        {getStatusText(topup.status)}
-                                                    </Badge>
-                                                    <Badge variant="outline" className="text-xs">
-                                                        {getMethodText(topup.method)}
-                                                    </Badge>
-                                                </div>
-
-                                                <p className="text-sm text-muted-foreground mb-1">{topup.reason}</p>
-
-                                                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3"/>
-                              {new Date(topup.createdAt).toLocaleDateString('en-US')}
-                          </span>
-                                                    <span className="flex items-center gap-1">
-                            <User className="w-3 h-3"/>
-                            ID: {topup.userId}
-                          </span>
-                                                </div>
-                                            </div>
+                            return (
+                                <div
+                                    key={t.id}
+                                    className="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-card rounded-xl border shadow-sm hover:shadow-md transition-all"
+                                >
+                                    <div className="flex items-start gap-4 flex-1">
+                                        <div
+                                            className="w-11 h-11 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <CreditCard className="w-6 h-6 text-primary"/>
                                         </div>
 
-                                        <div className="text-right">
-                                            <div
-                                                className="text-lg font-bold text-success">+{topup.amount.toLocaleString()}</div>
-                                            <div className="text-xs text-muted-foreground">coins</div>
+                                        <div className="flex-1 space-y-2">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <h4 className="font-semibold text-foreground">
+                                                    {item.localUser.email}
+                                                </h4>
+                                                {getStatusBadge(t.status, t.transferred)}
+                                                {t.qrId && (
+                                                    <Badge variant="outline" className="text-xs">
+                                                        <Hash className="w-3 h-3 mr-1"/>
+                                                        {t.qrId}
+                                                    </Badge>
+                                                )}
+                                            </div>
+
+                                            <div className="text-sm text-muted-foreground space-y-1">
+                                                <div className="flex flex-wrap gap-3 text-xs">
+                                                    <span className="flex items-center gap-1">
+                                                        <Calendar className="w-3.5 h-3.5"/>
+                                                        {format(new Date(t.createdAt), "dd MMM yyyy, HH:mm")}
+                                                    </span>
+                                                    <span className="flex items-center gap-1">
+                                                        <User className="w-3.5 h-3.5"/>
+                                                        ID: {item.localUser.id}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
-                    </CardContent>
-                </Card>
+
+                                    <div className="flex items-center gap-4 mt-4 sm:mt-0">
+                                        <div className="text-right">
+                                            <div className="text-xl font-bold text-success">
+                                                +{t.amount.toLocaleString()}
+                                            </div>
+                                            <div className="text-xs text-muted-foreground">coins</div>
+                                        </div>
+
+                                        {/* Transfer Button */}
+                                        {canTransfer && (
+                                            <Button
+                                                size="sm"
+                                                className="flex items-center gap-1.5"
+                                                onClick={() => openTransferModal(item)}
+                                            >
+                                                <ArrowRightLeft className="w-4 h-4"/>
+                                                Transfer
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+
+                {/* Pagination */}
+                <PaginationControls
+                    hasPrevious={hasPreviousPage}
+                    hasNext={hasNextPage}
+                    onPrevious={handlePrevPage}
+                    onNext={handleNextPage}
+                    isLoading={isLoading}
+                />
             </div>
+
+            {/* Transfer Modal */}
+            <TransferConfirmModal
+                isOpen={isTransferModalOpen}
+                onClose={() => {
+                    setIsTransferModalOpen(false);
+                    setSelectedTransfer(null);
+                }}
+                onConfirm={confirmTransfer}
+                transfer={
+                    selectedTransfer
+                        ? {
+                            userName: selectedTransfer.localUser.email || undefined,
+                            reason: "User top-up",
+                            amount: selectedTransfer.walletTopup.amount,
+                            paymentCode: selectedTransfer.walletTopup.qrId || undefined,
+                            date: format(new Date(selectedTransfer.walletTopup.createdAt), "dd MMM yyyy, HH:mm"),
+                        }
+                        : null
+                }
+            />
         </AdminLayout>
     );
 };

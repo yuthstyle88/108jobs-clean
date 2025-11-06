@@ -1,267 +1,208 @@
 "use client";
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
-import { CustomInput } from "@/components/ui/InputField";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select";
-import { CheckCircle, XCircle, Eye, Search, Filter, User, Briefcase } from "lucide-react";
-import { UserDetailModal } from "@/modules/admin/components/Modal/UserDetailModal";
-import { toast } from "sonner";
+import {useState, useCallback} from "react";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
+import {Card} from "@/components/ui/Card";
+import {Button} from "@/components/ui/Button";
+import {Badge} from "@/components/ui/Badge";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar";
+import {Ban, User, Eye, RotateCcw} from "lucide-react";
+import {UserDetailModal} from "@/modules/admin/components/Modal/UserDetailModal";
+import {toast} from "sonner";
 import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
-interface PendingUser {
-    id: string;
-    name: string;
-    email: string;
-    type: "job_seeker" | "freelancer" | "company";
-    registeredAt: string;
-    avatar?: string;
-    status: "pending" | "reviewing";
-    documents: number;
-    experience?: string;
-    skills?: string[];
-    phone?: string;
-    location?: string;
-    bio?: string;
-    rating?: number;
-    completedProjects?: number;
-}
+import {PaginationControls} from "@/components/PaginationControls";
+import {LocalUserView} from "lemmy-js-client";
 
-const ApproveUsers = () => {
-    const [filter, setFilter] = useState("all");
-    const [searchTerm, setSearchTerm] = useState("");
-    const [selectedUser, setSelectedUser] = useState<PendingUser | null>(null);
+const ManageUsers = () => {
+    const [filters, setFilters] = useState<{ limit: number; bannedOnly: boolean }>({
+        limit: 10,
+        bannedOnly: false,
+    });
+
+    const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined);
+    const [cursorHistory, setCursorHistory] = useState<string[]>([]);
+
+    const {data, isLoading, execute: refetch} = useHttpGet("listUsers", {
+        ...filters,
+        pageCursor: currentCursor,
+    });
+
+    const users: LocalUserView[] = data?.users ?? [];
+    const hasNextPage = !!data?.nextPage;
+    const hasPreviousPage = cursorHistory.length > 0;
+
+    const [selectedUser, setSelectedUser] = useState<LocalUserView | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-    const pendingUsers: PendingUser[] = [
-        {
-            id: "1",
-            name: "Nguyễn Văn Anh",
-            email: "nguyen.van.anh@email.com",
-            type: "job_seeker",
-            registeredAt: "2024-01-15",
-            status: "pending",
-            documents: 3,
-            experience: "2 năm kinh nghiệm",
-            skills: ["React", "Node.js", "TypeScript"],
-            phone: "0901234567",
-            location: "Hà Nội",
-            bio: "Lập trình viên React với 2 năm kinh nghiệm, đam mê công nghệ mới và học hỏi không ngừng.",
-            rating: 4.5,
-            completedProjects: 12
-        },
-        {
-            id: "2",
-            name: "Công ty ABC Technology",
-            email: "hr@abctech.com",
-            type: "company",
-            registeredAt: "2024-01-14",
-            status: "reviewing",
-            documents: 5,
-            phone: "0901234568",
-            location: "TP.HCM",
-            bio: "Công ty công nghệ hàng đầu chuyên về phát triển phần mềm và ứng dụng di động."
-        },
-        {
-            id: "3",
-            name: "Trần Thị Mai",
-            email: "tran.thi.mai@email.com",
-            type: "freelancer",
-            registeredAt: "2024-01-13",
-            status: "pending",
-            documents: 4,
-            skills: ["UI/UX Design", "Figma", "Adobe Creative Suite"],
-            phone: "0901234569",
-            location: "Đà Nẵng",
-            bio: "Designer UI/UX với 3 năm kinh nghiệm, chuyên về thiết kế giao diện người dùng.",
-            rating: 4.8,
-            completedProjects: 25
-        },
-        {
-            id: "4",
-            name: "Lê Hoàng Nam",
-            email: "le.hoang.nam@email.com",
-            type: "job_seeker",
-            registeredAt: "2024-01-12",
-            status: "pending",
-            documents: 2,
-            experience: "Mới tốt nghiệp",
-            skills: ["Java", "Spring Boot", "MySQL"],
-            phone: "0901234570",
-            location: "Hà Nội",
-            bio: "Sinh viên mới tốt nghiệp ngành Công nghệ thông tin, mong muốn tìm cơ hội việc làm đầu tiên."
+    const handleFilterChange = (key: keyof typeof filters, value: any) => {
+        setFilters((prev) => ({...prev, [key]: value}));
+        setCurrentCursor(undefined);
+        setCursorHistory([]);
+    };
+
+    const handleNextPage = useCallback(() => {
+        if (data?.nextPage) {
+            setCursorHistory((prev) => [...prev, currentCursor || ""]);
+            setCurrentCursor(data.nextPage);
         }
-    ];
+    }, [data?.nextPage, currentCursor]);
 
-    const handleApprove = (userId: string, userName: string) => {
-        toast.success(`Successfully approved ${userName}'s account`);
+    const handlePrevPage = useCallback(() => {
+        if (cursorHistory.length > 0) {
+            const prevCursor = cursorHistory[cursorHistory.length - 1];
+            setCursorHistory((prev) => prev.slice(0, -1));
+            setCurrentCursor(prevCursor || undefined);
+        }
+    }, [cursorHistory]);
+
+    const handleBanToggle = (userId: number, userName: string, isBanned: boolean) => {
+        toast.success(`${isBanned ? "Unbanned" : "Banned"} ${userName}`);
+        refetch();
     };
 
-    const handleReject = (userId: string, userName: string) => {
-        toast.success(`Successfully rejected ${userName}'s account`);
+    const openDetailModal = (user: LocalUserView) => {
+        setSelectedUser(user);
+        setIsDetailModalOpen(true);
     };
-
-    const getTypeLabel = (type: string) => {
-        const typeMap = {
-            job_seeker: "Job Seeker",
-            freelancer: "Freelancer",
-            company: "Company"
-        };
-        return typeMap[type as keyof typeof typeMap] || type;
-    };
-
-    const getTypeIcon = (type: string) => {
-        if (type === "company") return <Briefcase className="w-4 h-4" />;
-        return <User className="w-4 h-4" />;
-    };
-
-    const filteredUsers = pendingUsers.filter(user => {
-        const matchesFilter = filter === "all" || user.type === filter;
-        const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesFilter && matchesSearch;
-    });
 
     return (
         <AdminLayout>
-            <div className="space-y-6 text-gray-600">
-                <div>
-                    <h1 className="text-3xl font-bold text-foreground">Approve Users</h1>
-                    <p className="text-muted-foreground mt-2">
-                        Approve registration profiles of new users
-                    </p>
-                </div>
+            <div className="max-w-5xl mx-auto text-gray-600 p-6 space-y-8">
+                {/* Header */}
+                <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h1 className="text-3xl font-light tracking-tight text-foreground">Users</h1>
+                        <p className="text-sm text-muted-foreground mt-1">Manage and monitor user accounts</p>
+                    </div>
 
-                <Card className="bg-gradient-card border-border/50">
-                    <CardContent className="p-6">
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <CustomInput
-                                    name={"searchUsers"}
-                                    placeholder="Search by name or email..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
+                    <div className="flex gap-2">
+                        <Button
+                            variant={filters.bannedOnly ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handleFilterChange("bannedOnly", !filters.bannedOnly)}
+                            className="text-xs"
+                        >
+                            <Ban className="w-3.5 h-3.5 mr-1"/>
+                            {filters.bannedOnly ? "Banned" : "All Users"}
+                        </Button>
 
-                            <Select value={filter} onValueChange={setFilter}>
-                                <SelectTrigger className="w-48">
-                                    <Filter className="w-4 h-4 mr-2" />
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All</SelectItem>
-                                    <SelectItem value="job_seeker">Job Seekers</SelectItem>
-                                    <SelectItem value="freelancer">Freelancers</SelectItem>
-                                    <SelectItem value="company">Companies</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                                setCurrentCursor(undefined);
+                                setCursorHistory([]);
+                                refetch();
+                            }}
+                        >
+                            <RotateCcw className="w-3.5 h-3.5"/>
+                        </Button>
+                    </div>
+                </header>
+
+                {/* User List */}
+                <div className="space-y-3">
+                    {isLoading ? (
+                        <div className="flex justify-center py-16">
+                            <div
+                                className="w-8 h-8 border-2 border-t-transparent border-foreground/30 rounded-full animate-spin"></div>
                         </div>
-                    </CardContent>
-                </Card>
+                    ) : users.length === 0 ? (
+                        <Card className="border-dashed p-12 text-center">
+                            <User className="w-12 h-12 mx-auto mb-3 text-muted-foreground/40"/>
+                            <p className="text-sm text-muted-foreground">No users found</p>
+                        </Card>
+                    ) : (
+                        users.map((userView) => {
+                            const {person, localUser} = userView;
+                            const banned = userView?.banned ?? false;
 
-                <div className="grid gap-4">
-                    {filteredUsers.map((user) => (
-                        <Card key={user.id} className="bg-gradient-card border-border/50 hover:shadow-md transition-all">
-                            <CardContent className="p-6">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="h-12 w-12">
-                                            <AvatarImage src={user.avatar} alt={user.name} />
-                                            <AvatarFallback className="bg-gradient-primary text-white">
-                                                {user.name.charAt(0)}
-                                            </AvatarFallback>
-                                        </Avatar>
+                            return (
+                                <Card
+                                    key={localUser.id}
+                                    className="p-5 hover:shadow-sm transition-shadow duration-200 border"
+                                >
+                                    <div className="flex items-center justify-between gap-4">
+                                        {/* User Info */}
+                                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                                            <Avatar className="h-11 w-11 shrink-0">
+                                                <AvatarImage src={person.avatar}/>
+                                                <AvatarFallback className="text-xs font-medium">
+                                                    {person.name[0].toUpperCase()}
+                                                </AvatarFallback>
+                                            </Avatar>
 
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <h3 className="font-semibold text-foreground">{user.name}</h3>
-                                                <Badge variant="outline" className="text-xs">
-                                                    {getTypeIcon(user.type)}
-                                                    <span className="ml-1">{getTypeLabel(user.type)}</span>
-                                                </Badge>
-                                                <Badge variant={user.status === "pending" ? "secondary" : "outline"}>
-                                                    {user.status === "pending" ? "Pending" : "Under Review"}
-                                                </Badge>
-                                            </div>
-
-                                            <p className="text-sm text-muted-foreground mb-2">{user.email}</p>
-
-                                            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                                                <span>📅 Registered: {new Date(user.registeredAt).toLocaleDateString('en-US')}</span>
-                                                <span>📄 {user.documents} documents</span>
-                                                {user.experience && <span>💼 {user.experience}</span>}
-                                            </div>
-
-                                            {user.skills && (
-                                                <div className="flex flex-wrap gap-1 mt-2">
-                                                    {user.skills.slice(0, 3).map((skill, index) => (
-                                                        <Badge key={index} variant="secondary" className="text-xs">
-                                                            {skill}
-                                                        </Badge>
-                                                    ))}
-                                                    {user.skills.length > 3 && (
-                                                        <Badge variant="secondary" className="text-xs">
-                                                            +{user.skills.length - 3} more
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <h3 className="font-medium text-foreground truncate">{person.name}</h3>
+                                                    {banned && (
+                                                        <Badge variant="destructive" className="text-xs h-5">
+                                                            <Ban className="w-3 h-3 mr-1"/>
+                                                            Banned
                                                         </Badge>
                                                     )}
                                                 </div>
-                                            )}
+                                                <p className="text-xs text-muted-foreground truncate">{localUser.email || "—"}</p>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    Joined {new Date(person.publishedAt).toLocaleDateString("en-US", {
+                                                    month: "short",
+                                                    day: "numeric",
+                                                    year: "numeric",
+                                                })}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Actions */}
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => openDetailModal(userView)}
+                                                className="text-muted-foreground hover:text-foreground"
+                                            >
+                                                <Eye className="w-4 h-4"/>
+                                            </Button>
+
+                                            <Button
+                                                variant={banned ? "outline" : "destructive"}
+                                                size="sm"
+                                                onClick={() => handleBanToggle(localUser.id, person.name, banned)}
+                                                className={`text-xs font-medium transition-colors ${
+                                                    banned
+                                                        ? "border-green-600 text-green-600 hover:bg-green-50"
+                                                        : "hover:bg-red-600"
+                                                }`}
+                                            >
+                                                {banned ? (
+                                                    <>
+                                                        <RotateCcw className="w-3.5 h-3.5 mr-1"/>
+                                                        Unban
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Ban className="w-3.5 h-3.5 mr-1"/>
+                                                        Ban
+                                                    </>
+                                                )}
+                                            </Button>
                                         </div>
                                     </div>
-
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => {
-                                                setSelectedUser(user);
-                                                setIsDetailModalOpen(true);
-                                            }}
-                                        >
-                                            <Eye className="w-4 h-4 mr-2" />
-                                            View Details
-                                        </Button>
-
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleReject(user.id, user.name)}
-                                            className="text-destructive hover:text-destructive"
-                                        >
-                                            <XCircle className="w-4 h-4 mr-2" />
-                                            Reject
-                                        </Button>
-
-                                        <Button
-                                            size="sm"
-                                            onClick={() => handleApprove(user.id, user.name)}
-                                            className="bg-gradient-primary hover:bg-blue/90"
-                                        >
-                                            <CheckCircle className="w-4 h-4 mr-2" />
-                                            Approve
-                                        </Button>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                                </Card>
+                            );
+                        })
+                    )}
                 </div>
 
-                {filteredUsers.length === 0 && (
-                    <Card className="bg-gradient-card border-border/50">
-                        <CardContent className="p-12 text-center">
-                            <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-foreground mb-2">No users found</h3>
-                            <p className="text-muted-foreground">
-                                No users found matching the current filters.
-                            </p>
-                        </CardContent>
-                    </Card>
-                )}
+                {/* Pagination */}
+                <PaginationControls
+                    hasPrevious={hasPreviousPage}
+                    hasNext={hasNextPage}
+                    onPrevious={handlePrevPage}
+                    onNext={handleNextPage}
+                    isLoading={isLoading}
+                />
 
+                {/* Detail Modal */}
                 {selectedUser && (
                     <UserDetailModal
                         isOpen={isDetailModalOpen}
@@ -270,8 +211,13 @@ const ApproveUsers = () => {
                             setSelectedUser(null);
                         }}
                         user={selectedUser}
-                        onApprove={() => handleApprove(selectedUser.id, selectedUser.name)}
-                        onReject={() => handleReject(selectedUser.id, selectedUser.name)}
+                        onApprove={() => {
+                            // Example: ban/unban or approve logic
+                            console.log("Approve user:", selectedUser.localUser.id);
+                        }}
+                        onReject={() => {
+                            console.log("Reject user:", selectedUser.localUser.id);
+                        }}
                     />
                 )}
             </div>
@@ -279,4 +225,4 @@ const ApproveUsers = () => {
     );
 };
 
-export default ApproveUsers;
+export default ManageUsers;

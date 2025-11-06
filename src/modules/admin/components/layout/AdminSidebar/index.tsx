@@ -39,12 +39,6 @@ const navigationItems = [
         description: "Review and manage user profiles"
     },
     {
-        title: "Banned Users",
-        url: "/banned-users",
-        icon: UserX,
-        description: "Handle policy violations"
-    },
-    {
         title: "Top-up Coins",
         url: "/topup-coins",
         icon: Plus,

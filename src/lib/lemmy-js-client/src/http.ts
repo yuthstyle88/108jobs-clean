@@ -601,7 +601,7 @@ export class LemmyHttp extends Controller {
      * @summary List all wallet topups (admin view).
      */
     @Security("bearerAuth")
-    @Get("/admin/wallet//top-ups")
+    @Get("/admin/wallet/top-ups")
     @Tags("Admin", "WalletTopup")
     async listWalletTopupsAdmin(
         @Queries() form: ListWalletTopupsQuery = {},
@@ -609,7 +609,7 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<ListWalletTopupsQuery, ListWalletTopupsResponse>(
             HttpType.Get,
-            "/admin/wallet//top-ups",
+            "/admin/wallet/top-ups",
             form,
             options,
         );
