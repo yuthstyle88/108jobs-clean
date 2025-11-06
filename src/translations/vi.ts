@@ -1816,7 +1816,33 @@ export const vi = {
             labelAmountToTopUp: "Số tiền cần nạp",
             imageSelected: "Đã chọn hình ảnh",
             dragDropClick: "Kéo & thả hoặc nhấp để tải lên hình ảnh",
-            scanQrToPay: "Quét mã QR này bằng ứng dụng ngân hàng để thanh toán {{amount}} Xu"
+            scanQrToPay: "Quét mã QR này bằng ứng dụng ngân hàng để thanh toán {{amount}} Xu",
+            stillDoNotPayYet:
+                "Chưa thanh toán — giao dịch đã hết thời gian. Vui lòng thử lại hoặc liên hệ hỗ trợ để biết thêm chi tiết.",
+            Status: "Trạng thái",
+            AllStatus: "Tất cả trạng thái",
+            Pending: "Đang chờ",
+            Success: "Thành công",
+            MinAmount: "Số tiền tối thiểu",
+            MaxAmount: "Số tiền tối đa",
+            DateOptional: "Ngày (Tùy chọn)",
+            Year: "Năm",
+            Month: "Tháng",
+            Day: "Ngày",
+            ApplyFilter: "Áp dụng bộ lọc",
+
+            PaymentCode: "Mã thanh toán",
+            Date: "Ngày",
+            Amount: "Số tiền",
+            StatusHeader: "Trạng thái",
+
+            NoTopupsFound: "Không tìm thấy giao dịch nạp tiền",
+            TryAdjustingFilters: "Hãy thử điều chỉnh bộ lọc",
+
+            previousButton: "Trước",
+            nextButton: "Tiếp",
+            Refresh: "Làm mới",
+            Loading: "Đang tải...",
         },
         profileCompany: {
             buttonSearchCompany: "Tìm kiếm thông tin công ty",

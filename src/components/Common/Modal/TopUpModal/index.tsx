@@ -17,7 +17,7 @@ const TopUpModal = ({
                         setIsModalOpen,
                         selectedAmount,
                     }: TopUpModalProps) => {
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const [qrImage, setQrImage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -27,7 +27,6 @@ const TopUpModal = ({
     const lastAmountRef = useRef<number | null>(null);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const apiCheckRef = useRef<NodeJS.Timeout | null>(null);
-    const accessTokenRef = useRef<string | null>(null);
 
     const canRequest = isModalOpen && typeof selectedAmount === "number" && selectedAmount > 0;
 
@@ -44,10 +43,8 @@ const TopUpModal = ({
             setQrImage(null);
             setError(null);
             setLoading(false);
-            setCountdown(300);
             setPaymentStatus("pending");
             setQrId(null);
-            accessTokenRef.current = null;
             if (timerRef.current) {
                 clearInterval(timerRef.current);
                 timerRef.current = null;
@@ -71,41 +68,25 @@ const TopUpModal = ({
                 setPaymentStatus("pending");
                 setCountdown(300);
                 setQrId(null);
-                accessTokenRef.current = null;
 
-                // 1) Get SCB access token
-                const tokenRes = await callHttp("generateScbToken");
-                if (!isSuccess<ScbTokenResponse>(tokenRes)) {
-                    throw new Error((tokenRes as any).err?.message || "Failed to get token");
-                }
-                const accessToken = tokenRes.data?.data?.accessToken;
-                if (!accessToken) {
-                    throw new Error("No access token returned");
-                }
-                accessTokenRef.current = accessToken;
-
-                // 2) Create QR code
                 const invoice = String(Math.floor(Date.now() / 1000));
                 const body: Record<string, unknown> = {
                     qrType: "CS",
                     amount: String(selectedAmount ?? 0),
                     invoice,
                 };
-                const qrRes = await callHttp("createScbQrCode", { body, token: accessToken });
-                console.log("QR code API response:", JSON.stringify(qrRes, null, 2));
+                const qrRes = await callHttp("createScbQrCode", {body});
                 if (!isSuccess<ScbQrCodeResponse>(qrRes)) {
                     throw new Error((qrRes as any).err?.message || "Failed to create QR code");
                 }
 
                 const qrcodeId = qrRes.data?.data?.qrcodeId ?? null;
-                console.log(`qrcodeId from API: ${qrcodeId}`);
                 if (!qrcodeId) {
                     setError("QR code ID not provided by the server");
                     setLoading(false);
                     return;
                 }
                 setQrId(qrcodeId);
-                console.log(`QR code created with ID: ${qrcodeId}`);
 
                 const raw = qrRes.data?.data?.qrImage;
                 const img = typeof raw === "string"
@@ -128,7 +109,7 @@ const TopUpModal = ({
                                     apiCheckRef.current = null;
                                 }
                                 setPaymentStatus("failed");
-                                setError(JSON.stringify({ error: "stillDoNotPayYet" }));
+                                setError("stillDoNotPayYet");
                                 return 0;
                             }
                             return prev - 1;
@@ -155,15 +136,13 @@ const TopUpModal = ({
         };
     }, [canRequest, selectedAmount, isModalOpen]);
 
-    // QR status checking
+    // QR status checking with dynamic frequency
     useEffect(() => {
-        if (!qrId || paymentStatus !== "pending" || !accessTokenRef.current) return;
+        if (!qrId || paymentStatus !== "pending") return;
 
-        console.log(`Starting QR status check with qrId: ${qrId}`);
-        apiCheckRef.current = setInterval(async () => {
-            console.log(`Checking QR status with qrId: ${qrId}`);
+        const checkQrStatus = async () => {
             try {
-                const inquiry = await callHttp("inquireScbQrCode", { qrId, token: accessTokenRef.current });
+                const inquiry = await callHttp("inquireScbQrCode", { qrId });
                 if (inquiry.state === REQUEST_STATE.SUCCESS) {
                     if (timerRef.current) {
                         clearInterval(timerRef.current);
@@ -178,7 +157,14 @@ const TopUpModal = ({
             } catch (e: any) {
                 console.error(`QR status check failed for qrId ${qrId}:`, e.message);
             }
-        }, 10000);
+        };
+
+        // run once immediately
+        checkQrStatus();
+
+        // decide interval time dynamically
+        const intervalTime = countdown <= 5 ? 1000 : 10000;
+        apiCheckRef.current = setInterval(checkQrStatus, intervalTime);
 
         return () => {
             if (apiCheckRef.current) {
@@ -186,7 +172,7 @@ const TopUpModal = ({
                 apiCheckRef.current = null;
             }
         };
-    }, [qrId, paymentStatus]);
+    }, [qrId, paymentStatus, countdown]);
 
     // Log qrId updates for debugging
     useEffect(() => {
@@ -212,7 +198,7 @@ const TopUpModal = ({
                         onClick={() => setIsModalOpen(false)}
                         aria-label="Close modal"
                     >
-                        <FontAwesomeIcon icon={faTimes} className="text-2xl" />
+                        <FontAwesomeIcon icon={faTimes} className="text-2xl"/>
                     </button>
                 </div>
                 {/* Content */}
@@ -243,27 +229,27 @@ const TopUpModal = ({
                             </div>
                         ) : paymentStatus === "failed" ? (
                             <div className="text-sm text-red-600 text-center">
-                                {error}
+                                {t(`profileCoins.${error}`)}
                             </div>
                         ) : (
                             <>
                                 <p className="text-gray-700 text-sm font-medium mb-3">
-                                    {t("profileCoins.scanQrToPay", { amount: selectedAmount?.toLocaleString() }) ||
+                                    {t("profileCoins.scanQrToPay", {amount: selectedAmount?.toLocaleString()}) ||
                                         `Scan this QR code with your banking app to pay ${selectedAmount?.toLocaleString()} Coins`}
                                 </p>
                                 {loading && (
                                     <div className="flex justify-center items-center">
-                                        <LoadingMultiCircle />
+                                        <LoadingMultiCircle/>
                                     </div>
                                 )}
                                 {error && (
                                     <div className="text-sm text-red-600 text-center">
-                                        {error}
+
                                     </div>
                                 )}
                                 {!loading && !error && qrImage && (
                                     <img src={qrImage} alt="SCB QR Code"
-                                         className="w-full h-56 object-contain bg-white rounded-lg shadow" />
+                                         className="w-full h-56 object-contain bg-white rounded-lg shadow"/>
                                 )}
                             </>
                         )}

@@ -1764,7 +1764,34 @@ export const th = {
             imageSelected: "เลือกภาพแล้ว",
             dragDropClick: "ลากและวางหรือคลิกเพื่ออัปโหลดภาพ",
             scanQrToPay: "สแกน QR Code นี้ด้วยแอปธนาคารเพื่อชำระเงิน {{amount}} เหรียญ",
-            topUpSuccessMessage: "คุณเติมเงินสำเร็จแล้ว โปรดรอผู้ดูแลระบบอนุมัติการชำระเงินของคุณ"
+            topUpSuccessMessage: "คุณเติมเงินสำเร็จแล้ว โปรดรอผู้ดูแลระบบอนุมัติการชำระเงินของคุณ",
+            stillDoNotPayYet:
+                "ยังไม่ได้ชำระเงิน — การทำรายการหมดเวลา กรุณาลองใหม่หรือติดต่อฝ่ายสนับสนุนเพื่อดูรายละเอียด",
+            Status: "สถานะ",
+            AllStatus: "ทุกสถานะ",
+            Pending: "รอดำเนินการ",
+            Success: "สำเร็จ",
+            MinAmount: "ยอดขั้นต่ำ",
+            MaxAmount: "ยอดสูงสุด",
+            DateOptional: "วันที่ (ไม่บังคับ)",
+            Year: "ปี",
+            Month: "เดือน",
+            Day: "วัน",
+            ApplyFilter: "ใช้ตัวกรอง",
+
+            PaymentCode: "รหัสการชำระเงิน",
+            Date: "วันที่",
+            Amount: "จำนวนเงิน",
+            StatusHeader: "สถานะ",
+
+            NoTopupsFound: "ไม่พบรายการเติมเงิน",
+            TryAdjustingFilters: "ลองปรับตัวกรอง",
+
+            previousButton: "ก่อนหน้า",
+            nextButton: "ถัดไป",
+
+            Refresh: "รีเฟรช",
+            Loading: "กำลังโหลด...",
         },
         profileCompany: {
             buttonSearchCompany: "ค้นหาข้อมูลบริษัท",

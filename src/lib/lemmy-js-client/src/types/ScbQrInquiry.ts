@@ -1,5 +1,4 @@
 export type ScbQrInquiryRequest = {
-  token: string | null;
   qrId: string | null;
 };
 
