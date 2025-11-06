@@ -72,7 +72,7 @@ export const sendStructured = async (
         senderId,
         content: opts.previewText || content,
         createdAt: new Date().toISOString(),
-        status: "sent"
+        status: "sending"
     });
 
     const secure = true;

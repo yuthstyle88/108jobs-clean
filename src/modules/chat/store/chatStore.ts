@@ -39,7 +39,7 @@ function removeAt<T>(arr: T[], index: number): T[] {
 
 function flushByStatus(
     getFn: () => ChatStoreState & ChatStoreActions,
-    status: 'pending' | 'retrying' | 'failed',
+    status: ChatStatus,
     roomId?: string
 ): ChatMessage[] {
     const {listMessages, retryMeta} = getFn();
@@ -66,9 +66,9 @@ interface ChatStoreActions {
     addMessage: (msg: ChatMessage) => void
     upsertHistory: (roomId: string, items: ChatMessage[]) => void;
     upsertMessage: (msg: ChatMessage) => void
-    addPending: (msg: ChatMessage) => void
-    removePending: (roomId: string, id: string) => void;
-    promoteToSent: (roomId: string, id: string) => void;
+    addSending: (msg: ChatMessage) => void
+    removeSending: (roomId: string, id: string) => void;
+    promoteToDelivered: (roomId: string, id: string) => void;
     markFailed: (roomId: string, id: string) => void;
     upsertRetryMeta: (id: string, meta: { retry: number; next: number }) => void
     dropRetryMeta: (id: string) => void
@@ -76,11 +76,10 @@ interface ChatStoreActions {
     getMessageById: (id: string) => ChatMessage | undefined
     commitStatus: (roomId: string, id: string, status: ChatStatus) => void;
     retryMessage: (id: string) => void
-    flushPending: (roomId?: string) => ChatMessage[]
     flushFailed: (roomId?: string) => ChatMessage[]
     removeMessage: (roomId: string, id: string) => void;
-    addPendingMessage: (msg: ChatMessage) => void
-    clearPendingMessages: (roomId: string) => void;
+    addSendingMessage: (msg: ChatMessage) => void
+    clearSendingMessages: (roomId: string) => void;
 }
 
 export const useChatStore = create<ChatStoreState & ChatStoreActions>((set, get) => ({
@@ -152,17 +151,17 @@ export const useChatStore = create<ChatStoreState & ChatStoreActions>((set, get)
 
     upsertMessage: (msg) => get().addMessage(msg),
 
-    addPending: (msg) => {
+    addSending: (msg) => {
         const withPending = {
             ...(msg as any),
             clientId: (msg as any).id,
             isOwner: true,
-            status: 'pending' as ChatStatus
+            status: 'sending' as ChatStatus
         } as ChatMessage;
         get().addMessage(withPending);
     },
 
-    removePending: (roomId, id) =>
+    removeSending: (roomId, id) =>
         set((s) => ({
             messagesByRoom: {
                 ...s.messagesByRoom,
@@ -173,7 +172,7 @@ export const useChatStore = create<ChatStoreState & ChatStoreActions>((set, get)
         })),
 
 
-    promoteToSent: (roomId, id) => get().commitStatus(roomId, id, "sent"),
+    promoteToDelivered: (roomId, id) => get().commitStatus(roomId, id, "delivered"),
 
     markFailed: (roomId, id) =>
         set((s) => ({
@@ -224,12 +223,6 @@ export const useChatStore = create<ChatStoreState & ChatStoreActions>((set, get)
         };
     }),
 
-    flushPending: (roomId) => {
-        // Include messages marked as 'pending' or 'retrying'
-        const pending = flushByStatus(get, 'pending', roomId);
-        const retrying = flushByStatus(get, 'retrying', roomId);
-        return [...pending, ...retrying];
-    },
     flushFailed: (roomId) => flushByStatus(get, 'failed', roomId),
 
     removeMessage: (roomId, id) =>
@@ -242,14 +235,14 @@ export const useChatStore = create<ChatStoreState & ChatStoreActions>((set, get)
             },
         })),
 
-    addPendingMessage: (msg) => get().addPending(msg),
-    clearPendingMessages: (roomId) =>
+    addSendingMessage: (msg) => get().addSending(msg),
+    clearSendingMessages: (roomId) =>
         set((s) => ({
             messagesByRoom: {
                 ...s.messagesByRoom,
                 [roomId]: s.messagesByRoom[roomId]?.filter(
                     (m) =>
-                        m.status !== "pending" &&
+                        m.status !== "sending" &&
                         m.status !== "retrying" &&
                         m.status !== "failed"
                 ),

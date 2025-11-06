@@ -1,8 +1,9 @@
 import React from "react";
+import {ChatStatus} from "lemmy-js-client";
 
 interface Props {
     isOwner: boolean | undefined;
-    msgStatus: "pending" | "sending" | "retrying" | "sent" | "failed";
+    msgStatus: ChatStatus;
     unread?: boolean;
     isRead: boolean | undefined;
     readTime: string | null
@@ -97,8 +98,8 @@ const MessageStatusIndicator: React.FC<Props> = ({
             );
         }
 
-        if (msgStatus === "pending" || msgStatus === "sending" || msgStatus === "retrying") {
-            const label = msgStatus === 'retrying'
+        if (msgStatus === "sending" || msgStatus === "retrying") {
+            const label = msgStatus.toLowerCase() === 'retrying'
               ? (t("profileChat.retrying") || "Retrying")
               : (t("profileChat.sending") || "Sending");
             return (

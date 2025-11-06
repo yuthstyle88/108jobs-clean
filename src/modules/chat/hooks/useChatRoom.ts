@@ -381,7 +381,7 @@ export function useChatRoom({
 
             // Fallback: if we can't resolve the message object or no sender, trigger store retry + flush
             st.retryMessage?.(id);
-            await st.flushPending?.();
+            st.flushFailed?.();
         } catch (err) {
             try {
                 console.warn('[chat] resendMessage failed, fallback to flush', err);
@@ -390,7 +390,7 @@ export function useChatRoom({
             // Final fallback
             try {
                 st.retryMessage?.(id);
-                await st.flushPending?.();
+                st.flushFailed?.();
             } catch {
             }
         }
@@ -414,7 +414,7 @@ export function useChatRoom({
 
     const flushPending = useCallback(async () => {
         try {
-            useChatStore.getState().flushPending?.();
+            useChatStore.getState().flushFailed?.();
         } catch {
         }
     }, []);

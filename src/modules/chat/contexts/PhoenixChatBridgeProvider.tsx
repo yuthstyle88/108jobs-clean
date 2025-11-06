@@ -107,7 +107,7 @@ export const PhoenixChatBridgeProvider: React.FC<WebSocketProviderProps> = ({chi
             upsertRetryMeta: useChatStore.getState().upsertRetryMeta,
             dropRetryMeta: useChatStore.getState().dropRetryMeta,
             markFailed: useChatStore.getState().markFailed,
-            promoteToSent: useChatStore.getState().promoteToSent,
+            promoteToSent: useChatStore.getState().promoteToDelivered,
         };
 
         const resend = new ResendManager(port, sender);
@@ -241,7 +241,7 @@ export const PhoenixChatBridgeProvider: React.FC<WebSocketProviderProps> = ({chi
         const unsub = GlobalAckMatcher.subscribe((ack) => {
             if(ack.clientId) {
                 try {
-                    store.promoteToSent(ack.roomId, ack.clientId);
+                    store.promoteToDelivered(ack.roomId, ack.clientId);
                     store.dropRetryMeta(ack.clientId);
                 } catch {
                 }

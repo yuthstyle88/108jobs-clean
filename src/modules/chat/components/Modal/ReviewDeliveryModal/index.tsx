@@ -58,7 +58,7 @@ export const ReviewDeliveryModal: React.FC<ReviewDeliveryModalProps> = ({
                                         content,
                                         id: uuidv4(),
                                         senderId: Number(localUser?.id) || 0,
-                                        status: "sent" as const,
+                                        status: "sending" as const,
                                         createdAt: tsIso,
                                 };
                                 emitChatNewMessage(detail);

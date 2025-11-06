@@ -116,7 +116,7 @@ export class ResendManager {
                     secure: msg.secure,
                     content: msg.content,
                     createdAt: msg.createdAt,
-                    status: 'pending',
+                    status: 'retrying',
                     id: msg.id, // ใช้ client id เพื่อให้ server ทำ idempotency ได้
                 }
 

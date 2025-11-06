@@ -458,14 +458,14 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                     senderId: Number(localUser.id),
                     content,
                     createdAt: tsIso,
-                    status: 'sent' as const,
+                    status: 'sending' as const,
                 };
                 emitChatNewMessage(detail);
-                sendMessage({
-                    message: JSON.stringify({type: 'review-submitted', rating: form.rating, comment: form.comment}),
-                    senderId: Number(localUser.id),
-                    secure: true,
-                    id: messageId,
+                await sendMessage({
+                  message: JSON.stringify({type: 'review-submitted', rating: form.rating, comment: form.comment}),
+                  senderId: Number(localUser.id),
+                  secure: true,
+                  id: messageId,
                 });
                 return true;
             } else {
@@ -519,7 +519,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                         senderId: Number(localUser.id),
                         content: preview,
                         createdAt: tsIso,
-                        status: 'pending' as const,
+                        status: 'sending' as const,
                     };
                     emitChatNewMessage(detail);
                 } catch {

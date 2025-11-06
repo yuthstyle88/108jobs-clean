@@ -134,9 +134,9 @@ export async function sendChatMessage(deps: SendMessageDeps, data: MessagePayloa
     const allowEncrypt = data?.secure !== false;
     const p = createMessage(message, (deps as any).roomId, data.senderId, data.secure, data.id);
     if(!p) return;
-    p.status = 'pending' as any;
+    p.status = 'sending' as any;
     try {
-        store?.addPending?.(p);
+        store?.addSending?.(p);
     } catch {
     }
     if(msgId) try {
@@ -163,7 +163,7 @@ export async function sendChatMessage(deps: SendMessageDeps, data: MessagePayloa
         const pid = (p as any).id;                   // preserve original type
         const rid = (res as any)?.id ?? pid;         // if server returns new id only on success
         // update status without changing identity type
-        store?.commitStatus?.(rid, res?.sent ? rid : pid, res?.sent ? 'sent' : 'failed');
+        store?.commitStatus?.(rid, res?.sent ? rid : pid, res?.sent ? 'delivered' : 'failed');
         // If send failed, allow future retries by clearing the de-dup marker
         if (!res?.sent && msgId != null) try { sentSet?.delete?.(msgId); } catch {}
         return { id: rid, sent: !!res?.sent } as any;
