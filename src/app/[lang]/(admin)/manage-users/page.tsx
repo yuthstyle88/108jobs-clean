@@ -88,7 +88,7 @@ const ManageUsers = () => {
             toast.success(
                 banReason
                     ? t("manageUsers.banConfirmationModal.successWithReason", {reason: banReason})
-                    : t("manageUsers.bannedSuccess", {name: banTarget.name})
+                    : `${t("manageUsers.bannedSuccess")} ${banTarget.name}`
             );
             refetch(); // Refresh user list
         } catch (error: any) {
@@ -98,15 +98,15 @@ const ManageUsers = () => {
         }
     };
 
-    const handleUnban = async (userId: number, userName: string) => {
+    const handleUnban = async (person: Person) => {
         const payload: BanPerson = {
-            personId: userId,
+            personId: person.id,
             ban: false,
         };
 
         try {
             await executeBan(payload);
-            toast.success(t("manageUsers.unbannedSuccess", {name: userName}));
+            toast.success(t("manageUsers.unbannedSuccess", {name: person.name}));
             refetch();
         } catch (error: any) {
             toast.error(error.message || t("common.errorOccurred"));
@@ -220,7 +220,7 @@ const ManageUsers = () => {
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    onClick={() => handleUnban(localUser.id, person.name)}
+                                                    onClick={() => handleUnban(person)}
                                                     className="text-xs font-medium border-green-600 text-green-600 hover:bg-green-50"
                                                 >
                                                     <RotateCcw className="w-3.5 h-3.5 mr-1"/>

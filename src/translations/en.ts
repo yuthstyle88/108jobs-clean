@@ -1882,8 +1882,8 @@ export const en = {
             },
 
             // Toast Messages
-            bannedSuccess: "Banned {name}",
-            unbannedSuccess: "Unbanned {name}",
+            bannedSuccess: "Banned",
+            unbannedSuccess: "Unbanned",
             refresh: "Refresh",
         },
         profileCompany: {
