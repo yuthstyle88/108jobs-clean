@@ -1844,6 +1844,12 @@ export const en = {
             // Buttons
             Refresh: "Refresh",
             Loading: "Loading...",
+            transferModal: {
+                title: "Confirm Coin Transfer",
+                description: "Transfer coins from this top-up to the user's wallet.",
+                confirm: "Confirm Transfer",
+            },
+            processing: "Processing...",
         },
         manageUsers: {
             title: "Users",
@@ -1885,6 +1891,101 @@ export const en = {
             bannedSuccess: "Banned",
             unbannedSuccess: "Unbanned",
             refresh: "Refresh",
+        },
+        topupGuide: {
+            title: "How Top-up Works (Admin Guide)",
+            pending: {
+                badge: "Pending",
+                step: "Step 1",
+                title: "User Opened QR",
+                description: "User scanned the QR code but <strong>has not paid yet</strong>.",
+                list: [
+                    "QR is active",
+                    "Waiting for payment",
+                    "No action needed",
+                ],
+            },
+            paid: {
+                badge: "Paid",
+                step: "Step 2",
+                title: "Payment Confirmed",
+                description: "User <strong>successfully paid</strong> via QR. Now <strong>waiting for admin to transfer coins</strong>.",
+                list: [
+                    "Payment verified",
+                    "Click <strong>Transfer</strong> button",
+                    "Coins go to user wallet",
+                ],
+            },
+            expired: {
+                badge: "Expired",
+                step: "Failed",
+                title: "QR Code Expired",
+                description: "User did <strong>not pay in time</strong>. QR is no longer valid.",
+                list: [
+                    "No payment received",
+                    "No action possible",
+                    "User must try again",
+                ],
+            },
+            workflow: {
+                title: "Admin Workflow",
+                flow: "<strong>Pending</strong> → Wait → <strong>Paid</strong> → Click <strong>Transfer</strong> → Coins added → <strong>Transferred</strong>",
+            },
+            note: "Only <strong>Paid + Not Transferred</strong> items show the Transfer button.",
+        },
+        topupCoins: {
+            title: "Top-up Coins",
+            description: "Review payments and transfer coins to user wallets",
+
+            filters: {
+                status: "Status",
+                minAmount: "Min Amount",
+                maxAmount: "Max Amount",
+                year: "Year",
+                month: "Month",
+                day: "Day",
+                apply: "Apply Filter",
+                all: "All",
+                pending: "Pending",
+                paid: "Paid",
+                expired: "Expired",
+                placeholderMin: "e.g. 1000",
+                placeholderMax: "e.g. 50000",
+            },
+
+            list: {
+                loading: "Loading top-ups...",
+                noResults: "No top-ups found",
+                noResultsHint: "Try adjusting your filters",
+                coins: "coins",
+                transfer: "Transfer",
+            },
+
+            status: {
+                transferred: "Transferred",
+                paid: "Paid",
+                awaitingPayment: "Awaiting Payment",
+                expired: "Expired",
+            },
+
+            transferModal: {
+                title: "Confirm Coin Transfer",
+                description: "Transfer coins from this top-up to the user's wallet.",
+                user: "User",
+                paymentCode: "Payment Code",
+                date: "Date",
+                currentTime: "Current Time",
+                amount: "Transfer Amount",
+                reason: "Reason",
+                confirm: "Confirm Transfer",
+                cancel: "Cancel",
+                processing: "Processing...",
+            },
+
+            toast: {
+                success: "Transferred {{amount}} coins to {{email}}",
+                error: "Transfer failed. Please try again.",
+            },
         },
         profileCompany: {
             buttonSearchCompany: "Search Company Information",

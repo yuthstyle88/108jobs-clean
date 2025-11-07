@@ -1830,6 +1830,101 @@ export const th = {
             unbannedSuccess: "ยกเลิกแบน {name} แล้ว",
             refresh: "รีเฟรช",
         },
+        topupGuide: {
+            title: "วิธีการเติมเงิน (คู่มือแอดมิน)",
+            pending: {
+                badge: "รอดำเนินการ",
+                step: "ขั้นตอน 1",
+                title: "ผู้ใช้เปิด QR",
+                description: "ผู้ใช้สแกน QR code แล้ว แต่ <strong>ยังไม่ได้ชำระเงิน</strong>",
+                list: [
+                    "QR ยังใช้งานได้",
+                    "รอการชำระเงิน",
+                    "ไม่ต้องดำเนินการ",
+                ],
+            },
+            paid: {
+                badge: "ชำระแล้ว",
+                step: "ขั้นตอน 2",
+                title: "ยืนยันการชำระเงิน",
+                description: "ผู้ใช้ <strong>ชำระเงินสำเร็จ</strong> ผ่าน QR code แล้ว รอแอดมิน <strong>โอนเหรียญ</strong>",
+                list: [
+                    "ยืนยันการชำระเงินแล้ว",
+                    "กดปุ่ม <strong>โอนเหรียญ</strong>",
+                    "เหรียญจะเข้าวอลเล็ตผู้ใช้",
+                ],
+            },
+            expired: {
+                badge: "หมดอายุ",
+                step: "ล้มเหลว",
+                title: "QR code หมดอายุ",
+                description: "ผู้ใช้ <strong>ไม่ชำระเงินภายในเวลาที่กำหนด</strong> QR ใช้ไม่ได้แล้ว",
+                list: [
+                    "ไม่ได้รับเงิน",
+                    "ไม่สามารถดำเนินการได้",
+                    "ผู้ใช้ต้องลองใหม่",
+                ],
+            },
+            workflow: {
+                title: "ขั้นตอนของแอดมิน",
+                flow: "<strong>รอดำเนินการ</strong> → รอ → <strong>ชำระแล้ว</strong> → กด <strong>โอนเหรียญ</strong> → เพิ่มเหรียญ → <strong>โอนแล้ว</strong>",
+            },
+            note: "เฉพาะรายการ <strong>ชำระแล้ว + ยังไม่ได้โอน</strong> เท่านั้นที่จะแสดงปุ่มโอนเหรียญ",
+        },
+        topupCoins: {
+            title: "เติมเหรียญ",
+            description: "ตรวจสอบการชำระเงินและโอนเหรียญให้ผู้ใช้",
+
+            filters: {
+                status: "สถานะ",
+                minAmount: "จำนวนขั้นต่ำ",
+                maxAmount: "จำนวนสูงสุด",
+                year: "ปี",
+                month: "เดือน",
+                day: "วัน",
+                apply: "ใช้ตัวกรอง",
+                all: "ทั้งหมด",
+                pending: "รอดำเนินการ",
+                paid: "ชำระแล้ว",
+                expired: "หมดอายุ",
+                placeholderMin: "เช่น 1000",
+                placeholderMax: "เช่น 50000",
+            },
+
+            list: {
+                loading: "กำลังโหลดรายการเติมเงิน...",
+                noResults: "ไม่พบรายการเติมเงิน",
+                noResultsHint: "ลองปรับตัวกรอง",
+                coins: "เหรียญ",
+                transfer: "โอนเหรียญ",
+            },
+
+            status: {
+                transferred: "โอนแล้ว",
+                paid: "ชำระแล้ว",
+                awaitingPayment: "รอชำระเงิน",
+                expired: "หมดอายุ",
+            },
+
+            transferModal: {
+                title: "ยืนยันการโอนเหรียญ",
+                description: "โอนเหรียญจากรายการนี้ไปยังวอลเล็ตผู้ใช้",
+                user: "ผู้ใช้",
+                paymentCode: "รหัสชำระเงิน",
+                date: "วันที่",
+                currentTime: "เวลาปัจจุบัน",
+                amount: "จำนวนที่โอน",
+                reason: "เหตุผล",
+                confirm: "ยืนยันการโอน",
+                cancel: "ยกเลิก",
+                processing: "กำลังดำเนินการ...",
+            },
+
+            toast: {
+                success: "โอน {{amount}} เหรียญให้ {{email}}",
+                error: "โอนล้มเหลว กรุณาลองใหม่",
+            },
+        },
         profileCompany: {
             buttonSearchCompany: "ค้นหาข้อมูลบริษัท",
             labelTaxId: "เลขประจำตัวผู้เสียภาษี (บริษัท)",

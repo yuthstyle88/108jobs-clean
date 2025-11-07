@@ -1881,6 +1881,101 @@ export const vi = {
             unbannedSuccess: "Đã gỡ cấm {name}",
             refresh: "Làm mới",
         },
+        topupGuide: {
+            title: "Hướng dẫn nạp tiền (Dành cho Admin)",
+            pending: {
+                badge: "Đang chờ",
+                step: "Bước 1",
+                title: "Người dùng mở QR",
+                description: "Người dùng đã quét mã QR nhưng <strong>chưa thanh toán</strong>.",
+                list: [
+                    "QR còn hiệu lực",
+                    "Đang chờ thanh toán",
+                    "Không cần thao tác",
+                ],
+            },
+            paid: {
+                badge: "Đã thanh toán",
+                step: "Bước 2",
+                title: "Xác nhận thanh toán",
+                description: "Người dùng đã <strong>thanh toán thành công</strong> qua QR. Đang chờ admin <strong>chuyển coin</strong>.",
+                list: [
+                    "Đã xác minh thanh toán",
+                    "Nhấn nút <strong>Chuyển coin</strong>",
+                    "Coin sẽ vào ví người dùng",
+                ],
+            },
+            expired: {
+                badge: "Hết hạn",
+                step: "Thất bại",
+                title: "Mã QR đã hết hạn",
+                description: "Người dùng <strong>không thanh toán kịp thời</strong>. Mã QR không còn hiệu lực.",
+                list: [
+                    "Chưa nhận được tiền",
+                    "Không thể xử lý",
+                    "Người dùng phải thử lại",
+                ],
+            },
+            workflow: {
+                title: "Quy trình Admin",
+                flow: "<strong>Đang chờ</strong> → Chờ → <strong>Đã thanh toán</strong> → Nhấn <strong>Chuyển coin</strong> → Cộng coin → <strong>Đã chuyển</strong>",
+            },
+            note: "Chỉ các mục <strong>Đã thanh toán + Chưa chuyển</strong> mới hiển thị nút Chuyển coin.",
+        },
+        topupCoins: {
+            title: "Nạp Coin",
+            description: "Xem lại thanh toán và chuyển coin vào ví người dùng",
+
+            filters: {
+                status: "Trạng thái",
+                minAmount: "Số tiền nhỏ nhất",
+                maxAmount: "Số tiền lớn nhất",
+                year: "Năm",
+                month: "Tháng",
+                day: "Ngày",
+                apply: "Áp dụng bộ lọc",
+                all: "Tất cả",
+                pending: "Đang chờ",
+                paid: "Đã thanh toán",
+                expired: "Hết hạn",
+                placeholderMin: "ví dụ: 1000",
+                placeholderMax: "ví dụ: 50000",
+            },
+
+            list: {
+                loading: "Đang tải danh sách nạp...",
+                noResults: "Không tìm thấy giao dịch nạp",
+                noResultsHint: "Thử điều chỉnh bộ lọc",
+                coins: "coin",
+                transfer: "Chuyển coin",
+            },
+
+            status: {
+                transferred: "Đã chuyển",
+                paid: "Đã thanh toán",
+                awaitingPayment: "Chờ thanh toán",
+                expired: "Hết hạn",
+            },
+
+            transferModal: {
+                title: "Xác nhận chuyển coin",
+                description: "Chuyển coin từ giao dịch này vào ví người dùng.",
+                user: "Người dùng",
+                paymentCode: "Mã thanh toán",
+                date: "Ngày",
+                currentTime: "Thời gian hiện tại",
+                amount: "Số coin chuyển",
+                reason: "Lý do",
+                confirm: "Xác nhận chuyển",
+                cancel: "Hủy",
+                processing: "Đang xử lý...",
+            },
+
+            toast: {
+                success: "Đã chuyển {{amount}} coin cho {{email}}",
+                error: "Chuyển coin thất bại. Vui lòng thử lại.",
+            },
+        },
         profileCompany: {
             buttonSearchCompany: "Tìm kiếm thông tin công ty",
             labelTaxId: "Mã số thuế doanh nghiệp",

@@ -1,14 +1,18 @@
-import React from "react";
+"use client";
+import React, {useEffect, useState} from "react";
+import {ArrowRightLeft, User, Calendar, Hash, Clock, CheckCircle2} from "lucide-react";
+import {useTranslation} from "react-i18next";
 
 interface TransferConfirmModalProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
+    isLoading?: boolean;
     transfer: {
-        userName?: string | undefined;
+        userName?: string;
         reason: string;
         amount: number;
-        paymentCode?: string | undefined;
+        paymentCode?: string;
         date: string;
     } | null;
 }
@@ -17,52 +21,140 @@ export const TransferConfirmModal: React.FC<TransferConfirmModalProps> = ({
                                                                               isOpen,
                                                                               onClose,
                                                                               onConfirm,
+                                                                              isLoading = false,
                                                                               transfer,
                                                                           }) => {
+    const {t} = useTranslation();
+    const [currentTime, setCurrentTime] = useState("");
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const updateTime = () => {
+            const now = new Date();
+            const formatted = now.toLocaleString("en-US", {
+                timeZone: "Asia/Ho_Chi_Minh",
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+                timeZoneName: "short",
+            });
+            setCurrentTime(formatted);
+        };
+
+        updateTime();
+        const interval = setInterval(updateTime, 1000);
+        return () => clearInterval(interval);
+    }, [isOpen]);
+
     if (!isOpen || !transfer) return null;
 
     return (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md shadow-lg">
-                <h3 className="text-base sm:text-lg font-semibold mb-2 text-center">
-                    Confirm Coin Transfer
-                </h3>
-                <p className="text-xs sm:text-sm text-gray-600 mb-4 text-center">
-                    Transfer coins from this top-up to the user's wallet.
-                </p>
+        <div
+            className="fixed inset-0 z-50 flex text-gray-600 items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            onClick={onClose}
+        >
+            <div
+                className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-6 transform transition-all animate-in fade-in zoom-in-95 duration-300"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div className="text-center">
+                    <div
+                        className="mx-auto w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center mb-3">
+                        <ArrowRightLeft className="w-7 h-7 text-white"/>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">
+                        {t("profileCoins.transferModal.title") || "Confirm Coin Transfer"}
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                        {t("profileCoins.transferModal.description") ||
+                            "Transfer coins from this top-up to the user's wallet."}
+                    </p>
+                </div>
 
-                <div className="space-y-3 py-2 text-sm">
-                    <div className="flex justify-between">
-                        <span className="text-gray-500">User</span>
-                        <span className="font-medium">{transfer.userName}</span>
+                {/* Transfer Details */}
+                <div
+                    className="bg-gradient-to-br from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-2xl p-5 space-y-4">
+                    <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <User className="w-4 h-4"/>
+              User
+            </span>
+                        <span className="text-base font-bold text-gray-900">{transfer.userName}</span>
                     </div>
-                    <div className="flex justify-between">
-                        <span className="text-gray-500">Reason</span>
-                        <span className="text-xs">{transfer.reason}</span>
+
+                    <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <Hash className="w-4 h-4"/>
+              Payment Code
+            </span>
+                        <code className="text-sm font-mono bg-white/70 px-2 py-1 rounded">
+                            {transfer.paymentCode || "—"}
+                        </code>
                     </div>
-                    <div className="flex justify-between items-center pt-2 border-t">
-                        <span className="text-gray-600 font-medium">Amount</span>
-                        <span className="text-lg font-bold text-green-600">
-                            +{transfer.amount.toLocaleString()} coins
-                        </span>
+
+                    <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <Calendar className="w-4 h-4"/>
+              Date
+            </span>
+                        <span className="text-sm font-medium text-gray-800">{transfer.date}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-emerald-200">
+            <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <Clock className="w-4 h-4"/>
+              Current Time
+            </span>
+                        <span className="text-sm font-mono font-bold text-gray-900 bg-white/80 px-3 py-1.5 rounded-lg">
+              {currentTime}
+            </span>
                     </div>
                 </div>
 
-                <div className="flex justify-center gap-3 mt-6">
+                {/* Amount Highlight */}
+                <div className="bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-xl p-4 text-center">
+                    <p className="text-sm font-medium">Transfer Amount</p>
+                    <p className="text-2xl font-bold">
+                        +{transfer.amount.toLocaleString()} coins
+                    </p>
+                </div>
+
+                {/* Reason */}
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm font-semibold text-gray-700 mb-1">Reason</p>
+                    <p className="text-sm text-gray-800">{transfer.reason}</p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-center gap-3 pt-4">
                     <button
-                        className="rounded-md bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 text-sm transition-all duration-200"
                         onClick={onClose}
+                        disabled={isLoading}
+                        className="px-6 py-3 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all disabled:opacity-50"
                     >
-                        Cancel
+                        {t("global.cancel") || "Cancel"}
                     </button>
                     <button
-                        className="rounded-md bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm transition-all duration-200"
-                        onClick={() => {
-                            onConfirm();
-                            onClose();
-                        }}
+                        onClick={onConfirm}
+                        disabled={isLoading}
+                        className="inline-flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-medium bg-primary text-white hover:bg-[#063a68] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed"
                     >
-                        Confirm Transfer
+                        {isLoading ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin" />
+                                <span>{t("profileCoins.processing") || "Processing..."}</span>
+                            </>
+                        ) : (
+                            <>
+                                <CheckCircle2 className="w-4 h-4" />
+                                <span>{t("profileCoins.transferModal.confirm") || "Confirm Transfer"}</span>
+                            </>
+                        )}
                     </button>
                 </div>
             </div>

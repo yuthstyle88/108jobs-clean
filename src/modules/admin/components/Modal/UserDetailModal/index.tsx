@@ -1,4 +1,4 @@
-import {User, Mail, Calendar, FileText, Star, Phone, MapPin, X, Check, Ban} from "lucide-react";
+import {User, Mail, Calendar, FileText, X} from "lucide-react";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar";
 import {LocalUserView} from "lemmy-js-client";
 

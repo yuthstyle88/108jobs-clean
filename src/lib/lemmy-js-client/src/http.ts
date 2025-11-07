@@ -262,7 +262,6 @@ import type {ChatHistoryQuery} from "./types/ChatHistoryQuery";
 import type {ChatMessagesResponse} from "./types/ChatMessagesResponse";
 import type {Billing} from "./types/Billing";
 import type {GetBillingByRoomQuery} from "./types/GetBillingByRoomQuery";
-import type {ScbTokenResponse} from "./types/ScbTokenResponse";
 import type {ScbQrCodeRequest, ScbQrCodeResponse} from "./types/ScbQrCode";
 import type {ScbQrInquiryRequest, ScbQrInquiryResponse} from "./types/ScbQrInquiry";
 import type {BillingId} from "./types/BillingId";
@@ -278,6 +277,8 @@ import {BankAccountOperationResponse} from "./types/BankAccountOperationResponse
 import {UpdateBankAccount} from "./types/UpdateBankAccount";
 import {ListWalletTopupsQuery} from "./types/ListWalletTopupsQuery";
 import {ListWalletTopupsResponse} from "./types/ListWalletTopupsResponse";
+import {AdminTopUpWallet} from "./types/AdminTopUpWallet";
+import {AdminWalletOperationResponse} from "./types/AdminWalletOperationResponse";
 
 enum HttpType {
     Get = "GET",
@@ -610,6 +611,45 @@ export class LemmyHttp extends Controller {
         return this.#wrapper<ListWalletTopupsQuery, ListWalletTopupsResponse>(
             HttpType.Get,
             "/admin/wallet/top-ups",
+            form,
+            options,
+        );
+    }
+
+
+    /**
+     * Admin top up
+     */
+
+    @Security("bearerAuth")
+    @Post("/admin/wallet/top-up")
+    @Tags("Admin", "Top-up")
+    async adminTopUpWallet(
+        @Body() form: AdminTopUpWallet,
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<AdminTopUpWallet, AdminWalletOperationResponse>(
+            HttpType.Post,
+            "/admin/wallet/top-up",
+            form,
+            options,
+        );
+    }
+
+    /**
+     * Admin withdraws coin for user
+     */
+
+    @Security("bearerAuth")
+    @Post("/admin/wallet/withdraw")
+    @Tags("Admin", "Withdraw")
+    async adminWithdrawWallet(
+        @Body() form: AdminTopUpWallet,
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<AdminTopUpWallet, AdminWalletOperationResponse>(
+            HttpType.Post,
+            "/admin/wallet/withdraw",
             form,
             options,
         );
