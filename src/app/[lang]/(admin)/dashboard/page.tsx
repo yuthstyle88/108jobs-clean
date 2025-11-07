@@ -1,58 +1,105 @@
-import { StatsCard } from "@/components/ui/StatsCard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Users, CreditCard, Coins, TrendingUp, AlertTriangle, CheckCircle } from "lucide-react";
+"use client";
+
+import {StatsCard} from "@/components/ui/StatsCard";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/Card";
+import {Users, MessageSquare, Globe, Activity, Shield, CheckCircle, AlertTriangle, Settings} from "lucide-react";
 import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
+import {useSiteStore} from "@/store/useSiteStore";
+import {format} from "date-fns";
+import {useTranslation} from "react-i18next";
 
 const DashboardPage = () => {
+    const {t} = useTranslation();
+    const {siteRes} = useSiteStore();
+
+    const site = siteRes?.siteView?.site;
+    const localSite = siteRes?.siteView?.localSite;
+    const rateLimit = siteRes?.siteView?.localSiteRateLimit;
+    const admins = siteRes?.admins || [];
+    const version = siteRes?.version;
+
+    const siteName = site?.name ?? "108Jobs";
+
     const stats = [
         {
-            title: "Total Users",
-            value: "12,345",
+            title: t("dashboard.stats.totalUsers"),
+            value: localSite?.users?.toLocaleString() ?? "0",
             icon: Users,
-            trend: { value: 12.3, isPositive: true },
-            description: "Active users",
+            description: t("dashboard.stats.descriptionUsers"),
         },
         {
-            title: "Today's Transactions",
-            value: "1,234",
-            icon: CreditCard,
-            trend: { value: 8.7, isPositive: true },
-            description: "Total transactions",
+            title: t("dashboard.stats.totalPosts"),
+            value: localSite?.posts?.toLocaleString() ?? "0",
+            icon: MessageSquare,
+            description: t("dashboard.stats.descriptionPosts"),
         },
         {
-            title: "Total System Coins",
-            value: "2.4M",
-            icon: Coins,
-            trend: { value: 15.2, isPositive: true },
-            description: "Circulating coins",
-        },
-        {
-            title: "Monthly Revenue",
-            value: "$45,678",
-            icon: TrendingUp,
-            trend: { value: 23.1, isPositive: true },
-            description: "Monthly revenue",
+            title: t("dashboard.stats.totalProposals"),
+            value: localSite?.comments?.toLocaleString() ?? "0",
+            icon: MessageSquare,
+            description: t("dashboard.stats.descriptionProposals"),
         },
     ];
 
-    const pendingActions = [
-        { title: "Users Pending Approval", count: 23, icon: Users, urgent: true },
-        { title: "Coin Withdrawal Requests", count: 15, icon: Coins, urgent: false },
-        { title: "Violation Reports", count: 7, icon: AlertTriangle, urgent: true },
-        { title: "Expired Subscriptions", count: 12, icon: CreditCard, urgent: false },
+    const activityMetrics = [
+        {label: t("dashboard.activity.today"), value: localSite?.usersActiveDay ?? 0},
+        {label: t("dashboard.activity.week"), value: localSite?.usersActiveWeek ?? 0},
+        {label: t("dashboard.activity.month"), value: localSite?.usersActiveMonth ?? 0},
+        {label: t("dashboard.activity.sixMonths"), value: localSite?.usersActiveHalfYear ?? 0},
     ];
 
     return (
         <AdminLayout>
             <div className="space-y-6 text-gray-600">
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+                    <h1 className="text-3xl font-bold text-foreground">
+                        {t("dashboard.title")}
+                    </h1>
                     <p className="text-muted-foreground mt-2">
-                        Job Portal System Management Overview
+                        {t("dashboard.description", {siteName})}
                     </p>
                 </div>
 
+                {/* Site Info Bar */}
+                <Card className="bg-muted/50 border-border/50">
+                    <CardContent className="flex flex-wrap items-center gap-6 py-3 text-sm">
+                        <div className="flex items-center gap-2">
+                            <Globe className="w-4 h-4 text-muted-foreground"/>
+                            <span
+                                className="font-medium">{t("dashboard.siteInfo.instance")}:</span> {site?.name ?? "108jobs"}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Settings className="w-4 h-4 text-muted-foreground"/>
+                            <span
+                                className="font-medium">{t("dashboard.siteInfo.version")}:</span> {version ?? "N/A"}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Shield className="w-4 h-4 text-muted-foreground"/>
+                            <span className="font-medium">{t("dashboard.siteInfo.registration")}:</span>{" "}
+                            <span
+                                className={localSite?.registrationMode === "Open" ? "text-success" : "text-warning"}
+                            >
+                {localSite?.registrationMode ?? t("common.unknown")}
+              </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4 text-muted-foreground"/>
+                            <span className="font-medium">{t("dashboard.siteInfo.emailVerification")}:</span>{" "}
+                            {localSite?.requireEmailVerification
+                                ? t("dashboard.siteInfo.required")
+                                : t("dashboard.siteInfo.optional")}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <AlertTriangle className="w-4 h-4 text-muted-foreground"/>
+                            <span className="font-medium">{t("dashboard.siteInfo.captcha")}:</span>{" "}
+                            {localSite?.captchaEnabled
+                                ? t("dashboard.siteInfo.enabled", {difficulty: localSite.captchaDifficulty ?? "easy"})
+                                : t("dashboard.siteInfo.disabled")}
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Stats Grid */}
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                     {stats.map((stat, index) => (
                         <StatsCard key={index} {...stat} />
@@ -60,104 +107,65 @@ const DashboardPage = () => {
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">
+                    {/* User Activity */}
                     <Card className="bg-gradient-card border-border/50">
                         <CardHeader>
                             <CardTitle className="text-foreground flex items-center gap-2">
-                                <AlertTriangle className="w-5 h-5 text-warning" />
-                                Pending Tasks
+                                <Activity className="w-5 h-5 text-blue"/>
+                                {t("dashboard.activity.title")}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {pendingActions.map((action, index) => (
-                                <div
-                                    key={index}
-                                    className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                                                action.urgent ? "bg-warning/20" : "bg-blue/20"
-                                            }`}
-                                        >
-                                            <action.icon
-                                                className={`w-5 h-5 ${
-                                                    action.urgent ? "text-warning" : "text-blue"
-                                                }`}
-                                            />
-                                        </div>
-                                        <div>
-                                            <p className="font-medium text-foreground">
-                                                {action.title}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                {action.count} pending items
-                                            </p>
-                                        </div>
+                            {activityMetrics.map((item, idx) => (
+                                <div key={idx} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                                    <div>
+                                        <p className="font-medium text-foreground">{item.label}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {item.value} {item.value === 1 ? t("dashboard.activity.user") : t("dashboard.activity.users")}
+                                        </p>
                                     </div>
-                                    <Button
-                                        size="sm"
-                                        variant={action.urgent ? "default" : "outline"}
-                                    >
-                                        Handle
-                                    </Button>
+                                    <div
+                                        className={`w-2 h-2 rounded-full ${item.value > 0 ? "bg-success" : "bg-muted"}`}/>
                                 </div>
                             ))}
                         </CardContent>
                     </Card>
 
+                    {/* Rate Limits & Admins */}
                     <Card className="bg-gradient-card border-border/50">
                         <CardHeader>
                             <CardTitle className="text-foreground flex items-center gap-2">
-                                <CheckCircle className="w-5 h-5 text-success" />
-                                Recent Activities
+                                <Shield className="w-5 h-5 text-warning"/>
+                                {t("dashboard.limits.title")}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-3">
-                                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                                    <div className="w-2 h-2 bg-success rounded-full"></div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium text-foreground">
-                                            User @john_doe has been approved
-                                        </p>
+                                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                                    <div>
+                                        <p className="font-medium text-foreground">{t("dashboard.limits.postRateLimit")}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            2 minutes ago
+                                            {rateLimit?.postMaxRequests ?? 6} {t("dashboard.limits.perMinute", {
+                                            minutes: (rateLimit?.postIntervalSeconds ?? 600) / 60
+                                        })}
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                                    <div className="w-2 h-2 bg-blue rounded-full"></div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium text-foreground">
-                                            Transferred 1,000 coins to @freelancer_pro
-                                        </p>
+                                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                                    <div>
+                                        <p className="font-medium text-foreground">{t("dashboard.limits.registerRateLimit")}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            15 minutes ago
+                                            {rateLimit?.registerMaxRequests ?? 10} {t("dashboard.limits.perHour")}
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                                    <div className="w-2 h-2 bg-warning rounded-full"></div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium text-foreground">
-                                            Cancelled subscription for @company_xyz
-                                        </p>
+                                <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                                    <div>
+                                        <p className="font-medium text-foreground">{t("dashboard.limits.admins")}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            1 hour ago
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                                    <div className="w-2 h-2 bg-destructive rounded-full"></div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium text-foreground">
-                                            Banned user @spam_account for policy violation
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            3 hours ago
+                                            {admins.length} {admins.length === 1 ? t("dashboard.limits.activeAdmin") : t("dashboard.limits.activeAdmins")}
                                         </p>
                                     </div>
                                 </div>
@@ -165,6 +173,60 @@ const DashboardPage = () => {
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Recent System Events */}
+                <Card className="bg-gradient-card border-border/50">
+                    <CardHeader>
+                        <CardTitle className="text-foreground flex items-center gap-2">
+                            <CheckCircle className="w-5 h-5 text-success"/>
+                            {t("dashboard.events.title")}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-3 text-sm">
+                            <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                                <div className="w-2 h-2 bg-success rounded-full"></div>
+                                <div className="flex-1">
+                                    <p className="font-medium text-foreground">
+                                        {t("dashboard.events.siteRefreshed")}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {site?.lastRefreshedAt
+                                            ? format(new Date(site.lastRefreshedAt), "PPp")
+                                            : t("dashboard.events.never")}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                                <div className="w-2 h-2 bg-blue rounded-full"></div>
+                                <div className="flex-1">
+                                    <p className="font-medium text-foreground">
+                                        {t("dashboard.events.adminActive", {name: admins[0]?.person?.name ?? "admin"})}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t("dashboard.events.instanceId", {id: site?.instanceId ?? "1"})}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {localSite?.posts !== undefined && localSite.posts > 0 && (
+                                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                                    <div className="w-2 h-2 bg-blue rounded-full"></div>
+                                    <div className="flex-1">
+                                        <p className="font-medium text-foreground">
+                                            {t("dashboard.events.postsPublished", {count: localSite.posts})}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t("dashboard.events.sinceLaunch", {
+                                                date: site?.publishedAt ? format(new Date(site.publishedAt), "PPP") : t("common.launch")
+                                            })}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </AdminLayout>
     );
