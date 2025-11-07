@@ -483,6 +483,7 @@ export const vi = {
             invalidName: "Tên người dùng không hợp lệ",
             titleLoginForm: "Chào mừng bạn trở lại",
             userNotFound: "Tên người dùng hoặc email không tồn tại",
+            siteBan: "Tài khoản của bạn đã bị cấm",
             roleSelectionLabel: "Bạn muốn trở thành:",
             resendEmail: "Gửi lại email",
             resendFailed: "Gửi lại mã OTP không thành công. Vui lòng thử lại.",
@@ -1844,6 +1845,41 @@ export const vi = {
             nextButton: "Tiếp",
             Refresh: "Làm mới",
             Loading: "Đang tải...",
+        },
+        manageUsers: {
+            title: "Người dùng",
+            description: "Quản lý và giám sát tài khoản người dùng",
+
+            allUsers: "Tất cả người dùng",
+            bannedOnly: "Đã bị cấm",
+
+            viewDetails: "Xem chi tiết",
+            ban: "Cấm",
+            unban: "Gỡ cấm",
+
+            bannedBadge: "Đã bị cấm",
+
+            noUsersFound: "Không tìm thấy người dùng",
+
+            userDetailModal: {
+                title: "Chi tiết người dùng",
+                approve: "Phê duyệt",
+                reject: "Từ chối",
+            },
+
+            banConfirmationModal: {
+                title: "Cấm người dùng",
+                description: "Bạn có chắc chắn muốn cấm người dùng này?",
+                reasonPlaceholder: "Nhập lý do cấm (tùy chọn)",
+                confirm: "Cấm người dùng",
+                cancel: "Hủy",
+                success: "Đã cấm người dùng",
+                successWithReason: "Đã cấm người dùng – {reason}",
+            },
+
+            bannedSuccess: "Đã cấm {name}",
+            unbannedSuccess: "Đã gỡ cấm {name}",
+            refresh: "Làm mới",
         },
         profileCompany: {
             buttonSearchCompany: "Tìm kiếm thông tin công ty",

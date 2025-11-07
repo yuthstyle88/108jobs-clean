@@ -6,11 +6,9 @@ interface UserDetailModalProps {
     isOpen: boolean;
     onClose: () => void;
     user: LocalUserView;
-    onApprove?: () => void;
-    onReject?: () => void;
 }
 
-export function UserDetailModal({isOpen, onClose, user, onApprove, onReject}: UserDetailModalProps) {
+export function UserDetailModal({isOpen, onClose, user}: UserDetailModalProps) {
     if (!isOpen) return null;
 
     const {person, localUser, banned} = user;

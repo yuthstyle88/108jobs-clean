@@ -74,6 +74,11 @@ export const handleLogin = async (i: LoginFormClass, data: any) => {
                             type: "manual",
                             message: t("authen.userNotFound"),
                         }),
+                    siteBan: () =>
+                        formMethods.setError("usernameOrEmail", {
+                            type: "manual",
+                            message: t("authen.siteBan"),
+                        }),
                     default: () =>
                         formMethods.setError("password", {
                             type: "manual",

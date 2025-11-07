@@ -10,9 +10,14 @@ import {UserDetailModal} from "@/modules/admin/components/Modal/UserDetailModal"
 import {toast} from "sonner";
 import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
 import {PaginationControls} from "@/components/PaginationControls";
-import {LocalUserView} from "lemmy-js-client";
+import {BanPerson, LocalUserView, Person} from "lemmy-js-client";
+import {BanConfirmationModal} from "@/modules/admin/components/Modal/BanConfirmationModal";
+import {useTranslation} from "react-i18next";
+import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 
 const ManageUsers = () => {
+    const {t} = useTranslation();
+
     const [filters, setFilters] = useState<{ limit: number; bannedOnly: boolean }>({
         limit: 10,
         bannedOnly: false,
@@ -26,12 +31,17 @@ const ManageUsers = () => {
         pageCursor: currentCursor,
     });
 
+    const {execute: executeBan, isMutating: isBanning} = useHttpPost("banPerson");
+
     const users: LocalUserView[] = data?.users ?? [];
     const hasNextPage = !!data?.nextPage;
     const hasPreviousPage = cursorHistory.length > 0;
 
     const [selectedUser, setSelectedUser] = useState<LocalUserView | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+    const [banTarget, setBanTarget] = useState<Person | null>(null);
+    const [banReason, setBanReason] = useState("");
 
     const handleFilterChange = (key: keyof typeof filters, value: any) => {
         setFilters((prev) => ({...prev, [key]: value}));
@@ -54,11 +64,54 @@ const ManageUsers = () => {
         }
     }, [cursorHistory]);
 
-    const handleBanToggle = (userId: number, userName: string, isBanned: boolean) => {
-        toast.success(`${isBanned ? "Unbanned" : "Banned"} ${userName}`);
-        refetch();
+    const openBanModal = (person: Person) => {
+        setBanTarget(person);
+        setBanReason("");
     };
 
+    const closeBanModal = () => {
+        setBanTarget(null);
+        setBanReason("");
+    };
+
+    const confirmBan = async () => {
+        if (!banTarget) return;
+
+        const payload: BanPerson = {
+            personId: banTarget.id,
+            ban: true,
+            reason: banReason || undefined,
+        };
+
+        try {
+            await executeBan(payload);
+            toast.success(
+                banReason
+                    ? t("manageUsers.banConfirmationModal.successWithReason", {reason: banReason})
+                    : t("manageUsers.bannedSuccess", {name: banTarget.name})
+            );
+            refetch(); // Refresh user list
+        } catch (error: any) {
+            toast.error(error.message || t("common.errorOccurred"));
+        } finally {
+            closeBanModal();
+        }
+    };
+
+    const handleUnban = async (userId: number, userName: string) => {
+        const payload: BanPerson = {
+            personId: userId,
+            ban: false,
+        };
+
+        try {
+            await executeBan(payload);
+            toast.success(t("manageUsers.unbannedSuccess", {name: userName}));
+            refetch();
+        } catch (error: any) {
+            toast.error(error.message || t("common.errorOccurred"));
+        }
+    };
     const openDetailModal = (user: LocalUserView) => {
         setSelectedUser(user);
         setIsDetailModalOpen(true);
@@ -70,8 +123,8 @@ const ManageUsers = () => {
                 {/* Header */}
                 <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-light tracking-tight text-foreground">Users</h1>
-                        <p className="text-sm text-muted-foreground mt-1">Manage and monitor user accounts</p>
+                        <h1 className="text-3xl font-light tracking-tight text-foreground">{t("manageUsers.title")}</h1>
+                        <p className="text-sm text-muted-foreground mt-1">{t("manageUsers.description")}</p>
                     </div>
 
                     <div className="flex gap-2">
@@ -82,7 +135,7 @@ const ManageUsers = () => {
                             className="text-xs"
                         >
                             <Ban className="w-3.5 h-3.5 mr-1"/>
-                            {filters.bannedOnly ? "Banned" : "All Users"}
+                            {filters.bannedOnly ? t("manageUsers.bannedOnly") : t("manageUsers.allUsers")}
                         </Button>
 
                         <Button
@@ -109,7 +162,7 @@ const ManageUsers = () => {
                     ) : users.length === 0 ? (
                         <Card className="border-dashed p-12 text-center">
                             <User className="w-12 h-12 mx-auto mb-3 text-muted-foreground/40"/>
-                            <p className="text-sm text-muted-foreground">No users found</p>
+                            <p className="text-sm text-muted-foreground">{t("manageUsers.noUsersFound")}</p>
                         </Card>
                     ) : (
                         users.map((userView) => {
@@ -133,11 +186,11 @@ const ManageUsers = () => {
 
                                             <div className="min-w-0 flex-1">
                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                    <h3 className="font-medium text-foreground truncate">{person.name}</h3>
+                                                    <h3 className="font-medium text-foreground truncate">{person.displayName}</h3>
                                                     {banned && (
                                                         <Badge variant="destructive" className="text-xs h-5">
                                                             <Ban className="w-3 h-3 mr-1"/>
-                                                            Banned
+                                                            {t("manageUsers.bannedBadge")}
                                                         </Badge>
                                                     )}
                                                 </div>
@@ -163,28 +216,27 @@ const ManageUsers = () => {
                                                 <Eye className="w-4 h-4"/>
                                             </Button>
 
-                                            <Button
-                                                variant={banned ? "outline" : "destructive"}
-                                                size="sm"
-                                                onClick={() => handleBanToggle(localUser.id, person.name, banned)}
-                                                className={`text-xs font-medium transition-colors ${
-                                                    banned
-                                                        ? "border-green-600 text-green-600 hover:bg-green-50"
-                                                        : "hover:bg-red-600"
-                                                }`}
-                                            >
-                                                {banned ? (
-                                                    <>
-                                                        <RotateCcw className="w-3.5 h-3.5 mr-1"/>
-                                                        Unban
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Ban className="w-3.5 h-3.5 mr-1"/>
-                                                        Ban
-                                                    </>
-                                                )}
-                                            </Button>
+                                            {banned ? (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleUnban(localUser.id, person.name)}
+                                                    className="text-xs font-medium border-green-600 text-green-600 hover:bg-green-50"
+                                                >
+                                                    <RotateCcw className="w-3.5 h-3.5 mr-1"/>
+                                                    {isBanning ? t("common.processing") : t("manageUsers.unban")}
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() => openBanModal(person)}
+                                                    className="py-2 px-4 rounded-lg font-medium bg-red-500 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                                >
+                                                    <Ban className="w-3.5 h-3.5 mr-1"/>
+                                                    {t("manageUsers.ban")}
+                                                </Button>
+                                            )}
                                         </div>
                                     </div>
                                 </Card>
@@ -211,15 +263,22 @@ const ManageUsers = () => {
                             setSelectedUser(null);
                         }}
                         user={selectedUser}
-                        onApprove={() => {
-                            // Example: ban/unban or approve logic
-                            console.log("Approve user:", selectedUser.localUser.id);
-                        }}
-                        onReject={() => {
-                            console.log("Reject user:", selectedUser.localUser.id);
-                        }}
                     />
                 )}
+
+                <BanConfirmationModal
+                    isOpen={!!banTarget}
+                    user={{
+                        id: banTarget?.id ?? 0,
+                        name: banTarget?.name ?? "",
+                        handle: banTarget?.displayName ?? "",
+                    }}
+                    reason={banReason}
+                    onReasonChange={setBanReason}
+                    onConfirm={confirmBan}
+                    onCancel={closeBanModal}
+                    isLoading={isBanning}
+                />
             </div>
         </AdminLayout>
     );

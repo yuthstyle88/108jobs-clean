@@ -483,6 +483,7 @@ export const th = {
             invalidName: "ชื่อผู้ใช้ไม่ถูกต้อง",
             titleSignInCreateAccount: `เข้าสู่ระบบ ${getAppName()}`,
             userNotFound: "ชื่อผู้ใช้หรืออีเมลไม่มีอยู่ในระบบ",
+            siteBan: "บัญชีของคุณถูกแบนแล้ว",
             roleSelectionLabel: "คุณต้องการเป็น:",
             resendEmail: "ส่งอีเมลอีกครั้ง",
             resendFailed: "ไม่สามารถส่งรหัส OTP อีกครั้ง กรุณาลองใหม่",
@@ -1793,6 +1794,41 @@ export const th = {
 
             Refresh: "รีเฟรช",
             Loading: "กำลังโหลด...",
+        },
+        manageUsers: {
+            title: "ผู้ใช้",
+            description: "จัดการและติดตามบัญชีผู้ใช้",
+
+            allUsers: "ผู้ใช้ทั้งหมด",
+            bannedOnly: "ถูกแบน",
+
+            viewDetails: "ดูรายละเอียด",
+            ban: "แบน",
+            unban: "ยกเลิกแบน",
+
+            bannedBadge: "ถูกแบน",
+
+            noUsersFound: "ไม่พบผู้ใช้",
+
+            userDetailModal: {
+                title: "รายละเอียดผู้ใช้",
+                approve: "อนุมัติ",
+                reject: "ปฏิเสธ",
+            },
+
+            banConfirmationModal: {
+                title: "แบนผู้ใช้",
+                description: "คุณแน่ใจหรือไม่ว่าต้องการแบนผู้ใช้นี้?",
+                reasonPlaceholder: "ระบุเหตุผลการแบน (ไม่บังคับ)",
+                confirm: "แบนผู้ใช้",
+                cancel: "ยกเลิก",
+                success: "แบนผู้ใช้เรียบร้อยแล้ว",
+                successWithReason: "แบนผู้ใช้แล้ว – {reason}",
+            },
+
+            bannedSuccess: "แบน {name} แล้ว",
+            unbannedSuccess: "ยกเลิกแบน {name} แล้ว",
+            refresh: "รีเฟรช",
         },
         profileCompany: {
             buttonSearchCompany: "ค้นหาข้อมูลบริษัท",

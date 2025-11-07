@@ -1,6 +1,7 @@
 import {Button} from "@/components/ui/Button";
 import {ChevronLeft, ChevronRight} from "lucide-react";
 import React from "react";
+import {useTranslation} from "react-i18next";
 
 interface PaginationControlsProps {
     hasPrevious: boolean;
@@ -17,6 +18,7 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
                                                                           onNext,
                                                                           isLoading = false,
                                                                       }) => {
+    const {t} = useTranslation();
     if (!hasPrevious && !hasNext) return null;
 
     return (
@@ -29,7 +31,7 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
                     className="py-2 px-4 rounded-lg font-medium bg-primary text-white hover:bg-[#063a68] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
                     <ChevronLeft className="w-4 h-4 mr-1.5"/>
-                    Previous
+                    {t("profileCoins.previousButton")}
                 </Button>
             )}
             {hasNext && (
@@ -38,7 +40,7 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
                     disabled={isLoading}
                     className="py-2 px-4 rounded-lg font-medium bg-primary text-white hover:bg-[#063a68] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
-                    Next
+                    {t("profileCoins.nextButton")}
                     <ChevronRight className="w-4 h-4 ml-1.5"/>
                 </Button>
             )}

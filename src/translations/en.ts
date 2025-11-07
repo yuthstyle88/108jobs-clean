@@ -487,6 +487,7 @@ export const en = {
             invalidName: "Username is not valid",
             titleLoginForm: "Welcome back",
             userNotFound: "Username or email does not exist",
+            siteBan: "Your account has been banned",
             roleSelectionLabel: "You want to be a/an:",
             resendEmail: "Resend email",
             resendFailed: "Failed to resend OTP. Please try again.",
@@ -1843,6 +1844,47 @@ export const en = {
             // Buttons
             Refresh: "Refresh",
             Loading: "Loading...",
+        },
+        manageUsers: {
+            title: "Users",
+            description: "Manage and monitor user accounts",
+
+            // Filters
+            allUsers: "All Users",
+            bannedOnly: "Banned",
+
+            // Actions
+            viewDetails: "View Details",
+            ban: "Ban",
+            unban: "Unban",
+
+            // Status
+            bannedBadge: "Banned",
+
+            // Empty State
+            noUsersFound: "No users found",
+
+            // Modals
+            userDetailModal: {
+                title: "User Details",
+                approve: "Approve",
+                reject: "Reject",
+            },
+
+            banConfirmationModal: {
+                title: "Ban User",
+                description: "Are you sure you want to ban this user?",
+                reasonPlaceholder: "Enter reason for ban (optional)",
+                confirm: "Ban User",
+                cancel: "Cancel",
+                success: "User has been banned",
+                successWithReason: "User has been banned – {reason}",
+            },
+
+            // Toast Messages
+            bannedSuccess: "Banned {name}",
+            unbannedSuccess: "Unbanned {name}",
+            refresh: "Refresh",
         },
         profileCompany: {
             buttonSearchCompany: "Search Company Information",
