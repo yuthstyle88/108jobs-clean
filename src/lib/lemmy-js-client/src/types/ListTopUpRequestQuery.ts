@@ -1,11 +1,11 @@
-import {TopupStatus} from "./TopupStatus";
+import {TopUpStatus} from "./TopUpStatus";
 import {PaginationCursor} from "./PaginationCursor";
 
-export type ListWalletTopupsQuery = {
+export type ListTopUpRequestQuery = {
     amountMin?: number;
     amountMax?: number;
     /** Optional filter by status (Pending, Success) */
-    status?: TopupStatus;
+    status?: TopUpStatus;
     /** Optional filter by year of createdAt */
     year?: number;
     /** Optional filter by month of createdAt */

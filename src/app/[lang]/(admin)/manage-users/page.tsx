@@ -188,7 +188,7 @@ const ManageUsers = () => {
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <h3 className="font-medium text-foreground truncate">{person.displayName}</h3>
                                                     {banned && (
-                                                        <Badge variant="destructive" className="text-xs h-5">
+                                                        <Badge variant="destructive" className="text-xs h-5 bg-red-600 text-white">
                                                             <Ban className="w-3 h-3 mr-1"/>
                                                             {t("manageUsers.bannedBadge")}
                                                         </Badge>

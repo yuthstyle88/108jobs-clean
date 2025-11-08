@@ -1,15 +1,15 @@
 import {LocalUserId} from "./LocalUserId";
-import {WalletTopupId} from "./WalletTopupId";
-import {TopupStatus} from "./TopupStatus";
+import {TopUpRequestId} from "./TopUpRequestId";
+import {TopUpStatus} from "./TopUpStatus";
 
-export type WalletTopup = {
-    id: WalletTopupId;
+export type TopUpRequest = {
+    id: TopUpRequestId;
     localUserId: LocalUserId;
     amount: number;
     currencyName: string;
     qrId: string;
     csExtExpiryTime: string; // ISO 8601 datetime string
-    status: TopupStatus;
+    status: TopUpStatus;
     transferred: boolean;
     createdAt: string; // ISO 8601 datetime string
     updatedAt: string; // ISO 8601 datetime string

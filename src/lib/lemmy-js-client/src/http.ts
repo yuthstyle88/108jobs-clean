@@ -275,8 +275,8 @@ import type {ListUserReviewsResponse} from "./types/ListUserReviewsResponse";
 import type {ListUserReviewsQuery} from "./types/ListUserReviewsQuery";
 import {BankAccountOperationResponse} from "./types/BankAccountOperationResponse";
 import {UpdateBankAccount} from "./types/UpdateBankAccount";
-import {ListWalletTopupsQuery} from "./types/ListWalletTopupsQuery";
-import {ListWalletTopupsResponse} from "./types/ListWalletTopupsResponse";
+import {ListTopUpRequestQuery} from "./types/ListTopUpRequestQuery";
+import {ListTopUpRequestResponse} from "./types/ListTopUpRequestResponse";
 import {AdminTopUpWallet} from "./types/AdminTopUpWallet";
 import {AdminWalletOperationResponse} from "./types/AdminWalletOperationResponse";
 
@@ -603,12 +603,12 @@ export class LemmyHttp extends Controller {
      */
     @Security("bearerAuth")
     @Get("/admin/wallet/top-ups")
-    @Tags("Admin", "WalletTopup")
-    async listWalletTopupsAdmin(
-        @Queries() form: ListWalletTopupsQuery = {},
+    @Tags("Admin", "TopUpRequests")
+    async adminListTopUpRequests(
+        @Queries() form: ListTopUpRequestQuery = {},
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<ListWalletTopupsQuery, ListWalletTopupsResponse>(
+        return this.#wrapper<ListTopUpRequestQuery, ListTopUpRequestResponse>(
             HttpType.Get,
             "/admin/wallet/top-ups",
             form,
@@ -3204,16 +3204,16 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary Get wallet topups for a user.
+     * @summary Get wallet top-ups for a user.
      */
     @Security("bearerAuth")
     @Get("/account/wallet/top-ups")
-    @Tags("WalletTopup")
-    async listWalletTopups(
-        @Queries() form: ListWalletTopupsQuery,
+    @Tags("TopUpRequests")
+    async listTopUpRequests(
+        @Queries() form: ListTopUpRequestQuery,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<ListWalletTopupsQuery, ListWalletTopupsResponse>(
+        return this.#wrapper<ListTopUpRequestQuery, ListTopUpRequestResponse>(
             HttpType.Get,
             "/account/wallet/top-ups",
             form,

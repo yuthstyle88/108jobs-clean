@@ -1,7 +1,7 @@
 "use client";
 import {useState, useCallback} from "react";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
-import {ListWalletTopupsQuery, WalletTopupView} from "lemmy-js-client";
+import {ListTopUpRequestQuery, TopUpRequestView} from "lemmy-js-client";
 import {format} from "date-fns";
 import {toast} from "sonner";
 import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
@@ -19,27 +19,27 @@ import {REQUEST_STATE} from "@/services/HttpService";
 import {TopupGuide} from "@/modules/admin/components/TopupGuide";
 import {useTranslation} from "react-i18next";
 
-const TopupCoins = () => {
+const TopUpCoins = () => {
     const {t} = useTranslation();
-    const [filters, setFilters] = useState<ListWalletTopupsQuery>({limit: 10});
+    const [filters, setFilters] = useState<ListTopUpRequestQuery>({limit: 10});
     const [currentCursor, setCurrentCursor] = useState<string | undefined>();
     const [cursorHistory, setCursorHistory] = useState<string[]>([]);
 
-    const {data, isLoading, execute: refetch} = useHttpGet("listWalletTopupsAdmin", {
+    const {data, isLoading, execute: refetch} = useHttpGet("adminListTopUpRequests", {
         ...filters,
         pageCursor: currentCursor,
     });
 
     const {execute: adminTopUpWallet, isMutating: isToppingUp} = useHttpPost("adminTopUpWallet");
 
-    const topups: WalletTopupView[] = data?.walletTopups ?? [];
+    const topUps: TopUpRequestView[] = data?.topUpRequests ?? [];
     const hasNextPage = !!data?.nextPage;
     const hasPreviousPage = cursorHistory.length > 0;
 
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
-    const [selectedTransfer, setSelectedTransfer] = useState<WalletTopupView | null>(null);
+    const [selectedTransfer, setSelectedTransfer] = useState<TopUpRequestView | null>(null);
 
-    const handleFilterChange = (key: keyof ListWalletTopupsQuery, value: any) => {
+    const handleFilterChange = (key: keyof ListTopUpRequestQuery, value: any) => {
         setFilters((prev) => ({...prev, [key]: value}));
     };
 
@@ -64,8 +64,8 @@ const TopupCoins = () => {
         }
     }, [cursorHistory]);
 
-    const openTransferModal = (topup: WalletTopupView) => {
-        setSelectedTransfer(topup);
+    const openTransferModal = (topUp: TopUpRequestView) => {
+        setSelectedTransfer(topUp);
         setIsTransferModalOpen(true);
     };
 
@@ -74,8 +74,8 @@ const TopupCoins = () => {
 
         const payload: AdminTopUpWallet = {
             targetUserId: selectedTransfer.localUser.id,
-            qrId: selectedTransfer.walletTopup.qrId,
-            amount: selectedTransfer.walletTopup.amount,
+            qrId: selectedTransfer.topUpRequest.qrId,
+            amount: selectedTransfer.topUpRequest.amount,
             reason: "Admin top-up from payment",
         };
 
@@ -86,7 +86,7 @@ const TopupCoins = () => {
                 return;
             }
             toast.success(t("topupCoins.toast.success", {
-                amount: selectedTransfer.walletTopup.amount.toLocaleString(),
+                amount: selectedTransfer.topUpRequest.amount.toLocaleString(),
                 email: selectedTransfer.localUser.email,
             }));
             refetch();
@@ -215,7 +215,7 @@ const TopupCoins = () => {
                                 {t("topupCoins.list.loading")}
                             </p>
                         </div>
-                    ) : topups.length === 0 ? (
+                    ) : topUps.length === 0 ? (
                         <div className="text-center py-16 bg-muted/30 rounded-lg">
                             <p className="text-lg font-medium text-muted-foreground">
                                 {t("topupCoins.list.noResults")}
@@ -225,8 +225,8 @@ const TopupCoins = () => {
                             </p>
                         </div>
                     ) : (
-                        topups.map((item) => {
-                            const wt = item.walletTopup;
+                        topUps.map((item) => {
+                            const wt = item.topUpRequest;
                             const canTransfer = wt.status === "Success" && !wt.transferred;
 
                             return (
@@ -315,9 +315,9 @@ const TopupCoins = () => {
                             ? {
                                 userName: selectedTransfer.localUser.email || "Unknown",
                                 reason: "User paid via QR",
-                                amount: selectedTransfer.walletTopup.amount,
-                                paymentCode: selectedTransfer.walletTopup.qrId || undefined,
-                                date: format(new Date(selectedTransfer.walletTopup.createdAt), "dd MMM yyyy, HH:mm"),
+                                amount: selectedTransfer.topUpRequest.amount,
+                                paymentCode: selectedTransfer.topUpRequest.qrId || undefined,
+                                date: format(new Date(selectedTransfer.topUpRequest.createdAt), "dd MMM yyyy, HH:mm"),
                             }
                             : null
                     }
@@ -327,4 +327,4 @@ const TopupCoins = () => {
     );
 };
 
-export default TopupCoins;
+export default TopUpCoins;

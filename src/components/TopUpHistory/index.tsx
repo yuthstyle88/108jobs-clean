@@ -4,14 +4,14 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useTranslation} from "react-i18next";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useCallback, useMemo, useState} from "react";
-import {ListWalletTopupsQuery, WalletTopupView} from "@/lib/lemmy-js-client/src";
+import {ListTopUpRequestQuery, TopUpRequestView} from "lemmy-js-client";
 import {format} from "date-fns";
 
 const TopUpHistory = () => {
     const {t} = useTranslation();
 
     // Filters state
-    const [filters, setFilters] = useState<ListWalletTopupsQuery>({
+    const [filters, setFilters] = useState<ListTopUpRequestQuery>({
         status: undefined,
         amountMin: undefined,
         amountMax: undefined,
@@ -22,7 +22,7 @@ const TopUpHistory = () => {
     const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined);
     const [cursorHistory, setCursorHistory] = useState<string[]>([]);
 
-    const {data, isLoading, execute: refetch} = useHttpGet("listWalletTopups", {
+    const {data, isLoading, execute: refetch} = useHttpGet("listTopUpRequests", {
         ...filters,
         pageCursor: currentCursor,
     });
@@ -30,9 +30,9 @@ const TopUpHistory = () => {
     const hasPreviousPage = useMemo(() => cursorHistory.length > 0, [cursorHistory]);
     const hasNextPage = useMemo(() => !!data?.nextPage, [data?.nextPage]);
 
-    const topUps: WalletTopupView[] = data?.walletTopups ?? [];
+    const topUps: TopUpRequestView[] = data?.topUpRequests ?? [];
 
-    const handleFilterChange = (key: keyof ListWalletTopupsQuery, value: any) => {
+    const handleFilterChange = (key: keyof ListTopUpRequestQuery, value: any) => {
         setFilters((prev) => ({...prev, [key]: value}));
     };
 
@@ -322,33 +322,33 @@ const TopUpHistory = () => {
                         ) : (
                             topUps.map((item) => (
                                 <tr
-                                    key={item.walletTopup.id}
+                                    key={item.topUpRequest.id}
                                     className="hover:bg-gray-50 transition-colors duration-150"
                                 >
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <code className="text-sm font-mono text-primary bg-gray-100 px-2 py-1 rounded">
-                                            {item.walletTopup.qrId}
+                                            {item.topUpRequest.qrId}
                                         </code>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-700">
-                                        {format(new Date(item.walletTopup.createdAt), "dd MMM yyyy, HH:mm")}
+                                        {format(new Date(item.topUpRequest.createdAt), "dd MMM yyyy, HH:mm")}
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className="text-sm font-semibold text-gray-900">
-                                            {item.walletTopup.amount.toLocaleString()}
+                                            {item.topUpRequest.amount.toLocaleString()}
                                         </span>{" "}
                                         <span className="text-xs text-gray-500 uppercase">
-                                            {item.walletTopup.currencyName}
+                                            {item.topUpRequest.currencyName}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
                                         <span
                                             className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(
-                                                item.walletTopup.status
+                                                item.topUpRequest.status
                                             )}`}
                                         >
-                                            {getStatusIcon(item.walletTopup.status)}
-                                            {t(`profileCoins.${item.walletTopup.status}`)}
+                                            {getStatusIcon(item.topUpRequest.status)}
+                                            {t(`profileCoins.${item.topUpRequest.status}`)}
                                         </span>
                                     </td>
                                 </tr>
