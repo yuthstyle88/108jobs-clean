@@ -13,6 +13,7 @@ import GlobalLoader from "@/components/Common/Loading/Loading";
 import {getLangCookies} from "@/utils/getLangCookies";
 import {UserServiceProvider} from "@/contexts/UserServiceContext";
 import {GlobalLoaderProvider} from "@/hooks/ui/GlobalLoaderContext";
+import {TooltipProvider} from "@/components/ui/Tooltip";
 
 const kanit = Kanit({
     subsets: ["latin", "vietnamese", "thai"],
@@ -55,11 +56,13 @@ export default async function RootLayout({
                         isoData={isoData ?? null}
                     >
                         <AnnouncementProvider>
-                            <Toaster richColors closeButton position="bottom-right"/>
-                            <AccessibleAnnouncements/>
-                            <GlobalError/>
-                            <GlobalLoader/>
-                            {children}
+                            <TooltipProvider>
+                                <Toaster richColors closeButton position="bottom-right"/>
+                                <AccessibleAnnouncements/>
+                                <GlobalError/>
+                                <GlobalLoader/>
+                                {children}
+                            </TooltipProvider>
                         </AnnouncementProvider>
                     </UserServiceProvider>
                 </GlobalErrorProvider>

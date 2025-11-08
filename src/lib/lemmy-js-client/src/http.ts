@@ -262,7 +262,6 @@ import type {ChatHistoryQuery} from "./types/ChatHistoryQuery";
 import type {ChatMessagesResponse} from "./types/ChatMessagesResponse";
 import type {Billing} from "./types/Billing";
 import type {GetBillingByRoomQuery} from "./types/GetBillingByRoomQuery";
-import type {ScbTokenResponse} from "./types/ScbTokenResponse";
 import type {ScbQrCodeRequest, ScbQrCodeResponse} from "./types/ScbQrCode";
 import type {ScbQrInquiryRequest, ScbQrInquiryResponse} from "./types/ScbQrInquiry";
 import type {BillingId} from "./types/BillingId";
@@ -276,6 +275,10 @@ import type {ListUserReviewsResponse} from "./types/ListUserReviewsResponse";
 import type {ListUserReviewsQuery} from "./types/ListUserReviewsQuery";
 import {BankAccountOperationResponse} from "./types/BankAccountOperationResponse";
 import {UpdateBankAccount} from "./types/UpdateBankAccount";
+import {ListWalletTopupsQuery} from "./types/ListWalletTopupsQuery";
+import {ListWalletTopupsResponse} from "./types/ListWalletTopupsResponse";
+import {AdminTopUpWallet} from "./types/AdminTopUpWallet";
+import {AdminWalletOperationResponse} from "./types/AdminWalletOperationResponse";
 
 enum HttpType {
     Get = "GET",
@@ -590,6 +593,63 @@ export class LemmyHttp extends Controller {
         return this.#wrapper<ListMedia, ListMediaResponse>(
             HttpType.Get,
             "/image/list",
+            form,
+            options,
+        );
+    }
+
+    /**
+     * @summary List all wallet topups (admin view).
+     */
+    @Security("bearerAuth")
+    @Get("/admin/wallet/top-ups")
+    @Tags("Admin", "WalletTopup")
+    async listWalletTopupsAdmin(
+        @Queries() form: ListWalletTopupsQuery = {},
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<ListWalletTopupsQuery, ListWalletTopupsResponse>(
+            HttpType.Get,
+            "/admin/wallet/top-ups",
+            form,
+            options,
+        );
+    }
+
+
+    /**
+     * Admin top up
+     */
+
+    @Security("bearerAuth")
+    @Post("/admin/wallet/top-up")
+    @Tags("Admin", "Top-up")
+    async adminTopUpWallet(
+        @Body() form: AdminTopUpWallet,
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<AdminTopUpWallet, AdminWalletOperationResponse>(
+            HttpType.Post,
+            "/admin/wallet/top-up",
+            form,
+            options,
+        );
+    }
+
+    /**
+     * Admin withdraws coin for user
+     */
+
+    @Security("bearerAuth")
+    @Post("/admin/wallet/withdraw")
+    @Tags("Admin", "Withdraw")
+    async adminWithdrawWallet(
+        @Body() form: AdminTopUpWallet,
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<AdminTopUpWallet, AdminWalletOperationResponse>(
+            HttpType.Post,
+            "/admin/wallet/withdraw",
             form,
             options,
         );
@@ -3054,23 +3114,6 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary Generate SCB access token.
-     */
-    @Security("bearerAuth")
-    @Post("/scb/token")
-    @Tags("SCB")
-    async generateScbToken(
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<object, ScbTokenResponse>(
-            HttpType.Post,
-            "/scb/token",
-            {},
-            options,
-        );
-    }
-
-    /**
      * @summary Create SCB QR Code.
      */
     @Security("bearerAuth")
@@ -3159,6 +3202,25 @@ export class LemmyHttp extends Controller {
             options,
         );
     }
+
+    /**
+     * @summary Get wallet topups for a user.
+     */
+    @Security("bearerAuth")
+    @Get("/account/wallet/top-ups")
+    @Tags("WalletTopup")
+    async listWalletTopups(
+        @Queries() form: ListWalletTopupsQuery,
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<ListWalletTopupsQuery, ListWalletTopupsResponse>(
+            HttpType.Get,
+            "/account/wallet/top-ups",
+            form,
+            options,
+        );
+    }
+
 
     /**
      * @summary Get a Billing by ID.
@@ -3357,6 +3419,7 @@ export class LemmyHttp extends Controller {
             options,
         );
     }
+
     /**
      * @summary Fetch last read for a user of a room.
      */
@@ -3512,7 +3575,7 @@ function createFormData(image: File | Buffer, fieldName: string = "images[]"): F
     } else {
         const isUploadFile = fieldName === "uploadFile";
         const mime = isUploadFile ? "application/octet-stream" : "image/jpeg";
-        const blob = new Blob([Buffer.isBuffer(image) ? new Uint8Array(image) : (image as unknown as ArrayBuffer)], { type: mime });
+        const blob = new Blob([Buffer.isBuffer(image) ? new Uint8Array(image) : (image as unknown as ArrayBuffer)], {type: mime});
         const filename = isUploadFile ? "file.bin" : "image.jpg";
         formData.append(fieldName, blob, filename);
     }

@@ -2,7 +2,6 @@ export type ScbQrCodeBody = Record<string, unknown>;
 
 export type ScbQrCodeRequest = {
     body: ScbQrCodeBody;
-    token: string;
 };
 
 export type ScbQrCodeData = {
