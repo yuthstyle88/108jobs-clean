@@ -464,7 +464,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                 await sendMessage({
                   message: JSON.stringify({type: 'review-submitted', rating: form.rating, comment: form.comment}),
                   senderId: Number(localUser.id),
-                  secure: true,
+                  secure: Boolean((localUser as any)?.isMessageSecure),
                   id: messageId,
                 });
                 return true;
@@ -527,7 +527,12 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
             } catch {
             }
 
-            sendMessage({message: contentToSend, senderId: Number(localUser.id), secure: true, id: messageId});
+            await sendMessage({
+              message: contentToSend,
+              senderId: Number(localUser.id),
+              secure: Boolean((localUser as any)?.isMessageSecure),
+              id: messageId
+            });
 
             setSelectedFile(null);
             isSubmittingRef.current = false;

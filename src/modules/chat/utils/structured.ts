@@ -57,7 +57,7 @@ export const sendStructured = async (
     roomId: string,
     payload: Structured,
     senderId: LocalUserId,
-    opts: { previewText?: string; attach?: { url: string; name?: string } | null } = {}
+    opts: { previewText?: string; attach?: { url: string; name?: string } | null; secure?: boolean } = {}
 ) => {
     const id = uuidv4();
     const content = serializeStructured(payload);
@@ -75,7 +75,7 @@ export const sendStructured = async (
         status: "sending"
     });
 
-    const secure = true;
+    const secure = typeof opts.secure === 'boolean' ? opts.secure : false;
     await sendMessage({senderId: senderId, message, secure, id});
     return id;
 };

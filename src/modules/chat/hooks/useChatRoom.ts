@@ -343,7 +343,7 @@ export function useChatRoom({
         // Ensure payload has a senderId (fallback to localUser.id)
         const payload: MessagePayload = {
             ...data,
-            secure: true,
+            secure: Boolean((localUser as any)?.isMessageSecure),
             senderId: Number(localUser.id) || (data as any)?.senderId,
         };
 

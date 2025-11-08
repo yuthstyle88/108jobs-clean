@@ -47,7 +47,7 @@ export const ReviewDeliveryModal: React.FC<ReviewDeliveryModalProps> = ({
                             sendMessage({
                                 message: JSON.stringify({ type: 'delivery-accepted' }),
                                 senderId: Number(localUser?.id) || 0,
-                                secure: true,
+                                secure: Boolean((localUser as any)?.isMessageSecure),
                                 id: uuidv4(),
                             });
                             try {

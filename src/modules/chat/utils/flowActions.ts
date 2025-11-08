@@ -60,7 +60,7 @@ export function createFlowActions(deps: CreateFlowActionsDeps): FlowActions {
             await sendChatMessage({roomId} as any, {
                 message: payload,
                 senderId: localUser.id,
-                secure: true,
+                secure: Boolean((localUser as any)?.isMessageSecure),
                 id: messageId
             });
 
@@ -94,7 +94,7 @@ export function createFlowActions(deps: CreateFlowActionsDeps): FlowActions {
             await sendChatMessage({roomId} as any, {
                 message: payload,
                 senderId: localUser.id,
-                secure: true,
+                secure: Boolean((localUser as any)?.isMessageSecure),
                 id: messageId
             });
 

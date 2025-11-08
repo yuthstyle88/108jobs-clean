@@ -42,7 +42,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                 setApiError(err);
             } else {
                 setApiErrorState(err);
-            }
+            }``
         },
         [setApiError]);
 
