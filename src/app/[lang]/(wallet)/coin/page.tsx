@@ -50,8 +50,6 @@ const Coins108Jobs = () => {
     };
 
     const handleWithdrawSubmit = async () => {
-        console.log("Withdrawal Request:", withdrawAmount);
-        console.log("Withdrawal bank:", selectedBank);
         if (!isValidWithdrawAmount || !selectedBank) return;
 
         const payload: SubmitWithdrawRequest = {
@@ -61,7 +59,6 @@ const Coins108Jobs = () => {
             reason: withdrawReason ?? t("profileCoins.withdrawRequest"),
         };
 
-        console.log("Withdrawal Request:", payload);
         const res = await submitWithdraw(payload);
         if (isSuccess(res)) {
             toast(t("profileCoins.withdrawalRequestSent"));

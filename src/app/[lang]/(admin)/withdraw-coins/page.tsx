@@ -1,441 +1,595 @@
 "use client";
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
-import { CustomInput } from "@/components/ui/InputField";
-import { Textarea } from "@/components/ui/Textarea";
-import { Label } from "@/components/ui/Label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select";
-import { Minus, Search, Filter, CheckCircle, XCircle, Eye, CreditCard } from "lucide-react";
-import { toast } from "sonner";
-import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
 
-interface WithdrawRequest {
-    id: string;
-    userId: string;
-    userName: string;
-    userEmail: string;
-    avatar?: string;
-    amount: number;
-    bankInfo: {
-        bankName: string;
-        accountNumber: string;
-        accountName: string;
-    };
-    requestDate: string;
-    status: "pending" | "approved" | "rejected" | "processing";
-    reason?: string;
-    adminNote?: string;
-    currentBalance: number;
-}
+import {useCallback, useState} from "react";
+import {Card, CardContent} from "@/components/ui/Card";
+import {Button} from "@/components/ui/Button";
+import {Badge} from "@/components/ui/Badge";
+import {Textarea} from "@/components/ui/Textarea";
+import {Label} from "@/components/ui/Label";
+import {Minus, CheckCircle, XCircle, Eye, CreditCard, Filter, ChevronDown, Loader2} from "lucide-react";
+import {toast} from "sonner";
+import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
+import {useHttpPost} from "@/hooks/api/http/useHttpPost";
+import {PaginationControls} from "@/components/PaginationControls";
+import {useTranslation} from "react-i18next";
+import type {ListWithdrawRequestQuery, WithdrawRequestView, WithdrawStatus} from "lemmy-js-client";
+import {Skeleton} from "@/components/ui/Skeleton";
+import {cn} from "@/lib/utils";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faCoins} from "@fortawesome/free-solid-svg-icons";
 
 const WithdrawCoins = () => {
-    const [filter, setFilter] = useState("pending");
-    const [searchTerm, setSearchTerm] = useState("");
-    const [selectedRequest, setSelectedRequest] = useState<WithdrawRequest | null>(null);
+    const {t} = useTranslation();
+
+    // ──────────────────────────────────────────────────────────────
+    // State
+    // ──────────────────────────────────────────────────────────────
+    const [filters, setFilters] = useState<ListWithdrawRequestQuery>({limit: 10});
+    const [currentCursor, setCurrentCursor] = useState<string | undefined>();
+    const [cursorHistory, setCursorHistory] = useState<string[]>([]);
+    const [isGoingBack, setIsGoingBack] = useState(false);
+    const [selectedRequest, setSelectedRequest] = useState<WithdrawRequestView | null>(null);
     const [adminNote, setAdminNote] = useState("");
+    const [showFilters, setShowFilters] = useState(false);
 
-    const withdrawRequests: WithdrawRequest[] = [
-        {
-            id: "wd_001",
-            userId: "user_001",
-            userName: "John Smith",
-            userEmail: "john.smith@email.com",
-            amount: 50000,
-            bankInfo: {
-                bankName: "Chase Bank",
-                accountNumber: "1234567890",
-                accountName: "JOHN SMITH"
-            },
-            requestDate: "2024-01-15T10:30:00Z",
-            status: "pending",
-            currentBalance: 75000
-        },
-        {
-            id: "wd_002",
-            userId: "user_002",
-            userName: "Jane Doe",
-            userEmail: "jane.doe@email.com",
-            amount: 100000,
-            bankInfo: {
-                bankName: "Wells Fargo",
-                accountNumber: "9876543210",
-                accountName: "JANE DOE"
-            },
-            requestDate: "2024-01-14T14:20:00Z",
-            status: "processing",
-            currentBalance: 120000
-        },
-        {
-            id: "wd_003",
-            userId: "user_003",
-            userName: "Mike Johnson",
-            userEmail: "mike.johnson@email.com",
-            amount: 25000,
-            bankInfo: {
-                bankName: "Bank of America",
-                accountNumber: "1122334455",
-                accountName: "MIKE JOHNSON"
-            },
-            requestDate: "2024-01-13T09:15:00Z",
-            status: "approved",
-            adminNote: "Information verified and funds transferred",
-            currentBalance: 45000
-        },
-        {
-            id: "wd_004",
-            userId: "user_004",
-            userName: "Sarah Wilson",
-            userEmail: "sarah.wilson@email.com",
-            amount: 80000,
-            bankInfo: {
-                bankName: "Citibank",
-                accountNumber: "5566778899",
-                accountName: "SARAH WILSON"
-            },
-            requestDate: "2024-01-12T16:45:00Z",
-            status: "rejected",
-            reason: "Account information doesn't match profile",
-            adminNote: "Please update bank information",
-            currentBalance: 95000
-        }
-    ];
+    // ──────────────────────────────────────────────────────────────
+    // API
+    // ──────────────────────────────────────────────────────────────
+    const {data: bankListRes} = useHttpGet("listBanks");
+    const bankList = bankListRes?.banks ?? [];
 
-    const handleApprove = (request: WithdrawRequest) => {
-        if (!adminNote.trim()) {
-            toast.warning(`Please enter admin note`);
-            return;
-        }
-
-        toast.success(`Approved withdrawal of ${request.amount.toLocaleString()} coins for ${request.userName}`);
-
-        setAdminNote("");
-        setSelectedRequest(null);
-    };
-
-    const handleReject = (request: WithdrawRequest) => {
-        if (!adminNote.trim()) {
-            toast.warning(`Please enter rejection reason`);
-            return;
-        }
-
-        toast.success(`Rejected ${request.userName}'s coin withdrawal request`);
-
-        setAdminNote("");
-        setSelectedRequest(null);
-    };
-
-    const getStatusColor = (status: string) => {
-        const colorMap = {
-            pending: "bg-warning/10 text-warning border-warning/20",
-            processing: "bg-blue/10 text-blue border-blue/20",
-            approved: "bg-success/10 text-success border-success/20",
-            rejected: "bg-destructive/10 text-destructive border-destructive/20"
-        };
-        return colorMap[status as keyof typeof colorMap] || colorMap.pending;
-    };
-
-    const getStatusText = (status: string) => {
-        const textMap = {
-            pending: "Pending",
-            processing: "Processing",
-            approved: "Approved",
-            rejected: "Rejected"
-        };
-        return textMap[status as keyof typeof textMap] || status;
-    };
-
-    const filteredRequests = withdrawRequests.filter(request => {
-        const matchesFilter = filter === "all" || request.status === filter;
-        const matchesSearch = request.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            request.userEmail.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesFilter && matchesSearch;
+    const {data, isLoading, execute: refetch} = useHttpGet("adminListWithdrawRequests", {
+        ...filters,
+        pageCursor: currentCursor,
+        pageBack: isGoingBack,
     });
+
+    const withdrawRequests = data?.withdrawRequests ?? [];
+    const hasNextPage = !!data?.nextPage;
+    const hasPreviousPage = cursorHistory.length > 0;
+
+    const {execute: approve, isMutating: approving} = useHttpPost("adminApproveWithdraw");
+    const {execute: reject, isMutating: rejecting} = useHttpPost("adminRejectWithdraw");
+
+    // ──────────────────────────────────────────────────────────────
+    // Pagination
+    // ──────────────────────────────────────────────────────────────
+    const handleNextPage = useCallback(() => {
+        if (data?.nextPage) {
+            setCursorHistory((prev) => [...prev, currentCursor || ""]);
+            setCurrentCursor(data.nextPage);
+            setIsGoingBack(false);
+        }
+    }, [data?.nextPage, currentCursor]);
+
+    const handlePrevPage = useCallback(() => {
+        if (cursorHistory.length > 0) {
+            const prevCursor = cursorHistory[cursorHistory.length - 1];
+            setCursorHistory((prev) => prev.slice(0, -1));
+            setCurrentCursor(prevCursor || undefined);
+            setIsGoingBack(true);
+        }
+    }, [cursorHistory]);
+
+    // ──────────────────────────────────────────────────────────────
+    // Actions
+    // ──────────────────────────────────────────────────────────────
+    const handleApprove = async (request: WithdrawRequestView) => {
+        if (!adminNote.trim()) {
+            toast.warning(t("admin.withdraw.noteRequired"));
+            return;
+        }
+
+        try {
+            await approve({withdrawRequestId: request.withdrawRequest.id, adminNote});
+            toast.success(t("admin.withdraw.approved", {amount: request.withdrawRequest.amount.toLocaleString()}));
+            setAdminNote("");
+            setSelectedRequest(null);
+            refetch();
+        } catch {
+            toast.error(t("admin.withdraw.approveFailed"));
+        }
+    };
+
+    const handleReject = async (request: WithdrawRequestView) => {
+        if (!adminNote.trim()) {
+            toast.warning(t("admin.withdraw.noteRequired"));
+            return;
+        }
+
+        try {
+            await reject({withdrawRequestId: request.withdrawRequest.id, adminNote});
+            toast.success(t("admin.withdraw.rejected"));
+            setAdminNote("");
+            setSelectedRequest(null);
+            refetch();
+        } catch {
+            toast.error(t("admin.withdraw.rejectFailed"));
+        }
+    };
+
+    // ──────────────────────────────────────────────────────────────
+    // UI Helpers
+    // ──────────────────────────────────────────────────────────────
+    const getStatusConfig = (status: WithdrawStatus) => {
+        const config = {
+            Pending: {color: "bg-amber-500/15 text-amber-600 border-amber-500/30", icon: Minus, label: "Pending"},
+            Completed: {
+                color: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
+                icon: CheckCircle,
+                label: "Approved"
+            },
+            Rejected: {color: "bg-rose-500/15 text-rose-600 border-rose-500/30", icon: XCircle, label: "Rejected"},
+        };
+        return config[status] || {color: "bg-gray-500/15 text-gray-600", icon: Minus, label: status};
+    };
+
+    const getBankName = (bankId: number) => bankList.find((b) => b.id === bankId)?.name ?? "Unknown Bank";
+
+    const handleFilterChange = (key: keyof ListWithdrawRequestQuery, value: any) => {
+        setFilters((prev) => ({...prev, [key]: value}));
+    };
+
+    const applyFilters = () => {
+        setCurrentCursor(undefined);
+        setCursorHistory([]);
+        setIsGoingBack(false);
+        refetch();
+    };
+
+    // ──────────────────────────────────────────────────────────────
+    // Skeleton Loader
+    // ──────────────────────────────────────────────────────────────
+    const RequestSkeleton = () => (
+        <div
+            className="flex flex-col sm:flex-row justify-between p-5 bg-card rounded-2xl border border-border/50 backdrop-blur-sm animate-pulse">
+            <div className="flex items-start gap-4 flex-1">
+                <Skeleton className="w-11 h-11 rounded-lg"/>
+                <div className="flex-1 space-y-3">
+                    <Skeleton className="h-5 w-48"/>
+                    <Skeleton className="h-4 w-64"/>
+                    <Skeleton className="h-4 w-56"/>
+                </div>
+            </div>
+            <Skeleton className="h-9 w-24 mt-4 sm:mt-0"/>
+        </div>
+    );
 
     return (
         <AdminLayout>
-            <div className="space-y-6 text-gray-600">
-                <div>
-                    <h1 className="text-3xl font-bold text-foreground">Coin Withdrawals</h1>
-                    <p className="text-muted-foreground mt-2">
-                        Approve coin withdrawal requests from users
-                    </p>
-                </div>
+            <div
+                className="min-h-screen bg-gradient-to-br text-gray-600 from-slate-50 via-white to-blue-50/30 p-4 sm:p-6 lg:p-8">
+                <div className="max-w-7xl mx-auto space-y-8">
 
-                <Card className="bg-gradient-card border-border/50">
-                    <CardContent className="p-6">
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <CustomInput
-                                    name={"search"}
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
+                    {/* Header */}
+                    <div className="backdrop-blur-xl bg-white/70 border border-white/20 rounded-3xl p-6 shadow-lg">
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                            {t("admin.withdraw.title")}
+                        </h1>
+                        <p className="text-muted-foreground mt-2 max-w-2xl">{t("admin.withdraw.description")}</p>
+                    </div>
+
+                    {/* Filters (Collapsible) */}
+                    <Card
+                        className="backdrop-blur-xl bg-white/60 border-white/30 shadow-xl overflow-hidden transition-all duration-300">
+                        <div
+                            className="p-5 cursor-pointer flex items-center justify-between hover:bg-white/40 transition-colors"
+                            onClick={() => setShowFilters(!showFilters)}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Filter className="w-5 h-5 text-primary"/>
+                                <h3 className="font-semibold text-foreground">{t("admin.withdraw.filters.title") || "Filters"}</h3>
                             </div>
-
-                            <Select value={filter} onValueChange={setFilter}>
-                                <SelectTrigger className="w-48">
-                                    <Filter className="w-4 h-4 mr-2" />
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All</SelectItem>
-                                    <SelectItem value="pending">Pending</SelectItem>
-                                    <SelectItem value="processing">Processing</SelectItem>
-                                    <SelectItem value="approved">Approved</SelectItem>
-                                    <SelectItem value="rejected">Rejected</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <ChevronDown
+                                className={cn("w-5 h-5 text-muted-foreground transition-transform", showFilters && "rotate-180")}/>
                         </div>
-                    </CardContent>
-                </Card>
 
-                <div className="grid gap-4 md:grid-cols-4">
-                    <Card className="bg-gradient-card border-border/50">
-                        <CardContent className="p-6">
-                            <div className="flex items-center">
-                                <Minus className="w-8 h-8 text-warning" />
-                                <div className="ml-4">
-                                    <p className="text-sm font-medium text-muted-foreground">Pending</p>
-                                    <p className="text-2xl font-bold text-foreground">
-                                        {withdrawRequests.filter(r => r.status === "pending").length}
-                                    </p>
+                        {showFilters && (
+                            <div
+                                className="px-5 pb-5 border-t border-border/50 pt-5 animate-in slide-in-from-top-2 duration-300">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+                                    <div>
+                                        <Label
+                                            className="text-xs font-medium">{t("admin.withdraw.filters.status")}</Label>
+                                        <select
+                                            className="mt-1 w-full px-3 py-2 bg-white border rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                                            value={filters.status ?? ""}
+                                            onChange={(e) => handleFilterChange("status", e.target.value || undefined)}
+                                        >
+                                            <option value="">{t("admin.withdraw.filters.all")}</option>
+                                            <option value="Pending">Pending</option>
+                                            <option value="Completed">Approved</option>
+                                            <option value="Rejected">Rejected</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <Label
+                                            className="text-xs font-medium">{t("admin.withdraw.filters.minAmount")}</Label>
+                                        <input
+                                            type="number"
+                                            placeholder="0"
+                                            className="mt-1 w-full px-3 py-2 bg-white border rounded-xl text-sm focus:ring-2 focus:ring-primary transition-all"
+                                            value={filters.amountMin ?? ""}
+                                            onChange={(e) => handleFilterChange("amountMin", e.target.value ? Number(e.target.value) : undefined)}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Label
+                                            className="text-xs font-medium">{t("admin.withdraw.filters.maxAmount")}</Label>
+                                        <input
+                                            type="number"
+                                            placeholder="999999"
+                                            className="mt-1 w-full px-3 py-2 bg-white border rounded-xl text-sm focus:ring-2 focus:ring-primary transition-all"
+                                            value={filters.amountMax ?? ""}
+                                            onChange={(e) => handleFilterChange("amountMax", e.target.value ? Number(e.target.value) : undefined)}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Label
+                                            className="text-xs font-medium">{t("admin.withdraw.filters.year")}</Label>
+                                        <select
+                                            className="mt-1 w-full px-3 py-2 bg-white border rounded-xl text-sm focus:ring-2 focus:ring-primary transition-all"
+                                            value={filters.year ?? ""}
+                                            onChange={(e) => handleFilterChange("year", e.target.value ? Number(e.target.value) : undefined)}
+                                        >
+                                            <option value="">{new Date().getFullYear()}</option>
+                                            {Array.from({length: 5}, (_, i) => new Date().getFullYear() - i).map((y) => (
+                                                <option key={y} value={y}>{y}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <Label
+                                            className="text-xs font-medium">{t("admin.withdraw.filters.month")}</Label>
+                                        <select
+                                            className="mt-1 w-full px-3 py-2 bg-white border rounded-xl text-sm focus:ring-2 focus:ring-primary transition-all"
+                                            value={filters.month ?? ""}
+                                            onChange={(e) => handleFilterChange("month", e.target.value ? Number(e.target.value) : undefined)}
+                                        >
+                                            <option value="">MM</option>
+                                            {Array.from({length: 12}, (_, i) => i + 1).map((m) => (
+                                                <option key={m} value={m}>{m.toString().padStart(2, "0")}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="flex items-end">
+                                        <Button onClick={applyFilters}
+                                                className="w-full h-10 rounded-xl shadow-md hover:shadow-lg transition-all">
+                                            {t("admin.withdraw.filters.apply")}
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
-                        </CardContent>
+                        )}
                     </Card>
 
-                    <Card className="bg-gradient-card border-border/50">
-                        <CardContent className="p-6">
-                            <div className="flex items-center">
-                                <CheckCircle className="w-8 h-8 text-success" />
-                                <div className="ml-4">
-                                    <p className="text-sm font-medium text-muted-foreground">Approved</p>
-                                    <p className="text-2xl font-bold text-foreground">
-                                        {withdrawRequests.filter(r => r.status === "approved").length}
-                                    </p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-gradient-card border-border/50">
-                        <CardContent className="p-6">
-                            <div className="flex items-center">
-                                <XCircle className="w-8 h-8 text-destructive" />
-                                <div className="ml-4">
-                                    <p className="text-sm font-medium text-muted-foreground">Rejected</p>
-                                    <p className="text-2xl font-bold text-foreground">
-                                        {withdrawRequests.filter(r => r.status === "rejected").length}
-                                    </p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card className="bg-gradient-card border-border/50">
-                        <CardContent className="p-6">
-                            <div className="flex items-center">
-                                <CreditCard className="w-8 h-8 text-blue" />
-                                <div className="ml-4">
-                                    <p className="text-sm font-medium text-muted-foreground">Total Amount</p>
-                                    <p className="text-2xl font-bold text-foreground">
-                                        {withdrawRequests.reduce((sum, r) => sum + r.amount, 0).toLocaleString()}
-                                    </p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <div className="grid gap-6 lg:grid-cols-3">
-                    <div className="lg:col-span-2 space-y-4">
-                        {filteredRequests.map((request) => (
-                            <Card key={request.id} className="bg-gradient-card border-border/50 hover:shadow-md transition-all">
-                                <CardContent className="p-6">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <Avatar className="h-12 w-12">
-                                                <AvatarImage src={request.avatar} alt={request.userName} />
-                                                <AvatarFallback className="bg-gradient-primary text-white">
-                                                    {request.userName.charAt(0)}
-                                                </AvatarFallback>
-                                            </Avatar>
-
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <h3 className="font-semibold text-foreground">{request.userName}</h3>
-                                                    <Badge className={getStatusColor(request.status)}>
-                                                        {getStatusText(request.status)}
-                                                    </Badge>
-                                                </div>
-
-                                                <p className="text-sm text-muted-foreground mb-2">{request.userEmail}</p>
-
-                                                <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground mb-2">
-                                                    <div>
-                                                        <span className="font-medium">Amount:</span> {request.amount.toLocaleString()} coins
-                                                    </div>
-                                                    <div>
-                                                        <span className="font-medium">Balance:</span> {request.currentBalance.toLocaleString()} coins
-                                                    </div>
-                                                    <div>
-                                                        <span className="font-medium">Bank:</span> {request.bankInfo.bankName}
-                                                    </div>
-                                                    <div>
-                                                        <span className="font-medium">Requested:</span> {new Date(request.requestDate).toLocaleDateString('en-US')}
-                                                    </div>
-                                                </div>
-
-                                                <div className="text-xs text-muted-foreground">
-                                                    <span className="font-medium">Account:</span> {request.bankInfo.accountName} (**** {request.bankInfo.accountNumber.slice(-4)})
-                                                </div>
-                                            </div>
+                    {/* Stats Grid */}
+                    <div className="grid gap-5 md:grid-cols-4">
+                        {[
+                            {
+                                icon: Minus,
+                                label: "Pending",
+                                color: "from-amber-400 to-orange-500",
+                                value: withdrawRequests.filter(r => r.withdrawRequest.status === "Pending").length
+                            },
+                            {
+                                icon: CheckCircle,
+                                label: "Approved",
+                                color: "from-emerald-400 to-teal-500",
+                                value: withdrawRequests.filter(r => r.withdrawRequest.status === "Completed").length
+                            },
+                            {
+                                icon: XCircle,
+                                label: "Rejected",
+                                color: "from-rose-400 to-pink-500",
+                                value: withdrawRequests.filter(r => r.withdrawRequest.status === "Rejected").length
+                            },
+                            {
+                                icon: CreditCard,
+                                label: "Total Amount",
+                                color: "from-blue-500 to-indigo-600",
+                                value: withdrawRequests.reduce((sum, r) => sum + r.withdrawRequest.amount, 0).toLocaleString() + " coins"
+                            },
+                        ].map((stat, i) => (
+                            <Card key={i}
+                                  className="group relative overflow-hidden backdrop-blur-xl bg-white/70 border-white/30 shadow-lg hover:shadow-2xl transition-all duration-300">
+                                <div
+                                    className={cn("absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity", stat.color)}></div>
+                                <CardContent className="p-6 relative z-10">
+                                    <div className="flex items-center gap-4">
+                                        <div
+                                            className="p-3 rounded-2xl bg-white/80 shadow-md group-hover:scale-110 transition-transform">
+                                            <stat.icon className="w-7 h-7 text-gray-700"/>
                                         </div>
-
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => setSelectedRequest(request)}
-                                            >
-                                                <Eye className="w-4 h-4 mr-2" />
-                                                Review
-                                            </Button>
+                                        <div>
+                                            <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                                            <p className="text-2xl font-bold text-foreground mt-1">{stat.value}</p>
                                         </div>
                                     </div>
                                 </CardContent>
                             </Card>
                         ))}
-
-                        {filteredRequests.length === 0 && (
-                            <Card className="bg-gradient-card border-border/50">
-                                <CardContent className="p-12 text-center">
-                                    <Minus className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                                    <h3 className="text-lg font-medium text-foreground mb-2">No requests found</h3>
-                                    <p className="text-muted-foreground">
-                                        No withdrawal requests found matching the current filters.
-                                    </p>
-                                </CardContent>
-                            </Card>
-                        )}
                     </div>
 
-                    <div className="space-y-6">
-                        {selectedRequest && (
-                            <Card className="bg-gradient-card border-border/50">
-                                <CardHeader>
-                                    <CardTitle className="text-foreground flex items-center gap-2">
-                                        <Minus className="w-5 h-5 text-blue" />
-                                        Review Request
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div>
-                                        <h4 className="font-medium text-foreground mb-2">{selectedRequest.userName}</h4>
-                                        <p className="text-sm text-muted-foreground">{selectedRequest.userEmail}</p>
+                    {/* Main Content: List + Side Panel */}
+                    <div className="grid gap-6 lg:grid-cols-3">
+                        {/* Request List */}
+                        <div className="lg:col-span-2 space-y-4">
+                            {isLoading ? (
+                                <div className="space-y-4">
+                                    {[...Array(3)].map((_, i) => <RequestSkeleton key={i}/>)}
+                                </div>
+                            ) : withdrawRequests.length === 0 ? (
+                                <Card className="p-12 text-center backdrop-blur-xl bg-white/60 border-white/30">
+                                    <div
+                                        className="mx-auto w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
+                                        <CreditCard className="w-8 h-8 text-muted-foreground"/>
                                     </div>
+                                    <p className="text-lg font-medium text-foreground">{t("admin.withdraw.list.noResults")}</p>
+                                    <p className="text-sm text-muted-foreground mt-1">{t("admin.withdraw.list.noResultsHint")}</p>
+                                </Card>
+                            ) : (
+                                withdrawRequests.map((req) => {
+                                    const w = req.withdrawRequest;
+                                    const bank = req.bankAccount;
+                                    const user = req.localUser;
+                                    const status = getStatusConfig(w.status);
 
-                                    <div className="p-4 bg-muted/30 rounded-lg">
-                                        <div className="text-lg font-bold text-foreground mb-1">
-                                            {selectedRequest.amount.toLocaleString()} coins
-                                        </div>
-                                        <div className="text-sm text-muted-foreground">
-                                            Current balance: {selectedRequest.currentBalance.toLocaleString()} coins
-                                        </div>
-                                    </div>
+                                    return (
+                                        <Card
+                                            key={w.id}
+                                            className="group relative overflow-hidden rounded-2xl bg-white/80 backdrop-blur-2xl border border-white/40 shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer select-none"
+                                            onClick={() => setSelectedRequest(req)}
+                                        >
+                                            {/* Shimmer Effect */}
+                                            <div
+                                                className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"/>
 
-                                    <div className="space-y-2">
-                                        <h5 className="font-medium text-sm">Bank Information:</h5>
-                                        <div className="text-sm space-y-1">
-                                            <div><span className="font-medium">Bank:</span> {selectedRequest.bankInfo.bankName}</div>
-                                            <div><span className="font-medium">Account:</span> {selectedRequest.bankInfo.accountNumber}</div>
-                                            <div><span className="font-medium">Name:</span> {selectedRequest.bankInfo.accountName}</div>
-                                        </div>
-                                    </div>
+                                            {/* Gradient Border Glow (on hover) */}
+                                            <div
+                                                className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                                <div
+                                                    className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-400/30 via-purple-400/30 to-pink-400/30 blur-xl scale-110"/>
+                                            </div>
 
-                                    {selectedRequest.reason && (
-                                        <div className="space-y-2">
-                                            <h5 className="font-medium text-sm">Reason:</h5>
-                                            <p className="text-sm text-muted-foreground p-3 bg-muted/30 rounded-lg">
-                                                {selectedRequest.reason}
+                                            <div
+                                                className="relative p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5">
+                                                {/* Left: Avatar + Info */}
+                                                <div className="flex items-start gap-4 flex-1">
+                                                    {/* Gradient Icon Avatar */}
+                                                    <div
+                                                        className="relative p-3.5 rounded-2xl bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 shadow-xl ring-4 ring-white/50 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                                                        <CreditCard className="w-6 h-6 text-primary drop-shadow-md"/>
+                                                        {/* Pulse Ring */}
+                                                        <div
+                                                            className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/30 to-transparent opacity-0 group-hover:opacity-100 animate-pulse"/>
+                                                    </div>
+
+                                                    {/* Text Content */}
+                                                    <div className="flex-1 space-y-3">
+                                                        {/* User + Status */}
+                                                        <div className="flex flex-wrap items-center gap-3">
+                                                            <h4 className="font-bold text-lg text-foreground truncate max-w-[200px] sm:max-w-none group-hover:text-primary transition-colors">
+                                                                {user.email}
+                                                            </h4>
+                                                            <Badge
+                                                                variant="outline"
+                                                                className={cn(
+                                                                    "text-xs font-semibold px-2.5 py-0.5 border rounded-full shadow-sm transition-all duration-300",
+                                                                    status.color,
+                                                                    "group-hover:scale-105"
+                                                                )}
+                                                            >
+                                                                <status.icon className="w-3.5 h-3.5 mr-1.5"/>
+                                                                {status.label}
+                                                            </Badge>
+                                                        </div>
+
+                                                        {/* Details Grid */}
+                                                        <div
+                                                            className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                                                            <div className="flex items-center gap-2 text-foreground/80">
+                                                                <div
+                                                                    className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"/>
+                                                                <span className="font-medium">Amount:</span>
+                                                                <span className="font-bold text-foreground">
+                            {w.amount.toLocaleString()}
+                                                                    <span
+                                                                        className="text-xs font-normal text-muted-foreground"> <FontAwesomeIcon
+                                                                        icon={faCoins}
+                                                                        className="text-xl text-yellow-500 transition-transform hover:scale-110"
+                                                                    /></span>
+                        </span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2 text-foreground/80">
+                                                                <div
+                                                                    className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-500"/>
+                                                                <span className="font-medium">Bank:</span>
+                                                                <span
+                                                                    className="truncate max-w-[120px]">{getBankName(bank.bankId)}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Account + Date */}
+                                                        <div
+                                                            className="flex flex-col sm:flex-row gap-3 sm:gap-6 text-xs text-muted-foreground/80 mt-1">
+                                                            {/* Account Line */}
+                                                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                                <span
+                                                                    className="font-medium text-foreground/70 whitespace-nowrap">Account:</span>
+                                                                <span className="font-mono text-foreground/90 truncate">
+            {bank.accountName} • **** {bank.accountNumber.slice(-4)}
+        </span>
+                                                            </div>
+
+                                                            {/* Requested Line */}
+                                                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                                <span
+                                                                    className="font-medium text-foreground/70 whitespace-nowrap">Requested:</span>
+                                                                <span className="font-mono text-foreground/90">
+            {new Date(w.createdAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+            })}
+        </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Right: Action Button */}
+                                                <div className="flex justify-end w-full sm:w-auto">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className={cn(
+                                                            "group/btn relative overflow-hidden rounded-xl px-4 py-2 font-medium text-primary hover:text-primary-foreground transition-all duration-300",
+                                                            "before:absolute before:inset-0 before:bg-gradient-to-r before:from-primary/10 before:via-primary/20 before:to-primary/10 before:-translate-x-full before:transition-transform before:duration-700",
+                                                            "hover:before:translate-x-full hover:shadow-lg hover:scale-105"
+                                                        )}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedRequest(req);
+                                                        }}
+                                                    >
+                                                        <Eye
+                                                            className="w-4 h-4 mr-2 group-hover/btn:scale-110 transition-transform"/>
+                                                        {t("admin.withdraw.review")}
+                                                    </Button>
+                                                </div>
+                                            </div>
+
+                                            {/* Bottom Accent Bar */}
+                                            <div
+                                                className={cn(
+                                                    "absolute bottom-0 left-0 h-1 w-full bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-500",
+                                                    w.status === "Pending" && "from-amber-400 to-orange-500",
+                                                    w.status === "Completed" && "from-emerald-400 to-teal-500",
+                                                    w.status === "Rejected" && "from-rose-400 to-pink-500"
+                                                )}
+                                            />
+                                        </Card>
+                                    );
+                                })
+                            )}
+                        </div>
+
+                        {/* Side Panel */}
+                        <div className="space-y-6">
+                            {selectedRequest && (
+                                <Card
+                                    className="sticky top-6 backdrop-blur-xl bg-white/80 border-white/40 shadow-2xl overflow-hidden">
+                                    <div
+                                        className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-pink-500/5"></div>
+                                    <CardContent className="p-6 space-y-5 relative z-10">
+                                        <div className="flex items-center justify-between">
+                                            <h4 className="font-bold text-lg text-foreground">{selectedRequest.localUser.email}</h4>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="h-8 w-8"
+                                                onClick={() => setSelectedRequest(null)}
+                                            >
+                                                <XCircle className="w-4 h-4"/>
+                                            </Button>
+                                        </div>
+
+                                        <div
+                                            className="p-5 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-2xl border border-blue-500/20">
+                                            <p className="text-3xl font-bold text-foreground">
+                                                {selectedRequest.withdrawRequest.amount.toLocaleString()} <span
+                                                className="text-lg font-normal text-muted-foreground">coins</span>
                                             </p>
                                         </div>
-                                    )}
 
-                                    {selectedRequest.adminNote && (
-                                        <div className="space-y-2">
-                                            <h5 className="font-medium text-sm">Admin Note:</h5>
-                                            <p className="text-sm text-muted-foreground p-3 bg-muted/30 rounded-lg">
-                                                {selectedRequest.adminNote}
-                                            </p>
+                                        <div className="space-y-3 text-sm">
+                                            <h5 className="font-semibold text-foreground">{t("admin.withdraw.bankInfo")}:</h5>
+                                            <div className="space-y-2 p-3 bg-muted/30 rounded-xl">
+                                                <div><span
+                                                    className="font-medium">Bank:</span> {getBankName(selectedRequest.bankAccount.bankId)}
+                                                </div>
+                                                <div><span
+                                                    className="font-medium">Account #:</span> {selectedRequest.bankAccount.accountNumber}
+                                                </div>
+                                                <div><span
+                                                    className="font-medium">Name:</span> {selectedRequest.bankAccount.accountName}
+                                                </div>
+                                            </div>
                                         </div>
-                                    )}
 
-                                    {selectedRequest.status === "pending" && (
-                                        <>
+                                        {selectedRequest.withdrawRequest.reason && (
                                             <div className="space-y-2">
-                                                <Label htmlFor="admin-note">Admin Note</Label>
-                                                <Textarea
-                                                    id="admin-note"
-                                                    placeholder="Enter admin note or rejection reason..."
-                                                    value={adminNote}
-                                                    onChange={(e) => setAdminNote(e.target.value)}
-                                                    rows={3}
-                                                />
+                                                <h5 className="font-semibold text-sm">{t("admin.withdraw.reason")}:</h5>
+                                                <p className="text-sm p-3 bg-muted/30 rounded-xl text-muted-foreground italic">
+                                                    "{selectedRequest.withdrawRequest.reason}"
+                                                </p>
                                             </div>
+                                        )}
 
-                                            <div className="flex gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={() => handleReject(selectedRequest)}
-                                                    className="flex-1 text-destructive hover:text-destructive"
-                                                    disabled={!adminNote.trim()}
-                                                >
-                                                    <XCircle className="w-4 h-4 mr-2" />
-                                                    Reject
-                                                </Button>
+                                        {selectedRequest.withdrawRequest.status === "Pending" && (
+                                            <>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="admin-note" className="font-medium">
+                                                        {t("admin.withdraw.adminNote")} <span
+                                                        className="text-red-500">*</span>
+                                                    </Label>
+                                                    <Textarea
+                                                        id="admin-note"
+                                                        placeholder={t("admin.withdraw.notePlaceholder")}
+                                                        value={adminNote}
+                                                        onChange={(e) => setAdminNote(e.target.value)}
+                                                        className="resize-none rounded-xl focus:ring-2 focus:ring-primary"
+                                                        rows={3}
+                                                    />
+                                                </div>
 
-                                                <Button
-                                                    onClick={() => handleApprove(selectedRequest)}
-                                                    className="flex-1 bg-gradient-primary hover:bg-blue/90"
-                                                    disabled={!adminNote.trim()}
-                                                >
-                                                    <CheckCircle className="w-4 h-4 mr-2" />
-                                                    Approve
-                                                </Button>
-                                            </div>
-                                        </>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        )}
+                                                <div className="flex gap-3">
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => handleReject(selectedRequest)}
+                                                        className="flex-1 border-rose-500/30 text-rose-600 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50"
+                                                        disabled={!adminNote.trim() || rejecting}
+                                                    >
+                                                        {rejecting ? <Loader2 className="w-4 h-4 mr-2 animate-spin"/> :
+                                                            <XCircle className="w-4 h-4 mr-2"/>}
+                                                        {t("admin.withdraw.reject")}
+                                                    </Button>
 
-                        <Card className="bg-gradient-card border-border/50">
-                            <CardHeader>
-                                <CardTitle className="text-foreground">Quick Actions</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid grid-cols-2 gap-2">
-                                    <Button variant="outline" size="sm" onClick={() => setFilter("pending")}>
-                                        View Pending
-                                    </Button>
-                                    <Button variant="outline" size="sm" onClick={() => setFilter("processing")}>
-                                        View Processing
-                                    </Button>
-                                </div>
+                                                    <Button
+                                                        onClick={() => handleApprove(selectedRequest)}
+                                                        className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg disabled:opacity-50"
+                                                        disabled={!adminNote.trim() || approving}
+                                                    >
+                                                        {approving ? <Loader2 className="w-4 h-4 mr-2 animate-spin"/> :
+                                                            <CheckCircle className="w-4 h-4 mr-2"/>}
+                                                        {t("admin.withdraw.approve")}
+                                                    </Button>
+                                                </div>
+                                            </>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
+                    </div>
 
-                                <div className="text-center p-4 bg-muted/30 rounded-lg">
-                                    <div className="text-2xl font-bold text-warning">
-                                        {withdrawRequests.filter(r => r.status === "pending").length}
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">Pending reviews</div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                    {/* Pagination */}
+                    <div className="flex justify-center">
+                        <PaginationControls
+                            hasPrevious={hasPreviousPage}
+                            hasNext={hasNextPage}
+                            onPrevious={handlePrevPage}
+                            onNext={handleNextPage}
+                            isLoading={isLoading}
+                        />
                     </div>
                 </div>
             </div>

@@ -3262,7 +3262,7 @@ export class LemmyHttp extends Controller {
      */
     @Security("bearerAuth")
     @Get("/account/wallet/withdraw-requests")
-    @Tags("TopUpRequests")
+    @Tags("WithdrawRequests")
     async listWithdrawRequests(
         @Queries() form: ListWithdrawRequestQuery,
         @Inject() options?: RequestOptions,

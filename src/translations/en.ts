@@ -1865,6 +1865,7 @@ export const en = {
             Rejected: "Rejected",
             RequestID: "Request ID",
         },
+
         manageUsers: {
             title: "Users",
             description: "Manage and monitor user accounts",
@@ -3665,6 +3666,41 @@ export const en = {
                 "After disabling 2FA, please remember to remove the old entry from your authenticator app.",
             agreeDisableNotice:
                 "I understand and want to disable two-factor authentication",
+        },
+        admin: {
+            withdraw: {
+                title: "Coin Withdrawals",
+                description: "Approve or reject user withdrawal requests",
+                filters: {
+                    title: "Filter Withdrawal Requests",
+                    status: "Status",
+                    all: "All",
+                    minAmount: "Min Amount",
+                    maxAmount: "Max Amount",
+                    year: "Year",
+                    month: "Month",
+                    apply: "Apply Filter",
+                    placeholderMin: "e.g. 1000",
+                    placeholderMax: "e.g. 50000",
+                },
+                list: {
+                    loading: "Loading requests...",
+                    noResults: "No withdrawal requests found",
+                    noResultsHint: "Try adjusting the filters",
+                },
+                review: "Review",
+                bankInfo: "Bank Information",
+                reason: "Reason",
+                adminNote: "Admin Note",
+                notePlaceholder: "Enter note or rejection reason...",
+                approve: "Approve",
+                reject: "Reject",
+                approved: "Approved {amount} coins",
+                rejected: "Rejected withdrawal",
+                approveFailed: "Failed to approve",
+                rejectFailed: "Failed to reject",
+                noteRequired: "Admin note is required",
+            },
         },
     },
 };
