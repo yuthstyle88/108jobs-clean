@@ -11,6 +11,7 @@ import type {
     WithdrawRequestView,
     WithdrawStatus,
 } from "lemmy-js-client";
+import {BankId} from "@/lib/lemmy-js-client/src/types/BankId";
 
 const WithdrawHistory = () => {
     const {t} = useTranslation();
@@ -33,7 +34,6 @@ const WithdrawHistory = () => {
 
     const {
         data: bankListRes,
-        isMutating: isBankListLoading,
     } = useHttpGet("listBanks");
     const bankList = bankListRes?.banks ?? [];
     const {data, isLoading, execute: refetch} = useHttpGet("listWithdrawRequests", {
@@ -127,14 +127,8 @@ const WithdrawHistory = () => {
         }
     };
 
-    const getBankName = (bankId: number) => {
-        const map: Record<number, string> = {
-            1: "Vietcombank",
-            2: "Techcombank",
-            3: "BIDV",
-            4: "MB Bank",
-        };
-        return map[bankId] || `Bank #${bankId}`;
+    const getBankName = (bankId: BankId) => {
+        return bankList.find((b) => b.id === bankId)?.name ?? "Unknown Bank";
     };
 
     return (
@@ -235,7 +229,7 @@ const WithdrawHistory = () => {
 
                             {/* Month */}
                             <select
-                                className="px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:ring-primary text-base"
+                                className="px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary text-base"
                                 value={filters.month ?? ""}
                                 onChange={(e) =>
                                     handleFilterChange("month", e.target.value ? Number(e.target.value) : undefined)
