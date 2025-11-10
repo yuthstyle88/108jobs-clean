@@ -22,10 +22,7 @@ import {faCoins} from "@fortawesome/free-solid-svg-icons";
 const WithdrawCoins = () => {
     const {t} = useTranslation();
 
-    // ──────────────────────────────────────────────────────────────
-    // State
-    // ──────────────────────────────────────────────────────────────
-    const [filters, setFilters] = useState<ListWithdrawRequestQuery>({limit: 10});
+    const [filters, setFilters] = useState<ListWithdrawRequestQuery>({limit: 5});
     const [currentCursor, setCurrentCursor] = useState<string | undefined>();
     const [cursorHistory, setCursorHistory] = useState<string[]>([]);
     const [isGoingBack, setIsGoingBack] = useState(false);
@@ -33,9 +30,6 @@ const WithdrawCoins = () => {
     const [adminNote, setAdminNote] = useState("");
     const [showFilters, setShowFilters] = useState(false);
 
-    // ──────────────────────────────────────────────────────────────
-    // API
-    // ──────────────────────────────────────────────────────────────
     const {data: bankListRes} = useHttpGet("listBanks");
     const bankList = bankListRes?.banks ?? [];
 
@@ -52,9 +46,6 @@ const WithdrawCoins = () => {
     const {execute: approve, isMutating: approving} = useHttpPost("adminApproveWithdraw");
     const {execute: reject, isMutating: rejecting} = useHttpPost("adminRejectWithdraw");
 
-    // ──────────────────────────────────────────────────────────────
-    // Pagination
-    // ──────────────────────────────────────────────────────────────
     const handleNextPage = useCallback(() => {
         if (data?.nextPage) {
             setCursorHistory((prev) => [...prev, currentCursor || ""]);
@@ -72,9 +63,6 @@ const WithdrawCoins = () => {
         }
     }, [cursorHistory]);
 
-    // ──────────────────────────────────────────────────────────────
-    // Actions
-    // ──────────────────────────────────────────────────────────────
     const handleApprove = async (request: WithdrawRequestView) => {
         if (!adminNote.trim()) {
             toast.warning(t("admin.withdraw.noteRequired"));
@@ -109,9 +97,6 @@ const WithdrawCoins = () => {
         }
     };
 
-    // ──────────────────────────────────────────────────────────────
-    // UI Helpers
-    // ──────────────────────────────────────────────────────────────
     const getStatusConfig = (status: WithdrawStatus) => {
         const config = {
             Pending: {color: "bg-amber-500/15 text-amber-600 border-amber-500/30", icon: Minus, label: "Pending"},
@@ -138,9 +123,6 @@ const WithdrawCoins = () => {
         refetch();
     };
 
-    // ──────────────────────────────────────────────────────────────
-    // Skeleton Loader
-    // ──────────────────────────────────────────────────────────────
     const RequestSkeleton = () => (
         <div
             className="flex flex-col sm:flex-row justify-between p-5 bg-card rounded-2xl border border-border/50 backdrop-blur-sm animate-pulse">
