@@ -93,12 +93,4 @@ export interface WorkStep {
   sortOrder: number;
 }
 
-export interface JobListResponse {
-  jobs: Job[];
-  totalItems: number;
-  totalPages: number;
-  page: number;
-  limit: number;
-}
-
 export type JobType = Job;

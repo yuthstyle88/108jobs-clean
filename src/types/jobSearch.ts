@@ -1,12 +1,3 @@
-export type JobList = {
-  jobs: Job[];
-  totalItems: number;
-  totalPages: number;
-  page: number;
-  limit: number;
-  serviceCategories: ServiceCategory[];
-  tag: string;
-};
 
 export type Job = {
   id: string;
@@ -60,25 +51,12 @@ export type Onboarding = {
   step5: boolean;
 };
 
-export type ServiceCategory = {
-  id: string;
-  title: string;
-  secondTitle: string | null;
-  parentId: string | null;
-  serviceTopic: string | null;
-  imageUrl: string | null;
-  jobsCount: number;
-};
 
 export type Tag = {
   id: string;
   name: string;
   slug: string;
   subCategoryId: string;
-};
-
-export type Tags = {
-  tags: Tag[];
 };
 
 export type image = {

@@ -279,6 +279,9 @@ import {ListTopUpRequestQuery} from "./types/ListTopUpRequestQuery";
 import {ListTopUpRequestResponse} from "./types/ListTopUpRequestResponse";
 import {AdminTopUpWallet} from "./types/AdminTopUpWallet";
 import {AdminWalletOperationResponse} from "./types/AdminWalletOperationResponse";
+import {ListWithdrawRequestQuery} from "./types/ListWithdrawRequestQuery";
+import {ListWithdrawRequestResponse} from "./types/ListWithdrawRequestResponse";
+import {SubmitWithdrawRequest} from "./types/SubmitWithdrawRequest";
 
 enum HttpType {
     Get = "GET",
@@ -616,11 +619,28 @@ export class LemmyHttp extends Controller {
         );
     }
 
+    /**
+     * @summary List all wallet WithdrawalRequests (admin view).
+     */
+    @Security("bearerAuth")
+    @Get("/admin/wallet/withdraw-requests")
+    @Tags("Admin", "WithdrawalRequests")
+    async adminListWithdrawRequests(
+        @Queries() form: ListWithdrawRequestQuery = {},
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<ListWithdrawRequestQuery, ListWithdrawRequestResponse>(
+            HttpType.Get,
+            "/admin/wallet/withdraw-requests",
+            form,
+            options,
+        );
+    }
+
 
     /**
      * Admin top up
      */
-
     @Security("bearerAuth")
     @Post("/admin/wallet/top-up")
     @Tags("Admin", "Top-up")
@@ -639,7 +659,6 @@ export class LemmyHttp extends Controller {
     /**
      * Admin withdraws coin for user
      */
-
     @Security("bearerAuth")
     @Post("/admin/wallet/withdraw")
     @Tags("Admin", "Withdraw")
@@ -662,7 +681,6 @@ export class LemmyHttp extends Controller {
      *
      * Disabling is only possible if 2FA was previously enabled. Again it is necessary to pass a valid token.
      */
-
     @Security("bearerAuth")
     @Post("/account/auth/totp/update")
     @Tags("Account")
@@ -3186,6 +3204,24 @@ export class LemmyHttp extends Controller {
     }
 
     /**
+     * @summary Submit a withdrawal request
+     */
+    @Security("bearerAuth")
+    @Post("/account/wallet/withdraw-requests")
+    @Tags("Wallet")
+    async submitWithdraw(
+        @Body() form: SubmitWithdrawRequest,
+        @Inject() options?: RequestOptions
+    ) {
+        return this.#wrapper<SubmitWithdrawRequest, SuccessResponse>(
+            HttpType.Post,
+            "/account/wallet/withdraw-requests",
+            form,
+            options
+        );
+    }
+
+    /**
      * @summary Get billing by comment id.
      */
     @Security("bearerAuth")
@@ -3216,6 +3252,24 @@ export class LemmyHttp extends Controller {
         return this.#wrapper<ListTopUpRequestQuery, ListTopUpRequestResponse>(
             HttpType.Get,
             "/account/wallet/top-ups",
+            form,
+            options,
+        );
+    }
+
+    /**
+     * @summary Get wallet withdraw-requests for a user.
+     */
+    @Security("bearerAuth")
+    @Get("/account/wallet/withdraw-requests")
+    @Tags("TopUpRequests")
+    async listWithdrawRequests(
+        @Queries() form: ListWithdrawRequestQuery,
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<ListWithdrawRequestQuery, ListWithdrawRequestResponse>(
+            HttpType.Get,
+            "/account/wallet/withdraw-requests",
             form,
             options,
         );

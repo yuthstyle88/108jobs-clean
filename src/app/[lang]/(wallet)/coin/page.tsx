@@ -2,34 +2,79 @@
 import TopUpHistory from "@/components/TopUpHistory";
 import {faCoins} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
 import TopUpModal from "@/components/Common/Modal/TopUpModal";
 import {useUserStore} from "@/store/useUserStore";
+import WithdrawalModal from "@/components/Common/Modal/WithdrawalModal";
+import {useBankAccountsStore} from "@/store/useBankAccountStore";
+import {BankAccountId, SubmitWithdrawRequest} from "lemmy-js-client";
+import {useHttpPost} from "@/hooks/api/http/useHttpPost";
+import {isSuccess} from "@/services/HttpService";
+import {toast} from "sonner";
 
 const Coins108Jobs = () => {
+    const {t} = useTranslation();
+    const {userInfo} = useUserStore();
+    const {bankAccounts} = useBankAccountsStore();
+
     const [amount, setAmount] = useState<string>("");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
-    const { t } = useTranslation();
-    const { userInfo } = useUserStore();
+    // Withdrawal Modal States
+    const [isIsWithdrawOpen, setIsWithdrawOpen] = useState<boolean>(false);
+    const [withdrawAmount, setWithdrawAmount] = useState<string>("");
+    const [withdrawReason, setWithdrawReason] = useState<string>("");
+    const [selectedBank, setSelectedBank] = useState<BankAccountId>(0);
+
+    const {execute: submitWithdraw} = useHttpPost("submitWithdraw");
 
     const wallet = userInfo?.wallet;
+    const banks = bankAccounts || [];
 
-    // Check if amount is a valid number
+    // Set default bank (first one if exists)
+    useEffect(() => {
+        if (banks.length > 0 && !selectedBank) {
+            setSelectedBank(banks[0].userBankAccount.id);
+        }
+    }, [banks, selectedBank]);
+
+    // Check if amount is valid
     const isValidAmount = !isNaN(parseFloat(amount)) && amount.trim() !== "";
+    const isValidWithdrawAmount = !isNaN(parseFloat(withdrawAmount)) && parseFloat(withdrawAmount) > 0 && parseFloat(withdrawAmount) <= (wallet?.balanceTotal || 0);
 
     const handleTopUpClick = (amt: number | string) => {
         setSelectedAmount(typeof amt === "string" ? parseFloat(amt) || null : amt);
         setIsModalOpen(true);
     };
 
+    const handleWithdrawSubmit = async () => {
+        console.log("Withdrawal Request:", withdrawAmount);
+        console.log("Withdrawal bank:", selectedBank);
+        if (!isValidWithdrawAmount || !selectedBank) return;
+
+        const payload: SubmitWithdrawRequest = {
+            walletId: wallet?.id ?? 0,
+            bankAccountId: selectedBank,
+            amount: parseFloat(withdrawAmount),
+            reason: withdrawReason ?? t("profileCoins.withdrawRequest"),
+        };
+
+        console.log("Withdrawal Request:", payload);
+        const res = await submitWithdraw(payload);
+        if (isSuccess(res)) {
+            toast(t("profileCoins.withdrawalRequestSent"));
+            setIsWithdrawOpen(false);
+            setWithdrawAmount("");
+            setWithdrawReason("");
+        }
+    };
+
     return (
         <div className="w-full min-h-screen bg-gray-50 font-sans">
             {/* Header Section */}
             <div
-                className="relative h-[250px] sm:h-[200px] bg-gradient-to-r coin-gradient px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center overflow-hidden"
-            >
+                className="relative h-[250px] sm:h-[200px] bg-gradient-to-r coin-gradient px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20"></div>
                 <h1 className="relative text-3xl sm:text-4xl font-extrabold text-white drop-shadow-md">
                     {t("profileCoins.titleFastworkCoin")}
@@ -45,14 +90,21 @@ const Coins108Jobs = () => {
                     {/* Coin Balance Card */}
                     <div className="flex justify-center">
                         <div
-                            className="max-w-lg w-full coin-gradient bg-white/80 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-white/20"
-                        >
+                            className="max-w-lg w-full coin-gradient bg-white/80 backdrop-blur-md rounded-2xl p-8 shadow-xl border border-white/20">
                             <p className="text-indigo-200 text-center text-sm font-medium">
                                 {t("profileCoins.labelYourCoin")}
                             </p>
                             <p className="text-5xl font-bold text-center mt-2">
-                                {wallet?.balanceTotal}
+                                {wallet?.balanceTotal?.toLocaleString() || 0}
                             </p>
+
+                            {/* Withdraw Button */}
+                            <button
+                                onClick={() => setIsWithdrawOpen(true)}
+                                className="mt-6 w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 rounded-lg transition-all hover:scale-105 focus:ring-2 focus:ring-red-500"
+                            >
+                                {t("profileCoins.buttonWithdraw") || "Withdraw Coins"}
+                            </button>
                         </div>
                     </div>
 
@@ -67,8 +119,7 @@ const Coins108Jobs = () => {
                                 {t("profileCoins.noteMinMax")}
                             </p>
                             <div
-                                className="mt-4 flex items-center space-x-4 bg-white p-4 rounded-xl shadow-md border border-gray-100"
-                            >
+                                className="mt-4 flex items-center space-x-4 bg-white p-4 rounded-xl shadow-md border border-gray-100">
                                 <FontAwesomeIcon
                                     icon={faCoins}
                                     className="text-2xl text-yellow-500 transition-transform hover:scale-110"
@@ -138,15 +189,28 @@ const Coins108Jobs = () => {
             {/* Top-Up History */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="bg-white rounded-2xl shadow-md p-6">
-                    <TopUpHistory />
+                    <TopUpHistory/>
                 </div>
             </div>
 
-            {/* Modal for Bank Info and Image Upload */}
+            {/* Top-Up Modal */}
             <TopUpModal
                 isModalOpen={isModalOpen}
                 setIsModalOpen={setIsModalOpen}
                 selectedAmount={selectedAmount}
+            />
+
+            {/* Withdrawal Request Modal */}
+            <WithdrawalModal
+                isOpen={isIsWithdrawOpen}
+                onClose={() => setIsWithdrawOpen(false)}
+                balance={wallet?.balanceAvailable ?? 0}
+                banks={banks}
+                withdrawAmount={withdrawAmount}
+                setWithdrawAmount={setWithdrawAmount}
+                withdrawReason={withdrawReason}
+                setWithdrawReason={setWithdrawReason}
+                onSubmit={handleWithdrawSubmit}
             />
 
             {/* Custom CSS for Animations */}

@@ -5,4 +5,4 @@ import type {BankAccount} from "./BankAccount";
 /**
  * A user bank account view with bank information.
  */
-export type BankAccountView = { user_bank_account: BankAccount, bank: Bank, };
+export type BankAccountView = { userBankAccount: BankAccount, bank: Bank, };

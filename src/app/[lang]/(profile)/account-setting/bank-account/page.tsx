@@ -11,10 +11,17 @@ import ConfirmDeleteModal from "@/components/Common/Modal/DeleteBankModal";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 import {useTranslation} from "react-i18next";
 import {isSuccess} from "@/services/HttpService";
+import {useBankAccountsStore} from "@/store/useBankAccountStore";
 
 
 const BankAccount = () => {
     const {t} = useTranslation();
+    const {
+        bankAccounts,
+        setDefaultBankAccount: setDefaultBankAccountStore,
+        deleteBankAccount: deleteBankAccountStore,
+        upsertBankAccount
+    } = useBankAccountsStore();
     const [bankAccountList, setBankAccountList] = useState<Array<any>>([]);
     const [error, setError] = useState<string | null>(null);
     const {
@@ -22,39 +29,33 @@ const BankAccount = () => {
         isMutating: isBankListLoading,
     } = useHttpGet("listBanks");
 
-    const {
-        data: bankAccountsRes,
-        isMutating: isBankAccountsLoading,
-        execute: mutateBankAccounts,
-    } = useHttpGet("listUserBankAccounts");
-
     const {execute: createBankAccount} = useHttpPost("createBankAccount");
     const {execute: updateBankAccount} = useHttpPut("updateBankAccount");
     const {execute: setDefaultBankAccount} = useHttpPut("setDefaultBankAccount");
     const {execute: deleteBankAccount, isMutating: isDeleting} =
         useHttpDelete("deleteBankAccount");
     useEffect(() => {
-        setBankAccountList(bankAccountsRes?.bankAccounts ?? []);
-    }, [bankAccountsRes]);
+        setBankAccountList(bankAccounts ?? []);
+    }, [bankAccounts]);
 
     const bankList = bankListRes?.banks || [];
 
     // Sort bank accounts with default account on top
     const normalizedAccounts = bankAccountList
         .map((acc: any) => {
-            const userBank = acc?.user_bank_account ?? acc?.userBankAccount;
+            const userBank = acc?.userBankAccount ?? acc?.userBankAccount;
             const bank = acc?.bank ?? acc?.Bank ?? undefined;
             if (!userBank) return null;
-            return {user_bank_account: userBank, bank};
+            return {userBankAccount: userBank, bank};
         })
         .filter(Boolean)
         .sort((a: any, b: any) => {
             // Put default accounts first (true comes before false)
-            if (a.user_bank_account.isDefault && !b.user_bank_account.isDefault) return -1;
-            if (!a.user_bank_account.isDefault && b.user_bank_account.isDefault) return 1;
+            if (a.userBankAccount.isDefault && !b.userBankAccount.isDefault) return -1;
+            if (!a.userBankAccount.isDefault && b.userBankAccount.isDefault) return 1;
 
             // If both have same default status, sort by account name or keep original order
-            return a.user_bank_account.accountName.localeCompare(b.user_bank_account.accountName);
+            return a.userBankAccount.accountName.localeCompare(b.userBankAccount.accountName);
         }) as any[];
 
     const [modalOpen, setModalOpen] = useState(false);
@@ -70,10 +71,10 @@ const BankAccount = () => {
 
     const handleEdit = (account: any) => {
         setEditingAccount({
-            id: account.user_bank_account.id, // Add the ID for editing
-            bankId: String(account.user_bank_account.bankId),
-            accountNumber: account.user_bank_account.accountNumber,
-            accountName: account.user_bank_account.accountName,
+            id: account.userBankAccount.id, // Add the ID for editing
+            bankId: String(account.userBankAccount.bankId),
+            accountNumber: account.userBankAccount.accountNumber,
+            accountName: account.userBankAccount.accountName,
         });
         setModalOpen(true);
     };
@@ -108,7 +109,7 @@ const BankAccount = () => {
 
         if (isSuccess(res)) {
             // Refresh the bank accounts list
-            await mutateBankAccounts();
+            upsertBankAccount(res.data.bankAccount);
             setModalOpen(false);
         } else {
             setError(t("sellerBankAccount.bankAccountAlreadyExistsForThisBank"))
@@ -118,7 +119,7 @@ const BankAccount = () => {
     const handleSetDefault = async (id: number) => {
         const res = await setDefaultBankAccount({bankAccountId: id});
         if (isSuccess(res)) {
-            await mutateBankAccounts();
+            setDefaultBankAccountStore(id);
         }
     };
 
@@ -131,8 +132,7 @@ const BankAccount = () => {
         if (deletingAccountId == null) return;
         const res = await deleteBankAccount({bankAccountId: deletingAccountId});
         if (isSuccess(res)) {
-            // Refresh the bank accounts list
-            await mutateBankAccounts();
+            deleteBankAccountStore(deletingAccountId);
         }
         setConfirmDeleteOpen(false);
         setDeletingAccountId(null);
@@ -159,20 +159,19 @@ const BankAccount = () => {
             </div>
 
             <div className="p-6 space-y-4">
-                {isBankAccountsLoading && <LoadingBlur text={""}/>}
-                {(isBankListLoading || isBankAccountsLoading) && <LoadingBlur text=""/>}
-                {!isBankAccountsLoading && normalizedAccounts.length === 0 && (
+                {isBankListLoading && <LoadingBlur text=""/>}
+                {normalizedAccounts.length === 0 && (
                     <p className="text-text-primary">{t("sellerBankAccount.noBankFound")}</p>
                 )}
                 {normalizedAccounts.map((acc) => (
                     <div
-                        key={acc.user_bank_account.id}
+                        key={acc.userBankAccount.id}
                         className={`border rounded-md p-4 flex justify-between items-center ${
-                            acc.user_bank_account.isDefault ? "border-blue-500 bg-blue-50" : "border-gray-200"
+                            acc.userBankAccount.isDefault ? "border-blue-500 bg-blue-50" : "border-gray-200"
                         }`}
                     >
                         <div className="flex items-center gap-3">
-                            {acc.user_bank_account.isDefault && (
+                            {acc.userBankAccount.isDefault && (
                                 <span className="text-xs text-primary font-medium bg-blue-100 px-2 py-1 rounded">
                                     ✅ {t("sellerBankAccount.default") || "Default"}
                                 </span>
@@ -180,15 +179,15 @@ const BankAccount = () => {
                             <div>
                                 <p className="font-medium text-gray-800">{acc.bank?.name ?? "Unknown Bank"}</p>
                                 <p className="text-gray-500">
-                                    {acc.user_bank_account.accountNumber} — {acc.user_bank_account.accountName}
+                                    {acc.userBankAccount.accountNumber} — {acc.userBankAccount.accountName}
                                 </p>
                             </div>
                         </div>
 
                         <div className="flex gap-2">
-                            {!acc.user_bank_account.isDefault && (
+                            {!acc.userBankAccount.isDefault && (
                                 <button
-                                    onClick={() => handleSetDefault(acc.user_bank_account.id)}
+                                    onClick={() => handleSetDefault(acc.userBankAccount.id)}
                                     className="text-sm text-primary border border-primary rounded-md px-3 py-1 hover:bg-blue-50"
                                 >
                                     <Star className="w-4 h-4 inline mr-1"/>
@@ -202,9 +201,9 @@ const BankAccount = () => {
                                 <Pencil className="w-4 h-4 inline mr-1"/>
                                 {t("sellerBankAccount.edit")}
                             </button>
-                            {!acc.user_bank_account.isDefault && (
+                            {!acc.userBankAccount.isDefault && (
                                 <button
-                                    onClick={() => handleConfirmDelete(acc.user_bank_account.id)}
+                                    onClick={() => handleConfirmDelete(acc.userBankAccount.id)}
                                     className="text-sm text-red-600 border border-red-600 rounded-md px-3 py-1 hover:bg-red-50"
                                 >
                                     <Trash2 className="w-4 h-4 inline mr-1"/>

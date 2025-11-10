@@ -1,11 +1,3 @@
-export type FavoriteJob = {
-  jobs: Job[];
-  totalCount: number;
-  success: boolean;
-  page: number;
-  perPage: number;
-};
-
 export type Job = {
   id: string;
   user: User;

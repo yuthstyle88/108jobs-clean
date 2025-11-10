@@ -4,7 +4,7 @@ import {
     CommentView,
     CommunityView,
     CreateOAuthProvider,
-    GetSiteResponse,
+    GetSiteResponse, ListBankAccountsResponse,
     ListCommunitiesResponse,
     ListUserChatRoomsResponse,
     MyUserInfo,
@@ -22,6 +22,7 @@ export interface IsoData<T extends RouteData = RouteData> {
     siteRes?: GetSiteResponse;
     communities?: ListCommunitiesResponse,
     chatRooms?: ListUserChatRoomsResponse,
+    bankAccounts?: ListBankAccountsResponse,
     myUserInfo?: MyUserInfo;
     errorPageData?: ErrorPageData;
     appUrl: string | undefined;

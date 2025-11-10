@@ -1794,6 +1794,14 @@ export const th = {
 
             Refresh: "รีเฟรช",
             Loading: "กำลังโหลด...",
+            buttonWithdraw: "ถอนเงิน",
+            withdrawRequest: "คำขอถอนเงิน",
+            amount: "จำนวนเงิน",
+            selectBank: "เลือกบัญชีธนาคาร",
+            noBank: "ยังไม่มีบัญชีธนาคารที่เชื่อมต่อ กรุณาเพิ่มก่อน",
+            reason: "เหตุผล",
+            withdrawalRequestSent: "ส่งคำขอถอนเงินสำเร็จ!",
+            available: "พร้อมใช้งาน",
         },
         manageUsers: {
             title: "ผู้ใช้",
