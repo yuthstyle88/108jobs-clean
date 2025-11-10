@@ -1853,6 +1853,12 @@ export const vi = {
             reason: "Lý do",
             withdrawalRequestSent: "Yêu cầu rút tiền đã được gửi thành công!",
             available: "Sẵn có",
+            sectionWithdrawHistory: "Lịch sử rút tiền",
+            noWithdrawHistory: "Chưa có lịch sử rút tiền.",
+            noteWithdrawProcess: "Yêu cầu rút tiền được xử lý trong vòng 1-3 ngày làm việc. Các yêu cầu được duyệt sẽ được chuyển vào tài khoản ngân hàng của bạn.",
+            Completed: "Đã hoàn tất",
+            Rejected: "Bị từ chối",
+            RequestID: "Mã yêu cầu",
         },
         manageUsers: {
             title: "Người dùng",

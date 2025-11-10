@@ -1,38 +1,57 @@
 "use client";
-import {faInfoCircle, faSync} from "@fortawesome/free-solid-svg-icons";
+
+import {faCoins, faInfoCircle, faSync} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useTranslation} from "react-i18next";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useCallback, useMemo, useState} from "react";
-import {ListTopUpRequestQuery, TopUpRequestView} from "lemmy-js-client";
 import {format} from "date-fns";
+import type {
+    ListWithdrawRequestQuery,
+    WithdrawRequestView,
+    WithdrawStatus,
+} from "lemmy-js-client";
 
-const TopUpHistory = () => {
+const WithdrawHistory = () => {
     const {t} = useTranslation();
 
-    // Filters state
-    const [filters, setFilters] = useState<ListTopUpRequestQuery>({
+    // === Filters (matches API) ===
+    const [filters, setFilters] = useState<ListWithdrawRequestQuery>({
         status: undefined,
         amountMin: undefined,
         amountMax: undefined,
+        year: undefined,
+        month: undefined,
+        day: undefined,
         limit: 5,
     });
 
-    // Pagination state
+    // === Pagination ===
     const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined);
     const [cursorHistory, setCursorHistory] = useState<string[]>([]);
+    const [isGoingBack, setIsGoingBack] = useState(false);
 
-    const {data, isLoading, execute: refetch} = useHttpGet("listTopUpRequests", {
+    const {
+        data: bankListRes,
+        isMutating: isBankListLoading,
+    } = useHttpGet("listBanks");
+    const bankList = bankListRes?.banks ?? [];
+    const {data, isLoading, execute: refetch} = useHttpGet("listWithdrawRequests", {
         ...filters,
         pageCursor: currentCursor,
+        pageBack: isGoingBack,
     });
 
     const hasPreviousPage = useMemo(() => cursorHistory.length > 0, [cursorHistory]);
     const hasNextPage = useMemo(() => !!data?.nextPage, [data?.nextPage]);
 
-    const topUps: TopUpRequestView[] = data?.topUpRequests ?? [];
+    const withdraws: WithdrawRequestView[] = data?.withdrawRequests ?? [];
 
-    const handleFilterChange = (key: keyof ListTopUpRequestQuery, value: any) => {
+    // === Handlers ===
+    const handleFilterChange = <K extends keyof ListWithdrawRequestQuery>(
+        key: K,
+        value: ListWithdrawRequestQuery[K]
+    ) => {
         setFilters((prev) => ({...prev, [key]: value}));
     };
 
@@ -44,6 +63,7 @@ const TopUpHistory = () => {
         if (data?.nextPage) {
             setCursorHistory((prev) => [...prev, currentCursor || ""]);
             setCurrentCursor(data.nextPage);
+            setIsGoingBack(false);
         }
     }, [data?.nextPage, currentCursor]);
 
@@ -52,27 +72,27 @@ const TopUpHistory = () => {
             const prevCursor = cursorHistory[cursorHistory.length - 1];
             setCursorHistory((prev) => prev.slice(0, -1));
             setCurrentCursor(prevCursor || undefined);
+            setIsGoingBack(true);
         }
     }, [cursorHistory]);
 
-    // Helper: Get status badge style
-    const getStatusStyle = (status: string) => {
+    // === UI Helpers ===
+    const getStatusStyle = (status: WithdrawStatus) => {
         switch (status) {
-            case "Success":
+            case "Completed":
                 return "bg-emerald-100 text-green-800";
             case "Pending":
                 return "bg-amber-100 text-yellow-700";
-            case "Expired":
+            case "Rejected":
                 return "bg-red-100 text-red-700";
             default:
                 return "bg-gray-100 text-gray-700";
         }
     };
 
-    // Helper: Get status icon
-    const getStatusIcon = (status: string) => {
+    const getStatusIcon = (status: WithdrawStatus) => {
         switch (status) {
-            case "Success":
+            case "Completed":
                 return (
                     <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path
@@ -92,7 +112,7 @@ const TopUpHistory = () => {
                         />
                     </svg>
                 );
-            case "Expired":
+            case "Rejected":
                 return (
                     <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <path
@@ -107,12 +127,22 @@ const TopUpHistory = () => {
         }
     };
 
+    const getBankName = (bankId: number) => {
+        const map: Record<number, string> = {
+            1: "Vietcombank",
+            2: "Techcombank",
+            3: "BIDV",
+            4: "MB Bank",
+        };
+        return map[bankId] || `Bank #${bankId}`;
+    };
+
     return (
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                 <h2 className="text-3xl font-bold text-gray-900">
-                    {t("profileCoins.sectionTopUpHistory")}
+                    {t("profileCoins.sectionWithdrawHistory")}
                 </h2>
                 <button
                     onClick={handleRefresh}
@@ -128,22 +158,24 @@ const TopUpHistory = () => {
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-6 rounded-2xl text-gray-600 shadow-sm border border-gray-200 mb-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 text-gray-600 lg:grid-cols-5 gap-4">
                     {/* Status */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">
                             {t("profileCoins.Status")}
                         </label>
                         <select
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all text-base"
+                            className="w-full px-4 py-3 border border-gray-300 text-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all text-base"
                             value={filters.status ?? ""}
-                            onChange={(e) => handleFilterChange("status", e.target.value || undefined)}
+                            onChange={(e) =>
+                                handleFilterChange("status", (e.target.value as WithdrawStatus) || undefined)
+                            }
                         >
                             <option value="">{t("profileCoins.AllStatus")}</option>
                             <option value="Pending">{t("profileCoins.Pending")}</option>
-                            <option value="Success">{t("profileCoins.Success")}</option>
-                            <option value="Expired">{t("profileCoins.Expired")}</option>
+                            <option value="Commpleted">{t("profileCoins.Completed")}</option>
+                            <option value="Rejected">{t("profileCoins.Rejected")}</option>
                         </select>
                     </div>
 
@@ -171,7 +203,7 @@ const TopUpHistory = () => {
                         <input
                             type="number"
                             placeholder={t("e.g. 50000")}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder-gray-400 text-base"
+                            className="w-full px-4 py-3 border  border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder-gray-400 text-base"
                             value={filters.amountMax ?? ""}
                             onChange={(e) =>
                                 handleFilterChange("amountMax", e.target.value ? Number(e.target.value) : undefined)
@@ -184,26 +216,30 @@ const TopUpHistory = () => {
                         <label className="block text-sm font-medium text-gray-700">
                             {t("profileCoins.DateOptional")}
                         </label>
-                        <div className="grid grid-cols-3 gap-3">
+                        <div className="grid grid-cols-3 text-gray-600 gap-3">
                             {/* Year */}
                             <select
                                 className="px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary text-base"
                                 value={filters.year ?? ""}
-                                onChange={(e) => handleFilterChange("year", e.target.value ? Number(e.target.value) : undefined)}
+                                onChange={(e) =>
+                                    handleFilterChange("year", e.target.value ? Number(e.target.value) : undefined)
+                                }
                             >
                                 <option value="">{t("profileCoins.Year")}</option>
-                                {Array.from({length: 5}, (_, i) => new Date().getFullYear() - i).map((year) => (
-                                    <option key={year} value={year}>
-                                        {year}
+                                {Array.from({length: 5}, (_, i) => new Date().getFullYear() - i).map((y) => (
+                                    <option key={y} value={y}>
+                                        {y}
                                     </option>
                                 ))}
                             </select>
 
                             {/* Month */}
                             <select
-                                className="px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary text-base"
+                                className="px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:ring-primary text-base"
                                 value={filters.month ?? ""}
-                                onChange={(e) => handleFilterChange("month", e.target.value ? Number(e.target.value) : undefined)}
+                                onChange={(e) =>
+                                    handleFilterChange("month", e.target.value ? Number(e.target.value) : undefined)
+                                }
                             >
                                 <option value="">{t("profileCoins.Month")}</option>
                                 {Array.from({length: 12}, (_, i) => i + 1).map((m) => (
@@ -217,7 +253,9 @@ const TopUpHistory = () => {
                             <select
                                 className="px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary text-base"
                                 value={filters.day ?? ""}
-                                onChange={(e) => handleFilterChange("day", e.target.value ? Number(e.target.value) : undefined)}
+                                onChange={(e) =>
+                                    handleFilterChange("day", e.target.value ? Number(e.target.value) : undefined)
+                                }
                                 disabled={!filters.year || !filters.month}
                             >
                                 <option value="">{t("profileCoins.Day")}</option>
@@ -225,7 +263,6 @@ const TopUpHistory = () => {
                                     const year = filters.year;
                                     const month = filters.month;
                                     if (!year || !month) return Array.from({length: 31}, (_, i) => i + 1);
-
                                     const daysInMonth = new Date(year, month, 0).getDate();
                                     return Array.from({length: daysInMonth}, (_, i) => i + 1);
                                 })().map((d) => (
@@ -243,6 +280,7 @@ const TopUpHistory = () => {
                             onClick={() => {
                                 setCurrentCursor(undefined);
                                 setCursorHistory([]);
+                                setIsGoingBack(false);
                                 refetch();
                             }}
                             className="w-full px-5 py-3 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 transition-all shadow-sm flex items-center justify-center gap-2"
@@ -263,10 +301,10 @@ const TopUpHistory = () => {
 
             {/* Info Banner */}
             <div
-                className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-5 mb-8 flex items-start gap-3 shadow-sm">
-                <FontAwesomeIcon icon={faInfoCircle} className="text-blue-600 text-xl mt-0.5 flex-shrink-0"/>
-                <p className="text-sm text-blue-800 leading-relaxed">
-                    {t("profileCoins.noteBalanceUpdate")}
+                className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-2xl p-5 mb-8 flex items-start gap-3 shadow-sm">
+                <FontAwesomeIcon icon={faInfoCircle} className="text-red-600 text-xl mt-0.5 flex-shrink-0"/>
+                <p className="text-sm text-red-800 leading-relaxed">
+                    {t("profileCoins.noteWithdrawProcess")}
                 </p>
             </div>
 
@@ -276,12 +314,12 @@ const TopUpHistory = () => {
                     <table className="w-full min-w-[800px]">
                         <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                         <tr>
-                            {["PaymentCode", "Date", "Amount", "Status"].map((header) => (
+                            {["RequestID", "Date", "Amount", "Bank", "Status"].map((h) => (
                                 <th
-                                    key={header}
+                                    key={h}
                                     className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider"
                                 >
-                                    {t(`profileCoins.${header}`)}
+                                    {t(`profileCoins.${h}`)}
                                 </th>
                             ))}
                         </tr>
@@ -289,7 +327,7 @@ const TopUpHistory = () => {
                         <tbody className="divide-y divide-gray-200">
                         {isLoading ? (
                             <tr>
-                                <td colSpan={4} className="text-center py-12">
+                                <td colSpan={5} className="text-center py-12">
                                     <div className="flex justify-center items-center">
                                         <div
                                             className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -297,16 +335,12 @@ const TopUpHistory = () => {
                                     <p className="mt-3 text-sm text-gray-500">{t("profileCoins.Loading")}</p>
                                 </td>
                             </tr>
-                        ) : topUps.length === 0 ? (
+                        ) : withdraws.length === 0 ? (
                             <tr>
-                                <td colSpan={4} className="text-center py-16">
+                                <td colSpan={5} className="text-center py-16">
                                     <div className="text-gray-400">
-                                        <svg
-                                            className="mx-auto h-12 w-12"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
+                                        <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor"
+                                             viewBox="0 0 24 24">
                                             <path
                                                 strokeLinecap="round"
                                                 strokeLinejoin="round"
@@ -314,45 +348,53 @@ const TopUpHistory = () => {
                                                 d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
                                             />
                                         </svg>
-                                        <p className="mt-3 text-sm font-medium text-gray-600">{t("No topups found")}</p>
+                                        <p className="mt-3 text-sm font-medium text-gray-600">
+                                            {t("profileCoins.noWithdrawHistory")}
+                                        </p>
                                         <p className="mt-1 text-xs text-gray-500">{t("Try adjusting your filters")}</p>
                                     </div>
                                 </td>
                             </tr>
                         ) : (
-                            topUps.map((item) => (
-                                <tr
-                                    key={item.topUpRequest.id}
-                                    className="hover:bg-gray-50 transition-colors duration-150"
-                                >
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <code className="text-sm font-mono text-primary bg-gray-100 px-2 py-1 rounded">
-                                            {item.topUpRequest.qrId}
-                                        </code>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-700">
-                                        {format(new Date(item.topUpRequest.createdAt), "dd MMM yyyy, HH:mm")}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-sm font-semibold text-gray-900">
-                                            {item.topUpRequest.amount.toLocaleString()}
-                                        </span>{" "}
-                                        <span className="text-xs text-gray-500 uppercase">
-                                            {item.topUpRequest.currencyName}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span
-                                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(
-                                                item.topUpRequest.status
-                                            )}`}
-                                        >
-                                            {getStatusIcon(item.topUpRequest.status)}
-                                            {t(`profileCoins.${item.topUpRequest.status}`)}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))
+                            withdraws.map((item) => {
+                                const req = item.withdrawRequest;
+                                const bank = item.bankAccount;
+                                return (
+                                    <tr key={req.id} className="hover:bg-gray-50 transition-colors duration-150">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <code
+                                                className="text-sm font-mono text-primary bg-gray-100 px-2 py-1 rounded">
+                                                #{req.id}
+                                            </code>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-700">
+                                            {format(new Date(req.createdAt), "dd MMM yyyy, HH:mm")}
+                                        </td>
+                                        <td className="px-6 py-4">
+                        <span className="text-sm font-semibold text-gray-900">
+                          {req.amount.toLocaleString()}
+                        </span>{" "}
+                                            <span className="text-xs text-gray-500 uppercase">  <FontAwesomeIcon
+                                                icon={faCoins}
+                                                className="text-xl text-yellow-500 transition-transform hover:scale-110"
+                                            /></span>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-700">
+                                            {getBankName(bank.bankId)} • ****{bank.accountNumber.slice(-4)}
+                                        </td>
+                                        <td className="px-6 py-4">
+                        <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(
+                                req.status
+                            )}`}
+                        >
+                          {getStatusIcon(req.status)}
+                            {t(`profileCoins.${req.status}`)}
+                        </span>
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         )}
                         </tbody>
                     </table>
@@ -365,9 +407,8 @@ const TopUpHistory = () => {
                     {hasPreviousPage && (
                         <button
                             onClick={handlePrevPage}
-                            className="py-2 px-4 rounded-lg font-medium bg-primary text-white hover:bg-[#063a68] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                             disabled={isLoading}
-                            aria-label="Go to previous page"
+                            className="py-2 px-4 rounded-lg font-medium bg-primary text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors disabled:opacity-60"
                         >
                             {t("profileCoins.previousButton")}
                         </button>
@@ -375,9 +416,8 @@ const TopUpHistory = () => {
                     {hasNextPage && (
                         <button
                             onClick={handleNextPage}
-                            className="py-2 px-4 rounded-lg font-medium bg-primary text-white hover:bg-[#063a68] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                             disabled={isLoading}
-                            aria-label="Go to next page"
+                            className="py-2 px-4 rounded-lg font-medium bg-primary text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors disabled:opacity-60"
                         >
                             {t("profileCoins.nextButton")}
                         </button>
@@ -388,4 +428,4 @@ const TopUpHistory = () => {
     );
 };
 
-export default TopUpHistory;
+export default WithdrawHistory;

@@ -12,12 +12,13 @@ import {BankAccountId, SubmitWithdrawRequest} from "lemmy-js-client";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 import {isSuccess} from "@/services/HttpService";
 import {toast} from "sonner";
+import WithdrawHistory from "@/components/WithdrawHistory";
 
 const Coins108Jobs = () => {
     const {t} = useTranslation();
     const {userInfo} = useUserStore();
     const {bankAccounts} = useBankAccountsStore();
-
+    const [activeTab, setActiveTab] = useState<"top-up" | "withdraw">("top-up");
     const [amount, setAmount] = useState<string>("");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
@@ -186,10 +187,37 @@ const Coins108Jobs = () => {
                 </div>
             </div>
 
-            {/* Top-Up History */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div className="bg-white rounded-2xl shadow-md p-6">
-                    <TopUpHistory/>
+            {/* ---------- Tabs: Top-Up & Withdraw History ---------- */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+                <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+                    {/* Tab Headers */}
+                    <div className="flex border-b border-gray-200">
+                        <button
+                            onClick={() => setActiveTab("top-up")}
+                            className={`flex-1 py-4 px-6 font-medium text-sm transition-all ${
+                                activeTab === "top-up"
+                                    ? "text-primary border-b-2 border-primary"
+                                    : "text-gray-500 hover:text-gray-700"
+                            }`}
+                        >
+                            {t("profileCoins.sectionTopUpHistory")}
+                        </button>
+                        <button
+                            onClick={() => setActiveTab("withdraw")}
+                            className={`flex-1 py-4 px-6 font-medium text-sm transition-all ${
+                                activeTab === "withdraw"
+                                    ? "text-red-600 border-b-2 border-red-600"
+                                    : "text-gray-500 hover:text-gray-700"
+                            }`}
+                        >
+                            {t("profileCoins.sectionWithdrawHistory")}
+                        </button>
+                    </div>
+
+                    {/* Tab Content */}
+                    <div className="p-6">
+                        {activeTab === "top-up" ? <TopUpHistory /> : <WithdrawHistory />}
+                    </div>
                 </div>
             </div>
 

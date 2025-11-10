@@ -1802,6 +1802,12 @@ export const th = {
             reason: "เหตุผล",
             withdrawalRequestSent: "ส่งคำขอถอนเงินสำเร็จ!",
             available: "พร้อมใช้งาน",
+            sectionWithdrawHistory: "ประวัติการถอนเงิน",
+            noWithdrawHistory: "ยังไม่มีประวัติการถอนเงิน",
+            noteWithdrawProcess: "คำขอถอนเงินจะดำเนินการภายใน 1-3 วันทำการ คำขอที่ได้รับการอนุมัติจะโอนเข้าบัญชีธนาคารของคุณ",
+            Completed: "เสร็จสิ้น",
+            Rejected: "ถูกปฏิเสธ",
+            RequestID: "รหัสคำขอ"
         },
         manageUsers: {
             title: "ผู้ใช้",

@@ -1858,6 +1858,12 @@ export const en = {
             reason: "Reason",
             withdrawalRequestSent: "Withdrawal request sent successfully!",
             available: "Available",
+            sectionWithdrawHistory: "Withdraw History",
+            noWithdrawHistory: "No withdrawal history yet.",
+            noteWithdrawProcess: "Withdrawal requests are processed within 1-3 business days. Approved requests will be transferred to your bank account.",
+            Completed: "Completed",
+            Rejected: "Rejected",
+            RequestID: "Request ID",
         },
         manageUsers: {
             title: "Users",
