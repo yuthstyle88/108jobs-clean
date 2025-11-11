@@ -5,7 +5,6 @@ import {usePathname} from "next/navigation";
 
 import {
     Users,
-    UserX,
     Plus,
     Minus,
     LayoutDashboard
@@ -96,7 +95,7 @@ export function AdminSidebar() {
                                                     // Active state
                                                     isActive
                                                         ? "bg-primary text-white shadow-md"
-                                                        : "text-foreground hover:bg-muted/80",
+                                                        : "hover:bg-muted/80",
                                                     // Collapsed: make button square + center icon
                                                     collapsed && "justify-center p-0 size-12",
                                                     // Expanded: normal padding

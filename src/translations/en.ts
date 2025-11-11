@@ -2047,7 +2047,7 @@ export const en = {
                 title: "Recent System Events",
                 siteRefreshed: "Site refreshed successfully",
                 adminActive: "Admin account active: @{name}",
-                postsPublished: "{count} posts published",
+                postsPublished: "{{count}} posts published",
                 sinceLaunch: "Since {{date}}",
                 never: "Never",
                 instanceId: "Instance ID: {{id}}",

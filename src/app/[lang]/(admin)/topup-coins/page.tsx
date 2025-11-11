@@ -139,7 +139,7 @@ const TopUpCoins = () => {
         <AdminLayout>
             <div className="space-y-6 p-4 sm:p-6 text-gray-600 lg:p-8 max-w-7xl mx-auto">
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground">
+                    <h1 className="text-3xl font-bold">
                         {t("topupCoins.title")}
                     </h1>
                     <p className="text-muted-foreground mt-2">
@@ -234,25 +234,25 @@ const TopUpCoins = () => {
                                      className="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-card rounded-xl border shadow-sm hover:shadow-md transition-all">
                                     <div className="flex items-start gap-4 flex-1">
                                         <div
-                                            className="w-11 h-11 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            className="w-11 h-11 rounded-lg flex items-center justify-center flex-shrink-0">
                                             <CreditCard className="w-6 h-6 text-primary"/>
                                         </div>
 
                                         <div className="flex-1 space-y-2">
                                             <div className="flex flex-wrap items-center gap-2">
-                                                <h4 className="font-semibold text-foreground">
+                                                <h4 className="font-semibold">
                                                     {item.localUser.email}
                                                 </h4>
                                                 {getStatusBadge(wt.status, wt.transferred)}
                                                 {wt.qrId && (
-                                                    <Badge variant="outline" className="text-xs">
+                                                    <Badge variant="secondary" className="text-xs">
                                                         <Hash className="w-3 h-3 mr-1"/>
                                                         {wt.qrId}
                                                     </Badge>
                                                 )}
                                             </div>
 
-                                            <div className="text-sm text-muted-foreground space-y-1">
+                                            <div className="text-sm space-y-1">
                                                 <div className="flex flex-wrap gap-3 text-xs">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3.5 h-3.5"/>

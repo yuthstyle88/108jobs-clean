@@ -123,7 +123,7 @@ const ManageUsers = () => {
                 {/* Header */}
                 <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-light tracking-tight text-foreground">{t("manageUsers.title")}</h1>
+                        <h1 className="text-3xl font-light tracking-tight">{t("manageUsers.title")}</h1>
                         <p className="text-sm text-muted-foreground mt-1">{t("manageUsers.description")}</p>
                     </div>
 

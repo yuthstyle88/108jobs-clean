@@ -14,12 +14,12 @@ interface StatsCardProps {
 
 export function StatsCard({title, value, icon: Icon, trend, description}: StatsCardProps) {
     return (
-        <Card className="bg-gradient-card border-border/50 hover:shadow-md transition-all">
+        <Card className="bg-gradient-card text-gray-600 border-border/50 hover:shadow-md transition-all">
             <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                     <div className="flex-1">
                         <p className="text-sm font-medium text-muted-foreground">{title}</p>
-                        <p className="text-2xl font-bold text-foreground mt-2">{value}</p>
+                        <p className="text-2xl font-bold mt-2">{value}</p>
 
                         {trend && (
                             <div className="flex items-center mt-2">
@@ -28,7 +28,7 @@ export function StatsCard({title, value, icon: Icon, trend, description}: StatsC
                 }`}>
                   {trend.isPositive ? "+" : ""}{trend.value}%
                 </span>
-                                <span className="text-xs text-muted-foreground ml-1">vs tháng trước</span>
+                                <span className="text-xs text-muted-foreground ml-1">vs previous month</span>
                             </div>
                         )}
 

@@ -87,7 +87,7 @@ export const TopupGuide = () => {
             </div>
 
             {/* Flow Summary */}
-            <div className="bg-gradient-to-r from-blue-500 to-emerald-500 rounded-xl p-5 mt-6">
+            <div className="rounded-xl p-5 mt-6">
                 <h3 className="font-bold text-lg mb-2">
                     {t("topupGuide.workflow.title")}
                 </h3>

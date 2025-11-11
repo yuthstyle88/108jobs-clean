@@ -15,7 +15,7 @@ import LanguageDropdown from "@/components/LanguageDropDown";
 export function AdminHeader() {
     return (
         <header
-            className="h-16 border-b border-border bg-primary backdrop-blur-sm flex items-center justify-between px-6">
+            className="h-16 border-b border-border bg-primary flex items-center justify-between px-6">
             <div className="flex items-center gap-4">
                 <SidebarTrigger className="text-muted-foreground hover:text-foreground"/>
             </div>

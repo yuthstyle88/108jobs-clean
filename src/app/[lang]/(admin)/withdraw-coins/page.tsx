@@ -104,7 +104,7 @@ const WithdrawCoins = () => {
 
     const getStatusConfig = (status: WithdrawStatus) => {
         const config = {
-            Pending: { color: "bg-primary text-white border-amber-400/30", icon: Minus, label: "Pending" },
+            Pending: { color: "bg-amber-500 text-white border-amber-400/30", icon: Minus, label: "Pending" },
             Completed: {
                 color: "bg-green-600 text-white border-emerald-500/30",
                 icon: CheckCircle,
@@ -150,7 +150,7 @@ const WithdrawCoins = () => {
 
                     {/* Header */}
                     <div className="backdrop-blur-xl bg-white/70 border border-white/20 rounded-3xl p-6 shadow-lg">
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        <h1 className="text-4xl font-bold bg-primary bg-clip-text text-transparent">
                             {t("admin.withdraw.title")}
                         </h1>
                         <p className="text-muted-foreground mt-2 max-w-2xl">{t("admin.withdraw.description")}</p>
@@ -164,8 +164,8 @@ const WithdrawCoins = () => {
                             onClick={() => setShowFilters(!showFilters)}
                         >
                             <div className="flex items-center gap-3">
-                                <Filter className="w-5 h-5 text-primary"/>
-                                <h3 className="font-semibold text-foreground">{t("admin.withdraw.filters.title") || "Filters"}</h3>
+                                <Filter className="w-5 h-5"/>
+                                <h3 className="font-semibold">{t("admin.withdraw.filters.title") || "Filters"}</h3>
                             </div>
                             <ChevronDown
                                 className={cn("w-5 h-5 text-muted-foreground transition-transform", showFilters && "rotate-180")}/>
@@ -294,8 +294,8 @@ const WithdrawCoins = () => {
                                             <stat.icon className="w-7 h-7 text-gray-700"/>
                                         </div>
                                         <div>
-                                            <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
-                                            <p className="text-2xl font-bold text-foreground mt-1">{stat.value}</p>
+                                            <p className="text-sm font-medium">{stat.label}</p>
+                                            <p className="text-2xl font-bold mt-1">{stat.value}</p>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -317,7 +317,7 @@ const WithdrawCoins = () => {
                                         className="mx-auto w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
                                         <CreditCard className="w-8 h-8 text-muted-foreground"/>
                                     </div>
-                                    <p className="text-lg font-medium text-foreground">{t("admin.withdraw.list.noResults")}</p>
+                                    <p className="text-lg font-medium">{t("admin.withdraw.list.noResults")}</p>
                                     <p className="text-sm text-muted-foreground mt-1">{t("admin.withdraw.list.noResultsHint")}</p>
                                 </Card>
                             ) : (
@@ -350,7 +350,7 @@ const WithdrawCoins = () => {
                                                 <div className="flex items-start gap-4 flex-1">
                                                     {/* Gradient Icon Avatar */}
                                                     <div
-                                                        className="relative p-3.5 rounded-2xl bg-gradient-to-br from-red-500 via-pink-500 to-purple-600 shadow-xl ring-4 ring-white/50 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                                                        className="relative p-3.5 rounded-2xl shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                                                         <CreditCard className="w-6 h-6 text-primary drop-shadow-md"/>
                                                         {/* Pulse Ring */}
                                                         <div
@@ -361,13 +361,13 @@ const WithdrawCoins = () => {
                                                     <div className="flex-1 space-y-3">
                                                         {/* User + Status */}
                                                         <div className="flex flex-wrap items-center gap-3">
-                                                            <h4 className="font-bold text-lg text-foreground truncate max-w-[200px] sm:max-w-none group-hover:text-primary transition-colors">
+                                                            <h4 className="font-bold text-lg truncate max-w-[200px] sm:max-w-none group-hover:text-primary transition-colors">
                                                                 {user.email}
                                                             </h4>
                                                             <Badge
                                                                 variant="outline"
                                                                 className={cn(
-                                                                    "text-xs font-semibold px-2.5 py-0.5 border rounded-full shadow-sm transition-all duration-300 bg-opacity-100",
+                                                                    "text-xs font-semibold px-2.5 py-0.5 border rounded-full shadow-sm transition-all duration-300",
                                                                     status.color,
                                                                     "group-hover:scale-105"
                                                                 )}
@@ -380,11 +380,11 @@ const WithdrawCoins = () => {
                                                         {/* Details Grid */}
                                                         <div
                                                             className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                                                            <div className="flex items-center gap-2 text-foreground/80">
+                                                            <div className="flex items-center gap-2">
                                                                 <div
                                                                     className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"/>
                                                                 <span className="font-medium">Amount:</span>
-                                                                <span className="font-bold text-foreground">
+                                                                <span className="font-bold">
                             {w.amount.toLocaleString()}
                                                                     <span
                                                                         className="text-xs font-normal text-muted-foreground"> <FontAwesomeIcon
@@ -393,7 +393,7 @@ const WithdrawCoins = () => {
                                                                     /></span>
                         </span>
                                                             </div>
-                                                            <div className="flex items-center gap-2 text-foreground/80">
+                                                            <div className="flex items-center gap-2">
                                                                 <div
                                                                     className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-green-500 to-emerald-500"/>
                                                                 <span className="font-medium">Bank:</span>
@@ -472,12 +472,12 @@ const WithdrawCoins = () => {
                         <div className="space-y-6">
                             {selectedRequest && (
                                 <Card
-                                    className="sticky top-6 backdrop-blur-xl bg-white/80 border-white/40 shadow-2xl overflow-hidden">
+                                    className="sticky top-6 text-gray-600 backdrop-blur-xl bg-white/80 border-white/40 shadow-2xl overflow-hidden">
                                     <div
                                         className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-pink-500/5"></div>
                                     <CardContent className="p-6 space-y-5 relative z-10">
                                         <div className="flex items-center justify-between">
-                                            <h4 className="font-bold text-lg text-foreground">{selectedRequest.localUser.email}</h4>
+                                            <h4 className="font-bold text-lg">{selectedRequest.localUser.email}</h4>
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
@@ -490,14 +490,14 @@ const WithdrawCoins = () => {
 
                                         <div
                                             className="p-5 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-2xl border border-blue-500/20">
-                                            <p className="text-3xl font-bold text-foreground">
+                                            <p className="text-3xl font-bold">
                                                 {selectedRequest.withdrawRequest.amount.toLocaleString()} <span
                                                 className="text-lg font-normal text-muted-foreground">coins</span>
                                             </p>
                                         </div>
 
                                         <div className="space-y-3 text-sm">
-                                            <h5 className="font-semibold text-foreground">{t("admin.withdraw.bankInfo")}:</h5>
+                                            <h5 className="font-semibold">{t("admin.withdraw.bankInfo")}:</h5>
                                             <div className="space-y-2 p-3 bg-muted/30 rounded-xl">
                                                 <div><span
                                                     className="font-medium">Bank:</span> {getBankName(selectedRequest.bankAccount.bankId)}
