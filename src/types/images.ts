@@ -135,6 +135,7 @@ export interface AssetsImageType {
     paper: StaticImageData;
     shield: StaticImageData;
     startSelling: StaticImageData;
+    notFound: StaticImageData;
 }
 
 export interface CustomerImageType {

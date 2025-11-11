@@ -2,13 +2,13 @@ import {LoginResponse, OAuthProvider,} from "lemmy-js-client";
 import {HttpService, UserService} from "@/services";
 import {setIsoData} from "@/utils/app";
 import {LoginFormClass} from "@/components/Authentication/LoginForm";
-import {toast} from "@/toast";
 import {LoginProps} from "@/components/Authentication/LoginForm/interface";
 import getQueryParams from "@/utils/helpers";
 import {isSuccess, REQUEST_STATE} from "@/services/HttpService";
 import {getAppName} from "@/utils/appConfig";
 import {isBrowser} from "@/utils";
-import {t} from "i18next";
+import {jwtDecode} from "jwt-decode";
+import {Claims} from "@/services/UserService";
 
 export const handleUseOAuthProvider = async (params: {
     oauthProvider: OAuthProvider;
@@ -112,9 +112,13 @@ export const handleLogin = async (i: LoginFormClass, data: any) => {
 
 export async function handleLoginSuccess(i: LoginFormClass, loginRes: LoginResponse) {
     await UserService.Instance.login({
-      res: loginRes,
+        res: loginRes,
     });
-
+    const claims = jwtDecode<Claims>(loginRes.jwt ?? "");
+    if (claims && claims.isAdmin) {
+        window.location.replace("/admin/dashboard");
+        return;
+    }
     // Redirect immediately after login so the new cookie is seen by server/middleware
     const target = i.props.redirectUrl ?? "/";
     if (isBrowser()) {

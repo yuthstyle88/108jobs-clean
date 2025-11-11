@@ -70,6 +70,7 @@ export class LoginFormClass extends Component<
     t: (key: string, options?: any) => string;
     router: any;
     redirectUrl: string;
+    setRedirectUrl: (url: string) => void;
     formMethods: any;
     loginSchema: any;
     apiError: string | null;

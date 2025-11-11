@@ -7,6 +7,7 @@ import {VALID_LANGUAGES} from "@/constants/language";
 
 export interface Claims {
     acceptedTerms: boolean;
+    isAdmin: boolean;
     sub: number;
     iss: string;
     iat: number;
@@ -126,7 +127,7 @@ export class UserService {
             } catch {}
 
             // Redirect to language-aware login/home page
-            const lang = this.currentLanguage || 'th';
+            const lang = (this.currentLanguage && this.currentLanguage === "browser") ? "th" : this.currentLanguage;
             const redirectPath = `/${lang}/login`;
             setTimeout(() => {
                 if (isBrowser()) location.replace(redirectPath);

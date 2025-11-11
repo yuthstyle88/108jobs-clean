@@ -11,8 +11,11 @@ import {
 } from "@/components/ui/DropdownMenu";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar";
 import LanguageDropdown from "@/components/LanguageDropDown";
+import React, {useCallback} from "react";
+import {UserService} from "@/services";
 
 export function AdminHeader() {
+    const logout = useCallback(() => UserService.Instance.logout(), []);
     return (
         <header
             className="h-16 border-b border-border bg-primary flex items-center justify-between px-6">
@@ -56,8 +59,8 @@ export function AdminHeader() {
                             <span>Settings</span>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator/>
-                        <DropdownMenuItem className="text-destructive">
-                            Sign Out
+                        <DropdownMenuItem className="text-destructive" onSelect={logout}>
+                            Logout
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

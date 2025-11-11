@@ -27,25 +27,25 @@ import {cn} from "@/lib/utils";
 const navigationItems = [
     {
         title: "Dashboard",
-        url: "/dashboard",
+        url: "/admin/dashboard",
         icon: LayoutDashboard,
         description: "System overview"
     },
     {
         title: "Manage Users",
-        url: "/manage-users",
+        url: "/admin/manage-users",
         icon: Users,
         description: "Review and manage user profiles"
     },
     {
         title: "Top-up Coins",
-        url: "/topup-coins",
+        url: "/admin/topup-coins",
         icon: Plus,
         description: "Add coins to user accounts"
     },
     {
         title: "Withdraw Coins",
-        url: "/withdraw-coins",
+        url: "/admin/withdraw-coins",
         icon: Minus,
         description: "Approve coin withdrawal requests"
     },
