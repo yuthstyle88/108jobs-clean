@@ -1,10 +1,11 @@
 "use client";
 
-import {faCoins, faUniversity} from "@fortawesome/free-solid-svg-icons";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {useTranslation} from "react-i18next";
-import {Dispatch, SetStateAction, useEffect, useState} from "react";
-import {BankAccountId, BankAccountView} from "lemmy-js-client";
+import { faCoins, faUniversity, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useTranslation } from "react-i18next";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { BankAccountId, BankAccountView } from "lemmy-js-client";
+import { useRouter } from "next/navigation";
 
 type Props = {
     isOpen: boolean;
@@ -29,9 +30,12 @@ const WithdrawalModal = ({
                              setWithdrawReason,
                              onSubmit,
                          }: Props) => {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
+    const router = useRouter();
 
-    const [bankId, setBankId] = useState<BankAccountId>(banks[0]?.userBankAccount.id ?? 0);
+    const [bankId, setBankId] = useState<BankAccountId>(
+        banks[0]?.userBankAccount.id ?? 0
+    );
 
     // keep default bank in sync when banks change
     useEffect(() => {
@@ -59,6 +63,11 @@ const WithdrawalModal = ({
     const handleCancel = () => {
         setWithdrawAmount("");
         setWithdrawReason("");
+        onClose();
+    };
+
+    const handleAddBank = () => {
+        router.push("/account-setting/bank-account");
         onClose();
     };
 
@@ -93,8 +102,8 @@ const WithdrawalModal = ({
                     </div>
                     {withdrawAmount && amountNum > balance && (
                         <p className="text-xs text-red-500 mt-1">
-                            {t("profileCoins.available") || "Available"}:{" "}
-                            {balance.toLocaleString()} coins
+                            {t("profileCoins.available") || "Available"}: {balance.toLocaleString()}{" "}
+                            coins
                         </p>
                     )}
                 </div>
@@ -104,44 +113,55 @@ const WithdrawalModal = ({
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         {t("profileCoins.selectBank") || "Select Bank Account"}
                     </label>
-                    <div className="relative">
-                        <select
-                            value={bankId}
-                            onChange={(e) => setBankId(Number(e.target.value))}
-                            className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-800 appearance-none"
-                        >
-                            {banks.length ? (
-                                banks.map((b) => (
-                                    <option key={b.userBankAccount.id} value={b.userBankAccount.id}>
-                                        {b.bank.name} - {b.userBankAccount.accountNumber} ({b.userBankAccount.accountName})
-                                    </option>
-                                ))
-                            ) : (
-                                <option value="">
-                                    {t("profileCoins.noBank") || "No bank added"}
-                                </option>
-                            )}
-                        </select>
-                        <FontAwesomeIcon
-                            icon={faUniversity}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
-                        />
-                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                            <svg
-                                className="w-5 h-5 text-gray-400"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+
+                    {banks.length > 0 ? (
+                        <div className="relative">
+                            <select
+                                value={bankId}
+                                onChange={(e) => setBankId(Number(e.target.value))}
+                                className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-800 appearance-none"
                             >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M19 9l-7 7-7-7"
-                                />
-                            </svg>
+                                {banks.map((b) => (
+                                    <option key={b.userBankAccount.id} value={b.userBankAccount.id}>
+                                        {b.bank.name} - {b.userBankAccount.accountNumber} (
+                                        {b.userBankAccount.accountName})
+                                    </option>
+                                ))}
+                            </select>
+                            <FontAwesomeIcon
+                                icon={faUniversity}
+                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                            />
+                            <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                <svg
+                                    className="w-5 h-5 text-gray-400"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M19 9l-7 7-7-7"
+                                    />
+                                </svg>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <p className="text-sm text-yellow-800">
+                                {t("profileCoins.noBank") || "No bank account added"}
+                            </p>
+                            <button
+                                onClick={handleAddBank}
+                                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition"
+                            >
+                                <FontAwesomeIcon icon={faPlus} />
+                                {t("sellerBankAccount.buttonAddBank") || "Add Bank"}
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* ---------- Reason ---------- */}
