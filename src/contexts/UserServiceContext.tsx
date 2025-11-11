@@ -36,7 +36,6 @@ interface UserServiceProviderProps {
 export function UserServiceProvider({children, isoData}: UserServiceProviderProps) {
     // Snapshot ISO data once per mount
     const isoMyUser = useMemo(() => isoData ?? null, []);
-    console.log("isomyuser", isoMyUser)
     const token = isoData?.jwt ?? getAuthJWTCookie();
     const initialRooms: RoomView[] = useMemo(
         () => ((isoMyUser?.chatRooms?.rooms ?? []).map(r => ({...r, isActive: false})) as RoomView[]),

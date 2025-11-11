@@ -29,7 +29,7 @@ export function AdminHeader() {
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-destructive rounded-full"></span>
                 </Button>
 
-                <LanguageDropdown/>
+                {/*<LanguageDropdown/>*/}
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-10 px-3 gap-2">

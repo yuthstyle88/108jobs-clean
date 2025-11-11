@@ -188,7 +188,8 @@ const ManageUsers = () => {
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <h3 className="font-medium text-foreground truncate">{person.displayName}</h3>
                                                     {banned && (
-                                                        <Badge variant="destructive" className="text-xs h-5 bg-red-600 text-white">
+                                                        <Badge variant="destructive"
+                                                               className="text-xs h-5 bg-red-600 text-white">
                                                             <Ban className="w-3 h-3 mr-1"/>
                                                             {t("manageUsers.bannedBadge")}
                                                         </Badge>
@@ -227,16 +228,19 @@ const ManageUsers = () => {
                                                     {isBanning ? t("common.processing") : t("manageUsers.unban")}
                                                 </Button>
                                             ) : (
-                                                <Button
-                                                    variant="destructive"
-                                                    size="sm"
-                                                    onClick={() => openBanModal(person)}
-                                                    className="py-2 px-4 rounded-lg font-medium bg-red-500 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                                >
-                                                    <Ban className="w-3.5 h-3.5 mr-1"/>
-                                                    {t("manageUsers.ban")}
-                                                </Button>
+                                                userView.localUser.admin ? null : (
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => openBanModal(person)}
+                                                        className="py-2 px-4 rounded-lg font-medium bg-red-500 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                                    >
+                                                        <Ban className="w-3.5 h-3.5 mr-1"/>
+                                                        {t("manageUsers.ban")}
+                                                    </Button>
+                                                )
                                             )}
+
                                         </div>
                                     </div>
                                 </Card>

@@ -24,8 +24,8 @@ export function UserDetailModal({isOpen, onClose, user}: UserDetailModalProps) {
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b">
                     <div className="flex items-center gap-2">
-                        <User className="w-5 h-5 text-foreground"/>
-                        <h2 className="text-xl font-semibold text-foreground">User Details</h2>
+                        <User className="w-5 h-5"/>
+                        <h2 className="text-xl font-semibold">User Details</h2>
                     </div>
                     <button
                         onClick={onClose}
@@ -50,7 +50,7 @@ export function UserDetailModal({isOpen, onClose, user}: UserDetailModalProps) {
 
                         <div className="flex-1 min-w-0">
                             <div className="flex flex-wrap items-center gap-2 mb-1">
-                                <h3 className="text-xl font-semibold text-foreground truncate">{person.name}</h3>
+                                <h3 className="text-xl font-semibold truncate">{person.name}</h3>
                                 <span className="px-2 py-0.5 text-xs font-medium border rounded-full">
                   {getTypeLabel()}
                 </span>
