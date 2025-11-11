@@ -18,6 +18,7 @@ import {Skeleton} from "@/components/ui/Skeleton";
 import {cn} from "@/lib/utils";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCoins} from "@fortawesome/free-solid-svg-icons";
+import {useDebounce} from "@/hooks/utils/useDebounce";
 
 const WithdrawCoins = () => {
     const {t} = useTranslation();
@@ -33,8 +34,10 @@ const WithdrawCoins = () => {
     const {data: bankListRes} = useHttpGet("listBanks");
     const bankList = bankListRes?.banks ?? [];
 
+    const debouncedFilters = useDebounce(filters, 500);
+
     const {data, isLoading, execute: refetch} = useHttpGet("adminListWithdrawRequests", {
-        ...filters,
+        ...debouncedFilters,
         pageCursor: currentCursor,
         pageBack: isGoingBack,
     });
@@ -104,7 +107,7 @@ const WithdrawCoins = () => {
 
     const getStatusConfig = (status: WithdrawStatus) => {
         const config = {
-            Pending: { color: "bg-amber-500 text-white border-amber-400/30", icon: Minus, label: "Pending" },
+            Pending: {color: "bg-amber-500 text-white border-amber-400/30", icon: Minus, label: "Pending"},
             Completed: {
                 color: "bg-green-600 text-white border-emerald-500/30",
                 icon: CheckCircle,

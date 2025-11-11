@@ -18,6 +18,7 @@ import {AdminTopUpWallet} from "@/lib/lemmy-js-client/src/types/AdminTopUpWallet
 import {REQUEST_STATE} from "@/services/HttpService";
 import {TopupGuide} from "@/modules/admin/components/TopupGuide";
 import {useTranslation} from "react-i18next";
+import {useDebounce} from "@/hooks/utils/useDebounce";
 
 const TopUpCoins = () => {
     const {t} = useTranslation();
@@ -25,8 +26,10 @@ const TopUpCoins = () => {
     const [currentCursor, setCurrentCursor] = useState<string | undefined>();
     const [cursorHistory, setCursorHistory] = useState<string[]>([]);
 
+    const debouncedFilters = useDebounce(filters, 500);
+
     const {data, isLoading, execute: refetch} = useHttpGet("adminListTopUpRequests", {
-        ...filters,
+        ...debouncedFilters,
         pageCursor: currentCursor,
     });
 

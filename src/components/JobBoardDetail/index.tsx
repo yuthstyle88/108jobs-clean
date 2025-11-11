@@ -74,7 +74,7 @@ const JobBoardDetail = ({jobId}: Props) => {
                                 {t("global.open")}
                             </Badge>
                             <Badge variant="outline"
-                                   className="text-xs font-medium px-3 py-1 rounded-full border-gray-300">
+                                   className="text-xs bg-amber-500 font-medium px-3 py-1 rounded-full border-gray-300">
                                 {t(`catalogs.${toCamelCaseLastSegment(jobDetailData?.categoryView.category.path)}`, {defaultValue: jobDetailData?.categoryView.category.name})}
                             </Badge>
                             {jobDetailData?.postView.post.isEnglishRequired && (

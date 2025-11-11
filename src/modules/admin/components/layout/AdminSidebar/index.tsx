@@ -7,7 +7,8 @@ import {
     Users,
     Plus,
     Minus,
-    LayoutDashboard
+    LayoutDashboard,
+    Handbag
 } from "lucide-react";
 
 import {
@@ -48,6 +49,12 @@ const navigationItems = [
         url: "/admin/withdraw-coins",
         icon: Minus,
         description: "Approve coin withdrawal requests"
+    },
+    {
+        title: "Manage Job Board",
+        url: "/admin/manage-job-board",
+        icon: Handbag,
+        description: "Manage job board posts"
     },
 ];
 
