@@ -13,6 +13,7 @@ function stripLocalePrefix(pathname: string) {
 // Disable protection: make all routes public except admin
 const PROTECTED_PATHS: string[] = ['/chat', '/profile', '/account-setting'];
 const ADMIN_PATHS: string[] = ['/admin'];
+const AUTH_PATHS = ['/login', '/register'];
 
 export async function proxy(req: NextRequest) {
     const { pathname, search } = req.nextUrl;
@@ -50,6 +51,14 @@ export async function proxy(req: NextRequest) {
     const isProtected = PROTECTED_PATHS.some((p) => pathNoLang.startsWith(p));
     const isAdminPath = ADMIN_PATHS.some((p) => pathNoLang.startsWith(p));
     const isOnLogin = /^\/[a-z]{2}\/login(\/|$)/i.test(pathname);
+    const isAuthPath = AUTH_PATHS.some((p) => pathNoLang.startsWith(p));
+
+    if (sid && isAuthPath) {
+        const home = new URL(`/${effectiveLng}/`, req.url);
+        const resp = NextResponse.redirect(home);
+        if (cookieLng !== cookieTargetLng) setLangCookie(resp, cookieTargetLng);
+        return resp;
+    }
 
     // normal protected routes
     if (isProtected && !sid && !isOnLogin) {
