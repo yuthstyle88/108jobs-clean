@@ -3696,7 +3696,7 @@ export const en = {
                 notePlaceholder: "Enter note or rejection reason...",
                 approve: "Approve",
                 reject: "Reject",
-                approved: "Approved {amount} coins",
+                approved: "Approved {{amount}} coins",
                 rejected: "Rejected withdrawal",
                 approveFailed: "Failed to approve",
                 rejectFailed: "Failed to reject",

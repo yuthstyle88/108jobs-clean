@@ -3616,7 +3616,7 @@ export const th = {
                 notePlaceholder: "ระบุหมายเหตุหรือเหตุผลปฏิเสธ...",
                 approve: "อนุมัติ",
                 reject: "ปฏิเสธ",
-                approved: "อนุมัติ {amount} เหรียญ",
+                approved: "อนุมัติ {{amount}} เหรียญ",
                 rejected: "ปฏิเสธคำขอถอน",
                 approveFailed: "อนุมัติล้มเหลว",
                 rejectFailed: "ปฏิเสธล้มเหลว",
