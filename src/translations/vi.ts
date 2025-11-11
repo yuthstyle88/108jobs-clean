@@ -1047,6 +1047,7 @@ export const vi = {
             closed: "Đóng",
             yes: "Có",
             no: "Không",
+            labelAdminDashboard: "Bảng Điều Khiển Admin",
         },
         guarantee: {
             fastworkGuaranteeTitle: `Đảm bảo của ${getAppName()}`,

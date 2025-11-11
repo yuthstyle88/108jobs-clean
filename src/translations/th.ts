@@ -1030,6 +1030,7 @@ export const th = {
             closed: "ปิด",
             yes: "ใช่",
             no: "ไม่",
+            labelAdminDashboard: "แดชบอร์ดแอดมิน",
         },
         guarantee: {
             fastworkGuaranteeTitle: `${getAppName()} Guarantee`,

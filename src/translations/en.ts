@@ -1053,6 +1053,7 @@ export const en = {
             closed: "Closed",
             yes: "Yes",
             no: "No",
+            labelAdminDashboard: "Admin Dashboard",
         },
         guarantee: {
             fastworkGuaranteeTitle: `${getAppName()} Guarantee`,

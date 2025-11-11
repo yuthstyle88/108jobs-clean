@@ -9,7 +9,7 @@ import UserProfileSection from "./components/UserProfileSection";
 import {useScrollHandler} from "./hooks/useScrollHandler";
 
 const Header = ({ type, forceShowSearch = false }: { type: string; forceShowSearch?: boolean }) => {
-    const { isLoggedIn } = useAuthInfo();
+    const { isLoggedIn, userInfo } = useAuthInfo();
     const { t } = useTranslation();
     const { scrollY, showSearch } = useScrollHandler(forceShowSearch);
     const bg = scrollY > 0 ? "bg-primary" : type === "transparent" ? "bg-transparent" : "bg-primary";
@@ -45,11 +45,20 @@ const Header = ({ type, forceShowSearch = false }: { type: string; forceShowSear
                 </section>
                 <section className="flex items-center gap-4 w-full sm:w-auto mt-4 sm:mt-0 justify-end">
                     {!isLoggedIn && (
-                        <Link prefetch={false} href="/job-board" className="text-white text-sm hover:text-gray-200">
+                        <Link prefetch={false} href="/job-board" className="text-white text-sm hover:text-gray-200 hover:text-black">
                             {t("global.labelJobBoardCenter")}
                         </Link>
                     )}
                     {isLoggedIn && <UserProfileSection />}
+                    {/* Admin Dashboard Button */}
+                    {userInfo?.localUserView.localUser.admin && (
+                        <Link
+                            href="/admin/dashboard"
+                            className="bg-amber-500 text-white text-sm px-3 py-1 rounded hover:bg-amber-200"
+                        >
+                            {t("global.labelAdminDashboard") || "Admin Dashboard"}
+                        </Link>
+                    )}
                     {!isLoggedIn && (
                         <>
                             <Link prefetch={false} href="/login" className="text-white text-sm hover:text-gray-200">
