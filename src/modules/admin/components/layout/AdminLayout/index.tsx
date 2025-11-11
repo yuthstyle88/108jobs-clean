@@ -23,8 +23,8 @@ function InnerLayout({children}: { children: React.ReactNode }) {
     const paddingLeft = isMobile
         ? 0
         : state === "collapsed"
-            ? "var(--sidebar-width-icon)"
-            : "var(--sidebar-width)";
+            ? "calc(var(--sidebar-width-icon) + var(--sidebar-border-width))"
+            : "calc(var(--sidebar-width) + var(--sidebar-border-width))";
 
     return (
         <div className="min-h-screen flex w-full">

@@ -104,8 +104,9 @@ const SidebarProvider = React.forwardRef<
                 <div
                     style={
                         {
-                            "--sidebar-width": SIDEBAR_WIDTH,
-                            "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
+                            "--sidebar-width": SIDEBAR_WIDTH,           // 192px
+                            "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,       // 80px
+                            "--sidebar-border-width": "1px",
                             ...style,
                         } as React.CSSProperties
                     }
@@ -172,32 +173,42 @@ const Sidebar = React.forwardRef<
             data-variant={variant}
             data-side={side}
         >
+            {/* Overlay for offcanvas */}
             <div
                 className={cn(
-                    "relative h-svh w-[--sidebar-width] bg-white transition-[width] duration-200 ease-linear",
+                    "relative h-svh w-[calc(var(--sidebar-width)+var(--sidebar-border-width))] bg-white transition-[width] duration-200 ease-linear",
                     "group-data-[collapsible=offcanvas]:w-0",
                     "group-data-[side=right]:rotate-180",
                     variant === "floating" || variant === "inset"
-                        ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
-                        : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]",
+                        ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+var(--sidebar-border-width)+theme(spacing.4))]"
+                        : "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+var(--sidebar-border-width))]",
                 )}
             />
             <div
                 className={cn(
-                    "fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] duration-200 ease-linear md:flex",
+                    "fixed inset-y-0 z-10 hidden h-svh transition-[left,right,width] duration-200 ease-linear md:flex",
                     side === "left"
                         ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
                         : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
                     variant === "floating" || variant === "inset"
-                        ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
-                        : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
+                        ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+var(--sidebar-border-width)+theme(spacing.4)+2px)]"
+                        : "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+var(--sidebar-border-width))]",
                     className,
                 )}
                 {...props}
             >
                 <div
                     data-sidebar="sidebar"
-                    className="flex h-full w-full flex-col bg-white group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
+                    className={cn(
+                        "flex h-full w-full flex-col bg-white border-r border-border",
+                        "group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow",
+                        "box-border" // Critical: include border in width
+                    )}
+                    style={{
+                        width: state === "collapsed"
+                            ? "calc(var(--sidebar-width-icon) + var(--sidebar-border-width))"
+                            : "calc(var(--sidebar-width) + var(--sidebar-border-width))",
+                    }}
                 >
                     {children}
                 </div>

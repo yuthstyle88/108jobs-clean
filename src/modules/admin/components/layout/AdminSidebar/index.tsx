@@ -64,7 +64,7 @@ export function AdminSidebar() {
                     <div className="flex items-center gap-3">
                         {!collapsed && (
                             <div className="text-primary">
-                                <Link prefetch={true} href="/dashboard" className="shrink-0">
+                                <Link prefetch={true} href="/admin/dashboard" className="shrink-0">
                                     <Image
                                         src={AssetIcon.logo}
                                         alt="logo"
