@@ -43,8 +43,8 @@ const WithdrawCoins = () => {
     const hasNextPage = !!data?.nextPage;
     const hasPreviousPage = cursorHistory.length > 0;
 
-    const {execute: approve, isMutating: approving} = useHttpPost("adminApproveWithdraw");
-    const {execute: reject, isMutating: rejecting} = useHttpPost("adminRejectWithdraw");
+    const {execute: approve, isMutating: approving} = useHttpPost("adminWithdrawWallet");
+    const {execute: reject, isMutating: rejecting} = useHttpPost("adminRejectWithdrawRequest");
 
     const handleNextPage = useCallback(() => {
         if (data?.nextPage) {
@@ -70,11 +70,16 @@ const WithdrawCoins = () => {
         }
 
         try {
-            await approve({withdrawRequestId: request.withdrawRequest.id, adminNote});
+            await approve({
+                withdrawalId: request.withdrawRequest.id,
+                reason: adminNote,
+                targetUserId: request.localUser.id,
+                amount: request.withdrawRequest.amount
+            });
             toast.success(t("admin.withdraw.approved", {amount: request.withdrawRequest.amount.toLocaleString()}));
             setAdminNote("");
             setSelectedRequest(null);
-            refetch();
+            await refetch();
         } catch {
             toast.error(t("admin.withdraw.approveFailed"));
         }
@@ -87,11 +92,11 @@ const WithdrawCoins = () => {
         }
 
         try {
-            await reject({withdrawRequestId: request.withdrawRequest.id, adminNote});
+            await reject({withdrawalId: request.withdrawRequest.id, reason: adminNote});
             toast.success(t("admin.withdraw.rejected"));
             setAdminNote("");
             setSelectedRequest(null);
-            refetch();
+            await refetch();
         } catch {
             toast.error(t("admin.withdraw.rejectFailed"));
         }
@@ -99,13 +104,13 @@ const WithdrawCoins = () => {
 
     const getStatusConfig = (status: WithdrawStatus) => {
         const config = {
-            Pending: {color: "bg-amber-500/15 text-amber-600 border-amber-500/30", icon: Minus, label: "Pending"},
+            Pending: { color: "bg-primary text-white border-amber-400/30", icon: Minus, label: "Pending" },
             Completed: {
-                color: "bg-emerald-500/15 text-emerald-600 border-emerald-500/30",
+                color: "bg-green-600 text-white border-emerald-500/30",
                 icon: CheckCircle,
                 label: "Approved"
             },
-            Rejected: {color: "bg-rose-500/15 text-rose-600 border-rose-500/30", icon: XCircle, label: "Rejected"},
+            Rejected: {color: "bg-red-500 text-white border-rose-500/30", icon: XCircle, label: "Rejected"},
         };
         return config[status] || {color: "bg-gray-500/15 text-gray-600", icon: Minus, label: status};
     };
@@ -120,7 +125,6 @@ const WithdrawCoins = () => {
         setCurrentCursor(undefined);
         setCursorHistory([]);
         setIsGoingBack(false);
-        refetch();
     };
 
     const RequestSkeleton = () => (
@@ -363,7 +367,7 @@ const WithdrawCoins = () => {
                                                             <Badge
                                                                 variant="outline"
                                                                 className={cn(
-                                                                    "text-xs font-semibold px-2.5 py-0.5 border rounded-full shadow-sm transition-all duration-300",
+                                                                    "text-xs font-semibold px-2.5 py-0.5 border rounded-full shadow-sm transition-all duration-300 bg-opacity-100",
                                                                     status.color,
                                                                     "group-hover:scale-105"
                                                                 )}
@@ -547,7 +551,7 @@ const WithdrawCoins = () => {
 
                                                     <Button
                                                         onClick={() => handleApprove(selectedRequest)}
-                                                        className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg disabled:opacity-50"
+                                                        className="flex-1 bg-primary text-white shadow-lg disabled:opacity-50"
                                                         disabled={!adminNote.trim() || approving}
                                                     >
                                                         {approving ? <Loader2 className="w-4 h-4 mr-2 animate-spin"/> :

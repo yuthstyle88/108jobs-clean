@@ -282,6 +282,8 @@ import {AdminWalletOperationResponse} from "./types/AdminWalletOperationResponse
 import {ListWithdrawRequestQuery} from "./types/ListWithdrawRequestQuery";
 import {ListWithdrawRequestResponse} from "./types/ListWithdrawRequestResponse";
 import {SubmitWithdrawRequest} from "./types/SubmitWithdrawRequest";
+import {AdminWithdrawWallet} from "./types/AdminWithdrawWallet";
+import {RejectWithdrawalRequest} from "./types/RejectWithdrawalRequest";
 
 enum HttpType {
     Get = "GET",
@@ -663,12 +665,30 @@ export class LemmyHttp extends Controller {
     @Post("/admin/wallet/withdraw")
     @Tags("Admin", "Withdraw")
     async adminWithdrawWallet(
-        @Body() form: AdminTopUpWallet,
+        @Body() form: AdminWithdrawWallet,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<AdminTopUpWallet, AdminWalletOperationResponse>(
+        return this.#wrapper<AdminWithdrawWallet, AdminWalletOperationResponse>(
             HttpType.Post,
             "/admin/wallet/withdraw",
+            form,
+            options,
+        );
+    }
+
+    /**
+     * Admin withdraws coin for user
+     */
+    @Security("bearerAuth")
+    @Post("/admin/wallet/withdraw-requests/reject")
+    @Tags("Admin", "Withdraw")
+    async adminRejectWithdrawRequest(
+        @Body() form: RejectWithdrawalRequest,
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<RejectWithdrawalRequest, SuccessResponse>(
+            HttpType.Post,
+            "/admin/wallet/withdraw-requests/reject",
             form,
             options,
         );
