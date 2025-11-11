@@ -1,21 +1,21 @@
 import {AdminListUsers} from "./types/AdminListUsers";
-import {CommunityIdQuery} from "./types/CommunityIdQuery";
+import {CategoryIdQuery} from "./types/CategoryIdQuery";
 import {DeleteImageParams} from "./types/DeleteImageParams";
 import {GetComment} from "./types/GetComment";
 import {GetComments} from "./types/GetComments";
-import {GetCommunity} from "./types/GetCommunity";
-import {GetCommunityPendingFollowsCount} from "./types/GetCommunityPendingFollowsCount";
+import {GetCategory} from "./types/GetCategory";
+import {GetCategoryPendingFollowsCount} from "./types/GetCategoryPendingFollowsCount";
 import {GetModlog} from "./types/GetModlog";
 import {GetPersonDetails} from "./types/GetPersonDetails";
 import {GetPost} from "./types/GetPost";
 import {GetPosts} from "./types/GetPosts";
-import {GetRandomCommunity} from "./types/GetRandomCommunity";
+import {GetRandomCategory} from "./types/GetRandomCategory";
 import {GetRegistrationApplication} from "./types/GetRegistrationApplication";
 import {GetReportCount} from "./types/GetReportCount";
 import {GetSiteMetadata} from "./types/GetSiteMetadata";
 import {ListCommentLikes} from "./types/ListCommentLikes";
-import {ListCommunities} from "./types/ListCommunities";
-import {ListCommunityPendingFollows} from "./types/ListCommunityPendingFollows";
+import {ListCategories} from "./types/ListCategories";
+import {ListCategoryPendingFollows} from "./types/ListCategoryPendingFollows";
 import {ListCustomEmojis} from "./types/ListCustomEmojis";
 import {ListNotifications} from "./types/ListNotifications";
 import {ListMedia} from "./types/ListMedia";
@@ -36,95 +36,138 @@ import {GetBankAccounts} from "./types/GetBankAccounts";
 import {ChatHistoryQuery} from "./types/ChatHistoryQuery";
 import {GetBillingByRoomQuery} from "./types/GetBillingByRoomQuery";
 import {LastReadQuery} from "./types/LastReadQuery";
-import {PeerReadQuery} from "./types/PeerReadQuery";
 import {PeerStatusQuery} from "./types/PeerStatusQuery";
 import {ListUserReviewsQuery} from "./types/ListUserReviewsQuery";
 
 export const VERSION = "v4";
 
 export interface UploadImage {
-  image: File | Buffer;
+    image: File | Buffer;
 }
 
 // tsoa doesn't currently support types in GET queries, so these need to be extended.
 // https://github.com/lukeautry/tsoa/issues/1743
-export interface ListMediaI extends ListMedia {}
+export interface ListMediaI extends ListMedia {
+}
 
-export interface GetModlogI extends GetModlog {}
+export interface GetModlogI extends GetModlog {
+}
 
-export interface SearchI extends Search {}
+export interface SearchI extends Search {
+}
 
-export interface ResolveObjectI extends ResolveObject {}
+export interface ResolveObjectI extends ResolveObject {
+}
 
-export interface GetCommunityI extends GetCommunity {}
+export interface GetCategoryI extends GetCategory {
+}
 
-export interface ListCommunitiesI extends ListCommunities {}
+export interface ListCategoriesI extends ListCategories {
+}
 
-export interface GetCommunityPendingFollowsCountI
-  extends GetCommunityPendingFollowsCount {}
+export interface GetCategoryPendingFollowsCountI
+    extends GetCategoryPendingFollowsCount {
+}
 
-export interface ListCommunityPendingFollowsI
-  extends ListCommunityPendingFollows {}
+export interface ListCategoryPendingFollowsI
+    extends ListCategoryPendingFollows {
+}
 
-export interface GetRandomCommunityI extends GetRandomCommunity {}
+export interface GetRandomCategoryI extends GetRandomCategory {
+}
 
-export interface GetPostI extends GetPost {}
+export interface GetPostI extends GetPost {
+}
 
-export interface GetPostsI extends GetPosts {}
+export interface GetPostsI extends GetPosts {
+}
 
-export interface ListPostLikesI extends ListPostLikes {}
+export interface ListPostLikesI extends ListPostLikes {
+}
 
-export interface GetSiteMetadataI extends GetSiteMetadata {}
+export interface GetSiteMetadataI extends GetSiteMetadata {
+}
 
-export interface ListCommentLikesI extends ListCommentLikes {}
+export interface ListCommentLikesI extends ListCommentLikes {
+}
 
-export interface GetCommentsI extends GetComments {}
+export interface GetCommentsI extends GetComments {
+}
 
-export interface GetCommentI extends GetComment {}
+export interface GetCommentI extends GetComment {
+}
 
-export interface GetPersonDetailsI extends GetPersonDetails {}
+export interface GetPersonDetailsI extends GetPersonDetails {
+}
 
-export interface ListPersonContentI extends ListPersonContent {}
+export interface ListPersonContentI extends ListPersonContent {
+}
 
-export interface GetReportCountI extends GetReportCount {}
+export interface GetReportCountI extends GetReportCount {
+}
 
-export interface ListNotificationsI extends ListNotifications {}
+export interface ListNotificationsI extends ListNotifications {
+}
 
-export interface ListPersonSavedI extends ListPersonSaved {}
+export interface ListPersonSavedI extends ListPersonSaved {
+}
 
-export interface ListPersonReadI extends ListPersonRead {}
-export interface ListPersonCreatedI extends ListPersonCreated {}
-export interface ListPersonHiddenI extends ListPersonHidden {}
+export interface ListPersonReadI extends ListPersonRead {
+}
 
-export interface ListPersonLikedI extends ListPersonLiked {}
+export interface ListPersonCreatedI extends ListPersonCreated {
+}
+
+export interface ListPersonHiddenI extends ListPersonHidden {
+}
+
+export interface ListPersonLikedI extends ListPersonLiked {
+}
 
 export interface ListRegistrationApplicationsI
-  extends ListRegistrationApplications {}
+    extends ListRegistrationApplications {
+}
 
 export interface GetRegistrationApplicationI
-  extends GetRegistrationApplication {}
+    extends GetRegistrationApplication {
+}
 
-export interface ListCustomEmojisI extends ListCustomEmojis {}
+export interface ListCustomEmojisI extends ListCustomEmojis {
+}
 
-export interface ListTaglinesI extends ListTaglines {}
+export interface ListTaglinesI extends ListTaglines {
+}
 
-export interface ListReportsI extends ListReports {}
+export interface ListReportsI extends ListReports {
+}
 
-export interface DeleteImageParamsI extends DeleteImageParams {}
+export interface DeleteImageParamsI extends DeleteImageParams {
+}
 
-export interface AdminListUsersI extends AdminListUsers {}
+export interface AdminListUsersI extends AdminListUsers {
+}
 
-export interface CommunityIdQueryI extends CommunityIdQuery {}
+export interface CategoryIdQueryI extends CategoryIdQuery {
+}
 
-export interface ListUserChatRoomsQueryI extends ListUserChatRoomsQuery {}
+export interface ListUserChatRoomsQueryI extends ListUserChatRoomsQuery {
+}
 
-export interface ListUserReviewsQueryI extends ListUserReviewsQuery {}
+export interface ListUserReviewsQueryI extends ListUserReviewsQuery {
+}
 
-export interface ChatHistoryQueryI extends ChatHistoryQuery {}
-export interface LastReadQueryI extends LastReadQuery {}
-export interface PeerStatusQueryI extends PeerStatusQuery {}
+export interface ChatHistoryQueryI extends ChatHistoryQuery {
+}
 
-export interface GetBillingByRoomQueryI extends GetBillingByRoomQuery {}
+export interface LastReadQueryI extends LastReadQuery {
+}
+
+export interface PeerStatusQueryI extends PeerStatusQuery {
+}
+
+export interface GetBillingByRoomQueryI extends GetBillingByRoomQuery {
+}
 
 // Bank Accounts (admin list)
-export interface GetBankAccountsI extends GetBankAccounts {}
+export interface GetBankAccountsI extends GetBankAccounts {
+}

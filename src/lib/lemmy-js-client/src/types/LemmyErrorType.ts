@@ -35,7 +35,7 @@ export type LemmyErrorType =
   | {error: "site_ban"}
   | {error: "deleted"}
   | {error: "person_is_blocked"}
-  | {error: "community_is_blocked"}
+  | {error: "category_is_blocked"}
   | {error: "instance_is_blocked"}
   | {error: "instance_is_private"}
   | {error: "invalid_password"}
@@ -46,8 +46,8 @@ export type LemmyErrorType =
   | {error: "couldnt_create_comment"}
   | {error: "max_comment_depth_reached"}
   | {error: "no_comment_edit_allowed"}
-  | {error: "only_admins_can_create_communities"}
-  | {error: "community_already_exists"}
+  | {error: "only_admins_can_create_categories"}
+  | {error: "category_already_exists"}
   | {error: "language_not_allowed"}
   | {error: "couldnt_update_languages"}
   | {error: "couldnt_update_post"}
@@ -62,7 +62,7 @@ export type LemmyErrorType =
   | {error: "registration_username_required"}
   | {error: "email_already_exists"}
   | {error: "username_already_exists"}
-  | {error: "person_is_banned_from_community"}
+  | {error: "person_is_banned_from_category"}
   | {error: "no_id_given"}
   | {error: "incorrect_login"}
   | {error: "no_email_setup"}
@@ -86,17 +86,17 @@ export type LemmyErrorType =
   | {error: "couldnt_save_comment"}
   | {error: "couldnt_create_report"}
   | {error: "couldnt_resolve_report"}
-  | {error: "community_moderator_already_exists"}
-  | {error: "community_user_already_banned"}
-  | {error: "community_block_already_exists"}
-  | {error: "community_follower_already_exists"}
+  | {error: "category_moderator_already_exists"}
+  | {error: "category_user_already_banned"}
+  | {error: "category_block_already_exists"}
+  | {error: "category_follower_already_exists"}
   | {error: "person_block_already_exists"}
   | {error: "couldnt_like_post"}
   | {error: "couldnt_save_post"}
   | {error: "couldnt_mark_post_as_read"}
   | {error: "couldnt_update_read_comments"}
   | {error: "couldnt_hide_post"}
-  | {error: "couldnt_update_community"}
+  | {error: "couldnt_update_category"}
   | {error: "couldnt_create_notification"}
   | {error: "couldnt_update_notification"}
   | {error: "couldnt_create_post"}
@@ -123,7 +123,7 @@ export type LemmyErrorType =
   | {error: "invalid_unix_time"}
   | {error: "invalid_bot_action"}
   | {error: "invalid_tag_name"}
-  | {error: "tag_not_in_community"}
+  | {error: "tag_not_in_category"}
   | {error: "cant_block_local_instance"}
   | {error: "unknown"; message: string}
   | {error: "url_length_overflow"}
@@ -133,7 +133,7 @@ export type LemmyErrorType =
   | {error: "couldnt_create_oauth_provider"}
   | {error: "couldnt_update_oauth_provider"}
   | {error: "not_found"}
-  | {error: "community_has_no_followers"}
+  | {error: "category_has_no_followers"}
   | {error: "post_schedule_time_must_be_in_future"}
   | {error: "too_many_scheduled_posts"}
   | {error: "cannot_combine_federation_blocklist_and_allowlist"}

@@ -51,8 +51,8 @@ export type Comment = {
   reportCount: number;
   unresolvedReportCount: number;
   /**
-   * If a local profile comments in a remote community, the comment is hidden until it is confirmed
-   * accepted by the community (by receiving it back via federation).
+   * If a local profile comments in a remote category, the comment is hidden until it is confirmed
+   * accepted by the category (by receiving it back via federation).
    */
   federationPending: boolean;
 };

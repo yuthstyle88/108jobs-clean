@@ -2,8 +2,8 @@
 import type {Comment} from "./Comment";
 import type {CommentActions} from "./CommentActions";
 import type {CommentReport} from "./CommentReport";
-import type {Community} from "./Community";
-import type {CommunityActions} from "./CommunityActions";
+import type {Category} from "./Category";
+import type {CategoryActions} from "./CategoryActions";
 import type {Person} from "./Person";
 import type {PersonActions} from "./PersonActions";
 import type {Post} from "./Post";
@@ -12,18 +12,18 @@ import type {Post} from "./Post";
  * A comment report view.
  */
 export type CommentReportView = {
-  commentReport: CommentReport;
-  comment: Comment;
-  post: Post;
-  community: Community;
-  creator: Person;
-  commentCreator: Person;
-  commentActions?: CommentActions;
-  resolver?: Person;
-  personActions?: PersonActions;
-  communityActions?: CommunityActions;
-  creatorIsAdmin: boolean;
-  creatorIsModerator: boolean;
-  creatorBanned: boolean;
-  creatorBannedFromCommunity: boolean;
+    commentReport: CommentReport;
+    comment: Comment;
+    post: Post;
+    category: Category;
+    creator: Person;
+    commentCreator: Person;
+    commentActions?: CommentActions;
+    resolver?: Person;
+    personActions?: PersonActions;
+    categoryActions?: CategoryActions;
+    creatorIsAdmin: boolean;
+    creatorIsModerator: boolean;
+    creatorBanned: boolean;
+    creatorBannedFromCategory: boolean;
 };

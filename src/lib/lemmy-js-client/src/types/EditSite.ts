@@ -21,9 +21,9 @@ export type EditSite = {
    */
   description?: string;
   /**
-   * Limits community creation to admins only.
+   * Limits category creation to admins only.
    */
-  communityCreationAdminOnly?: boolean;
+  categoryCreationAdminOnly?: boolean;
   /**
    * Whether to require email verification.
    */

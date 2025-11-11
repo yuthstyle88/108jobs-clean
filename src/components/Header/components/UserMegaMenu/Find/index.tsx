@@ -11,12 +11,12 @@ const Find = () => {
     const {
         data: catalogData,
         isMutating: isCatalogLoading,
-    } = useHttpGet("listCommunities");
+    } = useHttpGet("listCategories");
 
 
   const popularCategories =
-    catalogData?.communities?.find(
-      (catalog) => catalog.community.id === 1
+    catalogData?.categories?.find(
+      (catalog) => catalog.category.id === 1
     )?.children || [];
 
   return (
@@ -34,11 +34,11 @@ const Find = () => {
         <div className="mt-2 flex flex-col mr-4">
           {popularCategories.map((job, index) => (
             <Link prefetch={false}
-                  href={`/job/${job.community.id}`}
+                  href={`/job/${job.category.id}`}
                   key={index}
                   className="text-[0.875rem] text-text-secondary px-2 py-[4px] flex-1 flex items-center justify-between rounded-sm transition-all duration-150 ease-in-out"
             >
-              {job.community.name}
+              {job.category.name}
               <FontAwesomeIcon
                 icon={faArrowRight}
                 className="text-[rgba(43,50,59,.4)]"

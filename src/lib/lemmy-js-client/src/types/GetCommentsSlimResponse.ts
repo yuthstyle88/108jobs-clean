@@ -3,7 +3,7 @@ import type {CommentSlimView} from "./CommentSlimView";
 import type {PaginationCursor} from "./PaginationCursor";
 
 /**
- * A slimmer comment list response, without the post or community.
+ * A slimmer comment list response, without the post or category.
  */
 export type GetCommentsSlimResponse = {
   comments: Array<CommentSlimView>;

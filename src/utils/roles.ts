@@ -1,12 +1,12 @@
-import {CommunityId, CommunityModeratorView, GetSiteResponse, MyUserInfo, PersonView,} from "lemmy-js-client";
+import {CategoryId, CategoryModeratorView, GetSiteResponse, MyUserInfo, PersonView,} from "lemmy-js-client";
 
 export function amAdmin(myUserInfo?: MyUserInfo): boolean {
   return myUserInfo?.localUserView.localUser.admin ?? false;
 }
 
-export function amCommunityCreator(
+export function amCategoryCreator(
   creatorId: number,
-  mods?: CommunityModeratorView[],
+  mods?: CategoryModeratorView[],
   myUserInfo?: MyUserInfo,
 ): boolean {
   const myId = myUserInfo?.localUserView.person.id;
@@ -15,10 +15,10 @@ export function amCommunityCreator(
 }
 
 export function amMod(
-  communityId: CommunityId,
+  categoryId: CategoryId,
   myUserInfo?: MyUserInfo,
 ): boolean {
-  // MyUserInfo in our client does not include a list of moderated communities.
+  // MyUserInfo in our client does not include a list of moderated categories.
   // Until this data is wired, only admins are considered as having mod privileges site-wide.
   return amAdmin(myUserInfo);
 }
@@ -33,7 +33,7 @@ export function amSiteCreator(
 }
 
 export function amTopMod(
-  mods: CommunityModeratorView[],
+  mods: CategoryModeratorView[],
   myUserInfo?: MyUserInfo,
 ): boolean {
   return mods.at(0)?.moderator.id === myUserInfo?.localUserView.person.id;
@@ -53,16 +53,16 @@ export function canAdmin(
 }
 
 export function moderatesSomething(myUserInfo?: MyUserInfo): boolean {
-  // Our MyUserInfo type does not expose a moderated communities list.
+  // Our MyUserInfo type does not expose a moderated categories list.
   // Treat only admins as moderators until user moderates are provided elsewhere.
   return amAdmin(myUserInfo);
 }
 
-export function canCreateCommunity(
+export function canCreateCategory(
   siteRes: GetSiteResponse,
   myUserInfo?: MyUserInfo,
 ): boolean {
-  const adminOnly = siteRes.siteView.localSite.communityCreationAdminOnly;
+  const adminOnly = siteRes.siteView.localSite.categoryCreationAdminOnly;
   // TODO: Make this check if profile is logged on as well
   return !adminOnly || amAdmin(myUserInfo);
 }
@@ -70,7 +70,7 @@ export function canCreateCommunity(
 // TODO get rid of this, as its in the back-end now
 export function canMod(
   creator_id: number,
-  mods?: CommunityModeratorView[],
+  mods?: CategoryModeratorView[],
   admins?: PersonView[],
   myUserInfo?: MyUserInfo,
   onSelf = false,

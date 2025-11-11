@@ -4,7 +4,7 @@ import type {PersonId} from "./PersonId";
 import type {PostId} from "./PostId";
 
 /**
- * When a moderator features a post on a community (pins it to the top).
+ * When a moderator features a post on a category (pins it to the top).
  */
 export type ModFeaturePost = {
   id: ModFeaturePostId;
@@ -12,5 +12,5 @@ export type ModFeaturePost = {
   postId: PostId;
   featured: boolean;
   publishedAt: string;
-  isFeaturedCommunity: boolean;
+  isFeaturedCategory: boolean;
 };

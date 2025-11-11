@@ -5,26 +5,26 @@ import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {debounce} from "lodash";
-import {CommunityId, IntendedUse, JobType, PostSortType, SearchCombinedView,} from "lemmy-js-client";
+import {CategoryId, IntendedUse, JobType, PostSortType, SearchCombinedView,} from "lemmy-js-client";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import JobBoardTab from "@/components/JobBoardTab";
 import {useTranslation} from "react-i18next";
 import {
     formatBudget,
     formatDate,
-    getCommunitiesAtLevel,
+    getCategoriesAtLevel,
     getJobTypeLabel,
     toCamelCaseLastSegment
 } from "@/utils/helpers";
 import ErrorState from "@/components/ErrorState";
 import {REQUEST_STATE} from "@/services/HttpService";
-import {useCommunities} from "@/hooks/api/communities/useCommunities";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
+import {useCategories} from "@/hooks/api/categories/useCategories";
 
 const ITEMS_PER_PAGE = 20;
 
 interface FilterState {
-    community: CommunityId | undefined;
+    category: CategoryId | undefined;
     jobType: JobType | undefined;
     intendedUse: IntendedUse | undefined;
     budgetMin: number | undefined;
@@ -43,7 +43,7 @@ const JobBoard = () => {
     const sanitizedQuery = encoded ? encoded.trim() : "";
 
     const [filters, setFilters] = useState<FilterState>({
-        community: undefined,
+        category: undefined,
         jobType: undefined,
         intendedUse: undefined,
         budgetMin: undefined,
@@ -54,8 +54,8 @@ const JobBoard = () => {
     const [cursorHistory, setCursorHistory] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [budgetError, setBudgetError] = useState<string | null>(null);
-    const communitiesResponse = useCommunities();
-    const catalogData = getCommunitiesAtLevel(communitiesResponse.communities ?? undefined, 3);
+    const categoriesResponse = useCategories();
+    const catalogData = getCategoriesAtLevel(categoriesResponse.categories ?? undefined, 3);
 
     const {
         state: searchState,
@@ -64,7 +64,7 @@ const JobBoard = () => {
     } = useHttpGet("search", {
         type: "Posts",
         q: sanitizedQuery,
-        communityId: filters.community,
+        categoryId: filters.category,
         pageCursor: currentCursor,
         budgetMin: filters.budgetMin,
         budgetMax: filters.budgetMax,
@@ -85,7 +85,7 @@ const JobBoard = () => {
                 updatedFilters = {
                     ...prev,
                     [key]:
-                        key === "community"
+                        key === "category"
                             ? typeof value === "string" && value
                                 ? parseInt(value)
                                 : undefined
@@ -98,9 +98,9 @@ const JobBoard = () => {
             queueMicrotask(() => {
                 const params = new URLSearchParams(searchParams);
 
-                if (updatedFilters.community)
-                    params.set("community", updatedFilters.community.toString());
-                else params.delete("community");
+                if (updatedFilters.category)
+                    params.set("category", updatedFilters.category.toString());
+                else params.delete("category");
                 if (updatedFilters.jobType) params.set("jobType", updatedFilters.jobType);
                 else params.delete("jobType");
                 if (updatedFilters.intendedUse)
@@ -113,7 +113,7 @@ const JobBoard = () => {
                     params.set("budgetMax", updatedFilters.budgetMax.toString());
                 else params.delete("budgetMax");
 
-                router.push(`?${params.toString()}`, { scroll: false });
+                router.push(`?${params.toString()}`, {scroll: false});
 
                 if (key === "budgetMin") setBudgetError(null);
             });
@@ -159,7 +159,7 @@ const JobBoard = () => {
 
     const clearFilters = useCallback(() => {
         setFilters({
-            community: undefined,
+            category: undefined,
             jobType: undefined,
             intendedUse: undefined,
             budgetMin: undefined,
@@ -171,7 +171,7 @@ const JobBoard = () => {
 
     const hasActiveFilters = useMemo(
         () =>
-            filters.community ||
+            filters.category ||
             filters.jobType ||
             filters.intendedUse ||
             filters.budgetMin ||
@@ -182,7 +182,7 @@ const JobBoard = () => {
 
     useEffect(() => {
         setFilters({
-            community: searchParams.get("community") ? parseInt(searchParams.get("community")!) : undefined,
+            category: searchParams.get("category") ? parseInt(searchParams.get("category")!) : undefined,
             jobType: searchParams.get("jobType") ? (searchParams.get("jobType")! as JobType) : undefined,
             intendedUse: searchParams.get("intendedUse") ? (searchParams.get("intendedUse")! as IntendedUse) : undefined,
             budgetMin: searchParams.get("budgetMin") ? parseInt(searchParams.get("budgetMin")!) : undefined,
@@ -194,7 +194,7 @@ const JobBoard = () => {
     useEffect(() => {
         setCurrentCursor(undefined);
         setCursorHistory([]);
-    }, [filters.community, filters.sort, filters.budgetMin, filters.budgetMax, filters.jobType, filters.intendedUse]);
+    }, [filters.category, filters.sort, filters.budgetMin, filters.budgetMax, filters.jobType, filters.intendedUse]);
 
     useEffect(() => {
         setIsLoading(isJobsLoading);
@@ -247,14 +247,14 @@ const JobBoard = () => {
                                 <select
                                     id="category-filter"
                                     className="w-full appearance-none bg-white border border-gray-200 rounded-lg py-3 px-4 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 hover:border-blue-300"
-                                    value={filters.community || ""}
-                                    onChange={(e) => handleFilterChange("community", e.target.value || undefined)}
+                                    value={filters.category || ""}
+                                    onChange={(e) => handleFilterChange("category", e.target.value || undefined)}
                                     aria-label={t("profileJob.dropdownSearchCategory")}
                                 >
                                     <option value="">{t("profileJob.dropdownSearchCategory")}</option>
                                     {catalogData.map((category) => (
-                                        <option key={category.community.id} value={category.community.id}>
-                                            {t(`catalogs.${toCamelCaseLastSegment(category.community.path)}`)}
+                                        <option key={category.category.id} value={category.category.id}>
+                                            {t(`catalogs.${toCamelCaseLastSegment(category.category.path)}`)}
                                         </option>
                                     ))}
                                 </select>
@@ -474,7 +474,7 @@ const JobBoard = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">
-                                                    {t(`catalogs.${toCamelCaseLastSegment(job.community.path)}`) || "-"}
+                                                    {t(`catalogs.${toCamelCaseLastSegment(job.category.path)}`) || "-"}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">
                                                     {getJobTypeLabel(job.post.jobType, t)}

@@ -9,11 +9,11 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCoins, faExclamationCircle, faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import {z} from "zod";
 import {useLanguage} from "@/contexts/LanguageContext";
-import {getCommunitiesAtLevel, toCamelCaseLastSegment} from "@/utils/helpers";
+import {getCategoriesAtLevel, toCamelCaseLastSegment} from "@/utils/helpers";
 import {useTranslation} from "react-i18next";
 import {REQUEST_STATE} from "@/services/HttpService";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";
-import {useCommunities} from "@/hooks/api/communities/useCommunities";
+import {useCategories} from "@/hooks/api/categories/useCategories";
 import {getNumericCode} from "@/utils/getClientCurrentLanguage";
 import {useUserStore} from "@/store/useUserStore";
 
@@ -27,7 +27,7 @@ interface PostFormProps {
 }
 
 const postJobSchema = (t: (key: string) => string) => z.object({
-    communityId: z.coerce.number().int().positive(t("validation.communityIdPositive")),
+    categoryId: z.coerce.number().int().positive(t("validation.categoryIdPositive")),
     jobTitle: z.string().min(5,
         t("validation.jobTitleMinLength")),
     description: z.string().min(20,
@@ -87,8 +87,8 @@ export const PostForm: React.FC<PostFormProps> = ({
 
     const {successMessage, errorMessage} = useNotification();
     const [postId, setPostId] = useState<PostId>(0);
-    const communitiesResponse = useCommunities();
-    const catalogData = getCommunitiesAtLevel(communitiesResponse.communities ?? undefined, 3);
+    const categoriesResponse = useCategories();
+    const catalogData = getCategoriesAtLevel(categoriesResponse.categories ?? undefined, 3);
 
     // Create schema with translations
     const jobSchema = postJobSchema(t);
@@ -98,7 +98,7 @@ export const PostForm: React.FC<PostFormProps> = ({
         mode: "onChange",
         criteriaMode: "all",
         defaultValues: {
-            communityId: undefined,
+            categoryId: undefined,
             jobTitle: "",
             description: "",
             workingFrom: JobType.Freelance,
@@ -123,7 +123,7 @@ export const PostForm: React.FC<PostFormProps> = ({
             if (postView && mode === "edit") {
                 const post = postView.post
                 reset({
-                    communityId: post.communityId,
+                    categoryId: post.categoryId,
                     jobTitle: post.name,
                     description: post.body ?? "",
                     isEnglishRequired: post.isEnglishRequired,
@@ -150,7 +150,7 @@ export const PostForm: React.FC<PostFormProps> = ({
                     name: data.jobTitle,
                     body: data.description,
                     jobType: data.workingFrom,
-                    communityId: data.communityId,
+                    categoryId: data.categoryId,
                     deadline: data.deadline,
                     isEnglishRequired: data.isEnglishRequired ?? false,
                     url: data.url,
@@ -360,16 +360,16 @@ export const PostForm: React.FC<PostFormProps> = ({
 
                             <div>
                                 <label
-                                    htmlFor="communityId"
+                                    htmlFor="categoryId"
                                     className="block text-gray-700 font-medium mb-2"
                                 >
                                     {t("createJob.serviceCategoryLabel")}
                                 </label>
                                 <select
-                                    id="communityId"
-                                    {...register("communityId")}
+                                    id="categoryId"
+                                    {...register("categoryId")}
                                     className={`text-text-primary placeholder:text-text-secondary placeholder:font-sans w-full p-3 border rounded-lg focus:outline-none focus:ring-1 ${
-                                        errors.communityId
+                                        errors.categoryId
                                             ? "border-red-200 focus:ring-red-500"
                                             : "border-gray-300 focus:ring-blue-500"
                                     }`}
@@ -379,19 +379,19 @@ export const PostForm: React.FC<PostFormProps> = ({
                                     </option>
                                     {catalogData
                                         .map((catalog) => (
-                                            <option key={catalog.community.id} value={catalog.community.id}>
-                                                {t(`catalogs.${toCamelCaseLastSegment(catalog.community.path)}`)}
+                                            <option key={catalog.category.id} value={catalog.category.id}>
+                                                {t(`catalogs.${toCamelCaseLastSegment(catalog.category.path)}`)}
                                             </option>
                                         ))}
                                 </select>
 
-                                {errors.communityId && (
+                                {errors.categoryId && (
                                     <p className="mt-1 text-red-500 text-sm flex items-center">
                                         <FontAwesomeIcon
                                             icon={faExclamationCircle}
                                             className="mr-1"
                                         />
-                                        {errors.communityId.message}
+                                        {errors.categoryId.message}
                                     </p>
                                 )}
                             </div>

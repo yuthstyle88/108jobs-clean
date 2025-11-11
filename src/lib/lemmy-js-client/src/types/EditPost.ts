@@ -3,7 +3,7 @@ import type {LanguageId} from "./LanguageId";
 import type {PostId} from "./PostId";
 import {IntendedUse} from "./IntendedUse";
 import {JobType} from "./JobType";
-import {CommunityId} from "./CommunityId";
+import {CategoryId} from "./CategoryId";
 import {Budget} from "./Budget";
 
 /**
@@ -11,7 +11,7 @@ import {Budget} from "./Budget";
  */
 export type EditPost = {
   postId: PostId;
-  communityId?: CommunityId;
+  categoryId?: CategoryId;
   name?: string;
   url?: string;
   /**

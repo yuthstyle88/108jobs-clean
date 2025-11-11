@@ -26,7 +26,7 @@ export const th = {
     },
     translation: {
         validation: {
-            communityIdPositive: "Community ID ต้องเป็นเลขบวก",
+            categoryIdPositive: "Category ID ต้องเป็นเลขบวก",
             jobTitleMinLength: "Job title ต้องมีอย่างน้อย 5 ตัวอักษร",
             descriptionMinLength: "รายละเอียดงานต้องมีอย่างน้อย 20 ตัวอักษร",
             budgetPositive: "Budget ต้องเป็นตัวเลขบวก",
@@ -337,7 +337,7 @@ export const th = {
             influencerMarketing: "การตลาดผ่านผู้มีอิทธิพลทางโซเชียลมีเดีย",
             trackingAnalysis: "ติดตามและวิเคราะห์",
             digitalMarketing: "การตลาดดิจิทัล",
-            communityManager: "ผู้จัดการชุมชน",
+            categoryManager: "ผู้จัดการชุมชน",
             customerRelationshipManagement: "การบริหารความสัมพันธ์ลูกค้า (CRM)",
             socialMediaManager: "ผู้จัดการโซเชียลมีเดีย",
             emailMarketing: "การตลาดผ่านอีเมล",

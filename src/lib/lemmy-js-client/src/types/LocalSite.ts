@@ -20,9 +20,9 @@ export type LocalSite = {
    */
   siteSetup: boolean;
   /**
-   * Whether only admins can create communities.
+   * Whether only admins can create categories.
    */
-  communityCreationAdminOnly: boolean;
+  categoryCreationAdminOnly: boolean;
   /**
    * Whether emails are required.
    */
@@ -123,7 +123,7 @@ export type LocalSite = {
   users: number;
   posts: number;
   comments: number;
-  communities: number;
+  categories: number;
   /**
    * The number of users with any activity in the last day.
    */

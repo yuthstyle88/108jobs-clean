@@ -13,8 +13,8 @@ import SearchInput from "@/components/SearchInput";
 import SpAdsSlider from "@/containers/SpAdsSlider";
 import React, {useState} from "react";
 import {useTranslation} from "react-i18next";
-import {buildCommunitiesTree} from "@/utils/helpers";
-import {useCommunities} from "@/hooks/api/communities/useCommunities";
+import {buildCategoriesTree} from "@/utils/helpers";
+import {useCategories} from "@/hooks/api/categories/useCategories";
 import {LandingImage} from "@/constants/images";
 import {ChatLanguageProvider} from "@/contexts/ChatLanguage";
 import Link from "next/link";
@@ -26,8 +26,8 @@ export default function Home() {
     const {t, i18n} = useTranslation();
     useUserService();
     const [activeCatalogIndex, setActiveCatalogIndex] = useState<number>(0);
-    const catalogData = useCommunities();
-    const serviceCatalogs = buildCommunitiesTree(catalogData?.communities ?? undefined) ?? [];
+    const catalogData = useCategories();
+    const serviceCatalogs = buildCategoriesTree(catalogData?.categories ?? undefined) ?? [];
     const activeCatalog = serviceCatalogs[activeCatalogIndex];
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -91,11 +91,11 @@ export default function Home() {
                                     <div
                                         className="p-6 bg-gray-100 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
                                         <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                                            {t("home.feature1Title") || "Community Connection"}
+                                            {t("home.feature1Title") || "Category Connection"}
                                         </h3>
                                         <p className="text-gray-600">
                                             {t("home.feature1Desc") ||
-                                                "Connect with vibrant communities tailored to your interests."}
+                                                "Connect with vibrant categories tailored to your interests."}
                                         </p>
                                     </div>
                                     <div

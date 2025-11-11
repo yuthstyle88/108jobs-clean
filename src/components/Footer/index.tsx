@@ -9,13 +9,13 @@ import Link from "next/link";
 import {getAppName} from "@/utils/appConfig";
 import React from "react";
 import {useTranslation} from "react-i18next";
-import {useCommunities} from "@/hooks/api/communities/useCommunities";
-import {getCommunitiesAtLevel, toCamelCaseLastSegment} from "@/utils/helpers";
+import {useCategories} from "@/hooks/api/categories/useCategories";
+import {getCategoriesAtLevel, toCamelCaseLastSegment} from "@/utils/helpers";
 
 const Footer = () => {
     const {t} = useTranslation();
-    const communitiesResponse = useCommunities();
-    const catalogData = getCommunitiesAtLevel(communitiesResponse.communities ?? undefined, 3);
+    const categoriesResponse = useCategories();
+    const catalogData = getCategoriesAtLevel(categoriesResponse.categories ?? undefined, 3);
     return (
         <footer className="bg-[#042A48] text-white" role="contentinfo">
             {/* Top Section */}
@@ -28,13 +28,13 @@ const Footer = () => {
                         {catalogData.slice(0, 10).map((item, index) => (
                             <Link
                                 prefetch={false}
-                                key={item.community.id}
-                                href={`/job-board?community=${item.community.id}`}
-                                aria-label={`View ${item.community.name} jobs`}
+                                key={item.category.id}
+                                href={`/job-board?category=${item.category.id}`}
+                                aria-label={`View ${item.category.name} jobs`}
                             >
                                 <li key={index}>
                                     <span className="cursor-default opacity-80 hover:opacity-100 transition-opacity duration-200">
-                                        {t(`catalogs.${toCamelCaseLastSegment(item.community.path)}`)}
+                                        {t(`catalogs.${toCamelCaseLastSegment(item.category.path)}`)}
                                     </span>
                                 </li>
                             </Link>

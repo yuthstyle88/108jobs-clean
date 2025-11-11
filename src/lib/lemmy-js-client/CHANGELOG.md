@@ -103,7 +103,7 @@
 
 - 0.19.4-alpha.3 by @dessalines
 - [Chore] Update deps by @SleeplessOne1917 in [#240](https://github.com/LemmyNet/lemmy-js-client/pull/240)
-- Bring in `banned_from_community` and other type changes by @SleeplessOne1917
+- Bring in `banned_from_category` and other type changes by @SleeplessOne1917
   in [#239](https://github.com/LemmyNet/lemmy-js-client/pull/239)
 - Migrate from yarn to pnpm. by @dessalines in [#236](https://github.com/LemmyNet/lemmy-js-client/pull/236)
 - Use steps instead of pipeline for CI. by @dessalines in [#235](https://github.com/LemmyNet/lemmy-js-client/pull/235)
@@ -120,7 +120,7 @@
 ## What's Changed in v0.19.2-alpha.3
 
 - v0.19.2-alpha.3 by @dessalines
-- API changes for local-only community by @Nutomic in [#228](https://github.com/LemmyNet/lemmy-js-client/pull/228)
+- API changes for local-only category by @Nutomic in [#228](https://github.com/LemmyNet/lemmy-js-client/pull/228)
 
 **Full Changelog**: https://github.com/LemmyNet/lemmy-js-client/compare/v0.19.2-alpha.2...v0.19.2-alpha.3
 
@@ -128,11 +128,11 @@
 
 - v0.19.2-alpha.2 by @dessalines
 - Adding admin view votes. by @dessalines in [#225](https://github.com/LemmyNet/lemmy-js-client/pull/225)
-- Add subscribers_local to community aggregates by @ismailkarsli
+- Add subscribers_local to category aggregates by @ismailkarsli
   in [#226](https://github.com/LemmyNet/lemmy-js-client/pull/226)
-- Revert "Add local_subscribers field to CommunityAggregates" by @dessalines
+- Revert "Add local_subscribers field to CategoryAggregates" by @dessalines
   in [#223](https://github.com/LemmyNet/lemmy-js-client/pull/223)
-- Add local_subscribers field to CommunityAggregates by @ismailkarsli
+- Add local_subscribers field to CategoryAggregates by @ismailkarsli
   in [#221](https://github.com/LemmyNet/lemmy-js-client/pull/221)
 
 ## New Contributors
@@ -254,8 +254,8 @@
 - revert some changes by @MV-GH
 - type changes by @MV-GH
 - Add original type info by @MV-GH
-- Adding hide community. Fixes #183 by @SleeplessOne1917 in [#184](https://github.com/LemmyNet/lemmy-js-client/pull/184)
-- Merge branch 'main' into add_community_hide by @SleeplessOne1917
+- Adding hide category. Fixes #183 by @SleeplessOne1917 in [#184](https://github.com/LemmyNet/lemmy-js-client/pull/184)
+- Merge branch 'main' into add_category_hide by @SleeplessOne1917
 - Add set header func by @SleeplessOne1917 in [#185](https://github.com/LemmyNet/lemmy-js-client/pull/185)
 
 **Full Changelog**: https://github.com/LemmyNet/lemmy-js-client/compare/v0.19.0-rc.9...v0.19.0-rc.13
@@ -264,7 +264,7 @@
 
 - v0.19.0-rc.9 by @dessalines
 - Adding a set header function. by @dessalines
-- Adding hide community. Fixes #183 by @dessalines
+- Adding hide category. Fixes #183 by @dessalines
 - Fixing addadmin local_user_id -> person by @SleeplessOne1917
   in [#180](https://github.com/LemmyNet/lemmy-js-client/pull/180)
 - Merge branch 'main' into fix_add_admin by @SleeplessOne1917
@@ -347,8 +347,8 @@
 - v0.18.1-rc.3 by @dessalines
 - Add open links in new tab. by @dessalines in [#160](https://github.com/LemmyNet/lemmy-js-client/pull/160)
 - Handle 413 response on image uploads by @sunaurus in [#154](https://github.com/LemmyNet/lemmy-js-client/pull/154)
-- Add show_nsfw community sort. by @SleeplessOne1917 in [#156](https://github.com/LemmyNet/lemmy-js-client/pull/156)
-- Add show_nsfw community sort. by @dessalines
+- Add show_nsfw category sort. by @SleeplessOne1917 in [#156](https://github.com/LemmyNet/lemmy-js-client/pull/156)
+- Add show_nsfw category sort. by @dessalines
 
 ## New Contributors
 
@@ -565,7 +565,7 @@
 - v0.17.0-rc.58 by @dessalines
 - Fixing yarn.lock by @dessalines
 - Add LocalSite.registration_mode by @Nutomic in [#96](https://github.com/LemmyNet/lemmy-js-client/pull/96)
-- Add community language by @dessalines in [#85](https://github.com/LemmyNet/lemmy-js-client/pull/85)
+- Add category language by @dessalines in [#85](https://github.com/LemmyNet/lemmy-js-client/pull/85)
 
 **Full Changelog**: https://github.com/LemmyNet/lemmy-js-client/compare/v0.17.0-rc.56...v0.17.0-rc.58
 
@@ -641,7 +641,7 @@
 ## What's Changed in v0.17.0-rc.31
 
 - v0.17.0-rc.31 by @dessalines
-- Removing CommunityFollowerResponse, using SubscribedType. by @dessalines
+- Removing CategoryFollowerResponse, using SubscribedType. by @dessalines
   in [#62](https://github.com/LemmyNet/lemmy-js-client/pull/62)
 - Add option types by @dessalines in [#67](https://github.com/LemmyNet/lemmy-js-client/pull/67)
 
@@ -685,7 +685,7 @@
 ## What's Changed in v0.16.4-rc.1
 
 - v0.16.4-rc.1 by @dessalines
-- Add site to GetCommunityResponse by @Nutomic in [#47](https://github.com/LemmyNet/lemmy-js-client/pull/47)
+- Add site to GetCategoryResponse by @Nutomic in [#47](https://github.com/LemmyNet/lemmy-js-client/pull/47)
 
 **Full Changelog**: https://github.com/LemmyNet/lemmy-js-client/compare/v0.16.0-rc.1...v0.16.4-rc.1
 
@@ -959,7 +959,7 @@
 - Remove support / donate section. by @dessalines
 - Adding typedoc, and code comments. Fixes #29 by @dessalines
   in [#30](https://github.com/LemmyNet/lemmy-js-client/pull/30)
-- Adding block person and block community actions by @dessalines
+- Adding block person and block category actions by @dessalines
   in [#22](https://github.com/LemmyNet/lemmy-js-client/pull/22)
 
 **Full Changelog**: https://github.com/LemmyNet/lemmy-js-client/compare/v0.11.4-rc.12...v0.11.4-rc.16
@@ -968,7 +968,7 @@
 
 - v0.11.4-rc.12 by @dessalines
 - Adding GetSiteMetadata by @dessalines in [#26](https://github.com/LemmyNet/lemmy-js-client/pull/26)
-- Mod transfer community by @dessalines in [#25](https://github.com/LemmyNet/lemmy-js-client/pull/25)
+- Mod transfer category by @dessalines in [#25](https://github.com/LemmyNet/lemmy-js-client/pull/25)
 
 **Full Changelog**: https://github.com/LemmyNet/lemmy-js-client/compare/v0.11.3-rc.4...v0.11.4-rc.12
 
@@ -991,7 +991,7 @@
 
 - v0.11.0 by @dessalines
 - Feature/mark post as read by @dessalines in [#21](https://github.com/LemmyNet/lemmy-js-client/pull/21)
-- Add admin community_creation_admin_only. by @dessalines in [#20](https://github.com/LemmyNet/lemmy-js-client/pull/20)
+- Add admin category_creation_admin_only. by @dessalines in [#20](https://github.com/LemmyNet/lemmy-js-client/pull/20)
 
 **Full Changelog**: https://github.com/LemmyNet/lemmy-js-client/compare/v0.11.0-rc.11...v0.11.0
 
@@ -1051,7 +1051,7 @@
 ## What's Changed in v0.11.0-rc.3
 
 - v0.11.0-rc.3 by @dessalines
-- Remove community creator. by @dessalines
+- Remove category creator. by @dessalines
 - Merge branch 'main' into change_password by @dessalines
 - Display name by @dessalines in [#15](https://github.com/LemmyNet/lemmy-js-client/pull/15)
 - Merge branch 'main' into display_name by @dessalines
@@ -1181,14 +1181,14 @@
 
 - v0.9.1 by @dessalines
 - Add active aggregates by @dessalines in [#3](https://github.com/LemmyNet/lemmy-js-client/pull/3)
-- Add listing type to list communities by @dessalines in [#2](https://github.com/LemmyNet/lemmy-js-client/pull/2)
+- Add listing type to list categories by @dessalines in [#2](https://github.com/LemmyNet/lemmy-js-client/pull/2)
 
 **Full Changelog**: https://github.com/LemmyNet/lemmy-js-client/compare/v0.9.1-rc.1...v0.9.1
 
 ## What's Changed in v0.9.1-rc.1
 
 - v0.9.1-rc.1 by @dessalines
-- Adding listing_type to ListCommunities. by @dessalines
+- Adding listing_type to ListCategories. by @dessalines
 
 **Full Changelog**: https://github.com/LemmyNet/lemmy-js-client/compare/v0.9.0...v0.9.1-rc.1
 
@@ -1270,14 +1270,14 @@
 ## What's Changed in v1.0.17-beta5
 
 - v1.0.17-beta5 by @dessalines
-- PostView still does need community. by @dessalines
+- PostView still does need category. by @dessalines
 
 **Full Changelog**: https://github.com/LemmyNet/lemmy-js-client/compare/v1.0.17-beta4...v1.0.17-beta5
 
 ## What's Changed in v1.0.17-beta4
 
 - v1.0.17-beta4 by @dessalines
-- Moving post community_view. by @dessalines
+- Moving post category_view. by @dessalines
 
 **Full Changelog**: https://github.com/LemmyNet/lemmy-js-client/compare/v1.0.17-beta3...v1.0.17-beta4
 
@@ -1329,28 +1329,28 @@
 ## What's Changed in v1.0.14
 
 - v1.0.14 by @dessalines
-- Adding community_name for search. by @dessalines
+- Adding category_name for search. by @dessalines
 
 **Full Changelog**: https://github.com/LemmyNet/lemmy-js-client/compare/v1.0.13...v1.0.14
 
 ## What's Changed in v1.0.13
 
 - v1.0.13 by @dessalines
-- Removing auth from post and community join. by @dessalines
+- Removing auth from post and category join. by @dessalines
 
 **Full Changelog**: https://github.com/LemmyNet/lemmy-js-client/compare/v1.0.12...v1.0.13
 
 ## What's Changed in v1.0.12
 
 - v1.0.12 by @dessalines
-- Adding post and community join. by @dessalines
+- Adding post and category join. by @dessalines
 
 **Full Changelog**: https://github.com/LemmyNet/lemmy-js-client/compare/v1.0.11...v1.0.12
 
 ## What's Changed in v1.0.11
 
 - v1.0.11 by @dessalines
-- Adding community_name for getposts and getcomments. by @dessalines
+- Adding category_name for getposts and getcomments. by @dessalines
 
 **Full Changelog**: https://github.com/LemmyNet/lemmy-js-client/compare/v1.0.10...v1.0.11
 

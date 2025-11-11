@@ -26,7 +26,7 @@ export const vi = {
     },
     translation: {
         validation: {
-            communityIdPositive: "ID cộng đồng phải là số dương",
+            categoryIdPositive: "ID cộng đồng phải là số dương",
             jobTitleMinLength: "Tiêu đề công việc phải có ít nhất 5 ký tự",
             descriptionMinLength: "Mô tả công việc phải có ít nhất 20 ký tự",
             budgetPositive: "Ngân sách phải là số dương",
@@ -339,7 +339,7 @@ export const vi = {
                 "Tiếp thị thông qua người ảnh hưởng có ảnh hưởng trên mạng xã hội",
             trackingAnalysis: "Theo dõi và phân tích",
             digitalMarketing: "Tiếp thị kỹ thuật số",
-            communityManager: "Quản lý cộng đồng",
+            categoryManager: "Quản lý cộng đồng",
             customerRelationshipManagement: "Quản lý quan hệ khách hàng (CRM)",
             socialMediaManager: "Quản lý truyền thông xã hội",
             emailMarketing: "Tiếp thị qua Email",

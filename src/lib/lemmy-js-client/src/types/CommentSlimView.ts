@@ -6,7 +6,7 @@ import type {Person} from "./Person";
 import type {PersonActions} from "./PersonActions";
 
 /**
- * A slimmer comment view, without the post, or community.
+ * A slimmer comment view, without the post, or category.
  */
 export type CommentSlimView = {
   comment: Comment;
@@ -18,5 +18,5 @@ export type CommentSlimView = {
   canMod: boolean;
   creatorBanned: boolean;
   creatorIsModerator: boolean;
-  creatorBannedFromCommunity: boolean;
+  creatorBannedFromCategory: boolean;
 };

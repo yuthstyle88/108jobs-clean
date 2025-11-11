@@ -7,7 +7,7 @@ import {RoomView} from "@/modules/chat/types";
 import {useGlobalLoader} from "@/hooks/ui/GlobalLoaderContext";
 import {getAuthJWTCookie, IsoData} from "@/utils";
 import {useSiteStore} from "@/store/useSiteStore";
-import {useCommunitiesStore} from "@/store/useCommunitiesStore";
+import {useCategoriesStore} from "@/store/useCategoriesStore";
 import {useBankAccountsStore} from "@/store/useBankAccountStore";
 import {BankAccountView} from "@/lib/lemmy-js-client/src";
 
@@ -36,6 +36,7 @@ interface UserServiceProviderProps {
 export function UserServiceProvider({children, isoData}: UserServiceProviderProps) {
     // Snapshot ISO data once per mount
     const isoMyUser = useMemo(() => isoData ?? null, []);
+    console.log("isomyuser", isoMyUser)
     const token = isoData?.jwt ?? getAuthJWTCookie();
     const initialRooms: RoomView[] = useMemo(
         () => ((isoMyUser?.chatRooms?.rooms ?? []).map(r => ({...r, isActive: false})) as RoomView[]),
@@ -47,7 +48,7 @@ export function UserServiceProvider({children, isoData}: UserServiceProviderProp
     const setUserInfo = useUserStore((s) => s.setUserInfo);
     const setRoom = useRoomsStore((s) => s.setRooms);
     const setSiteRes = useSiteStore((s) => s.setSiteRes);
-    const setCommunities = useCommunitiesStore((s) => s.setCommunities);
+    const setCategories = useCategoriesStore((s) => s.setCategories);
     const setBankAccounts = useBankAccountsStore((s) => s.setBankAccounts);
     const user = UserService.Instance;
 
@@ -69,12 +70,12 @@ export function UserServiceProvider({children, isoData}: UserServiceProviderProp
             setUserInfo(isoMyUser.myUserInfo ?? null);
             setRoom(initialRooms);
             setBankAccounts(initialBankAccounts);
-            // site + communities
+            // site + categories
             if (isoMyUser.siteRes) {
                 setSiteRes(isoMyUser.siteRes);
             }
-            if (isoMyUser.communities) {
-                setCommunities(isoMyUser.communities);
+            if (isoMyUser.categories) {
+                setCategories(isoMyUser.categories);
             }
         }
 
@@ -94,7 +95,7 @@ export function UserServiceProvider({children, isoData}: UserServiceProviderProp
         } else {
             setReady(true);
         }
-    }, [isoMyUser, token, user, setUser, setPerson, setUserInfo, setRoom, setSiteRes, setCommunities, showLoader, hideLoader]);
+    }, [isoMyUser, token, user, setUser, setPerson, setUserInfo, setRoom, setSiteRes, setCategories, showLoader, hideLoader]);
 
     const value = useMemo<UserServiceContextType>(() => ({user}), [user]);
 

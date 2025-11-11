@@ -1,10 +1,9 @@
 import {isSuccess, REQUEST_STATE, RequestState} from "@/services/HttpService";
 import {
-    CommunityId,
-    CommunityNodeView,
+    CategoryId,
+    CategoryNodeView,
     GetSiteResponse,
-    JobType,
-    ListCommunitiesResponse,
+    JobType, ListCategoriesResponse,
     PaginationCursor,
     PersonId
 } from "lemmy-js-client";
@@ -49,7 +48,7 @@ type ImmutableListKey =
     | "commentReply"
     | "personPostMention"
     | "personCommentMention"
-    | "community"
+    | "category"
     | "privateMessage"
     | "post"
     | "postReport"
@@ -567,26 +566,26 @@ export const getJobTypeLabel = (jobType: string | null | undefined, t: (key: str
     return typeMap[jobType] || jobType;
 };
 
-export function buildCommunitiesTree(listCommunitiesResponse: ListCommunitiesResponse | undefined) {
-    const tree: CommunityNodeView[] = [];
-    const map = new Map<CommunityId, CommunityNodeView>();
-    listCommunitiesResponse?.communities.forEach(c => {
-        map.set(c.community.id, {...c, children: []});
+export function buildCategoriesTree(listCategoriesResponse: ListCategoriesResponse | undefined) {
+    const tree: CategoryNodeView[] = [];
+    const map = new Map<CategoryId, CategoryNodeView>();
+    listCategoriesResponse?.categories.forEach(c => {
+        map.set(c.category.id, {...c, children: []});
     });
 
-    listCommunitiesResponse?.communities.forEach(c => {
-        const node = map.get(c.community.id);
+    listCategoriesResponse?.categories.forEach(c => {
+        const node = map.get(c.category.id);
         if (!node) return;
 
 
-        const pathParts = c.community.path.split('.');
+        const pathParts = c.category.path.split('.');
 
         if (pathParts.length === 2) {
             tree.push(node);
         } else {
             const parentPath = pathParts.slice(0, -1).join('.');
             const parent = Array.from(map.values()).find(
-                n => n.community.path === parentPath
+                n => n.category.path === parentPath
             );
             if (parent) {
                 parent.children = parent.children || [];
@@ -598,12 +597,12 @@ export function buildCommunitiesTree(listCommunitiesResponse: ListCommunitiesRes
     return tree;
 }
 
-export function getCommunitiesAtLevel(catalogData: ListCommunitiesResponse | undefined, level: number) {
+export function getCategoriesAtLevel(catalogData: ListCategoriesResponse | undefined, level: number) {
     if (!catalogData || level < 1) {
         return [];
     }
 
-    return catalogData.communities.filter(c => c.community.path.split('.').length === level);
+    return catalogData.categories.filter(c => c.category.path.split('.').length === level);
 }
 
 /**

@@ -4,11 +4,11 @@
  * Federation related errors, these dont need to be translated.
  */
 export type FederationError =
-  | "InvalidCommunity"
-  | "CannotCreatePostOrCommentInDeletedOrRemovedCommunity"
+  | "InvalidCategory"
+  | "CannotCreatePostOrCommentInDeletedOrRemovedCategory"
   | "CannotReceivePage"
-  | "OnlyLocalAdminCanRemoveCommunity"
-  | "OnlyLocalAdminCanRestoreCommunity"
+  | "OnlyLocalAdminCanRemoveCategory"
+  | "OnlyLocalAdminCanRestoreCategory"
   | "PostIsLocked"
   | {PersonIsBannedFromSite: string}
   | "InvalidVoteValue"
@@ -25,5 +25,5 @@ export type FederationError =
   | "CantDeleteSite"
   | "ObjectIsNotPublic"
   | "ObjectIsNotPrivate"
-  | "PlatformLackingPrivateCommunitySupport"
+  | "PlatformLackingPrivateCategorySupport"
   | "Unreachable";

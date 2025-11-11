@@ -32,17 +32,17 @@ export const authCookieName =  process.env.NEXT_PUBLIC_APP_NAME ?? "108jobs.com"
 export const JWT =  "jwt";
 export const adultConsentCookieKey = "adultConsent";
 
-// No. of max displayed communities per
-// page on route "/communities"
-export const communityLimit = 50;
+// No. of max displayed categories per
+// page on route "/categories"
+export const categoryLimit = 50;
 
 const queryPairRegex = "[a-zA-Zd_-]+=[a-zA-Zd+-_]+";
 
 /**
  * Accepted formats:
- * !community@server.com
- * /c/community@server.com
- * /m/community@server.com
+ * !category@server.com
+ * /c/category@server.com
+ * /m/category@server.com
  * /u/username@server.com
  * @username@server.com
  */

@@ -2,10 +2,10 @@ import {
     Comment,
     CommentReply,
     CommentView,
-    CommunityView,
+    CategoryView,
     CreateOAuthProvider,
     GetSiteResponse, ListBankAccountsResponse,
-    ListCommunitiesResponse,
+    ListCategoriesResponse,
     ListUserChatRoomsResponse,
     MyUserInfo,
     PersonCommentMention,
@@ -20,7 +20,7 @@ export interface IsoData<T extends RouteData = RouteData> {
     path: string;
     routeData: T;
     siteRes?: GetSiteResponse;
-    communities?: ListCommunitiesResponse,
+    categories?: ListCategoriesResponse,
     chatRooms?: ListUserChatRoomsResponse,
     bankAccounts?: ListBankAccountsResponse,
     myUserInfo?: MyUserInfo;
@@ -60,7 +60,7 @@ export interface PostFormParams {
     body?: string;
     nsfw?: boolean;
     languageId?: number;
-    communityId?: number;
+    categoryId?: number;
     customThumbnail?: string;
     altText?: string;
 }
@@ -76,7 +76,7 @@ export enum DataType {
 }
 
 export enum BanType {
-    Community,
+    Category,
     Site,
 }
 
@@ -90,7 +90,7 @@ export enum PersonDetailsView {
 
 export enum PurgeType {
     Person,
-    Community,
+    Category,
     Post,
     Comment,
 }
@@ -124,9 +124,9 @@ export interface Choice {
     disabled?: boolean;
 }
 
-export interface CommunityTribute {
+export interface CategoryTribute {
     key: string;
-    view: CommunityView;
+    view: CategoryView;
 }
 
 export interface ErrorPageData {
@@ -177,7 +177,7 @@ export interface WithComment {
     creatorIsModerator: boolean;
     creatorIsAdmin: boolean;
     creatorBlocked: boolean;
-    creatorBannedFromCommunity: boolean;
+    creatorBannedFromCategory: boolean;
 }
 
 export interface CrossPostParams {

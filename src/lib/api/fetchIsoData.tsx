@@ -21,7 +21,7 @@ import {IncomingHttpHeaders} from "http";
 import {
     GetSiteResponse,
     LemmyHttp, ListBankAccountsResponse,
-    ListCommunitiesResponse,
+    ListCategoriesResponse,
     ListUserChatRoomsResponse,
     MyUserInfo
 } from "lemmy-js-client";
@@ -86,7 +86,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
     let routeData: RouteData = {};
     let errorPageData: ErrorPageData | undefined = undefined;
     let match: Match<any> | null | undefined;
-    let communities: ListCommunitiesResponse | undefined = undefined;
+    let categories: ListCategoriesResponse | undefined = undefined;
     let chatRooms: ListUserChatRoomsResponse | undefined = undefined;
     let bankAccounts: ListBankAccountsResponse | undefined = undefined;
     let activeRoute;
@@ -108,10 +108,10 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
         }
 
         // Fetch site data and profile info in parallel for better performance
-        const [trySite, tryUser, tryCommunities, tryChatRooms, tryBankAccounts] = await Promise.all([
+        const [trySite, tryUser, tryCategories, tryChatRooms, tryBankAccounts] = await Promise.all([
             (tempClient as any).getSite(),
             (tempClient as any).getMyUser(),
-            (tempClient as any).listCommunities(),
+            (tempClient as any).listCategories(),
             (tempClient as any).listChatRooms(),
             (tempClient as any).listUserBankAccounts()
         ]);
@@ -119,7 +119,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
         // Process profile data with improved error handling
         await processUserData(tryUser);
 
-        await processCommunitiesData(tryCommunities)
+        await processCategoriesData(tryCategories)
 
         await processChatRoomsData(tryChatRooms)
 
@@ -135,7 +135,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
                 url,
                 siteRes,
                 myUserInfo,
-                communities,
+                categories,
                 chatRooms,
                 bankAccounts,
                 routeData,
@@ -149,7 +149,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
                 url,
                 siteRes,
                 myUserInfo,
-                communities,
+                categories,
                 chatRooms,
                 bankAccounts,
                 {},
@@ -162,7 +162,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
             url,
             siteRes,
             myUserInfo,
-            communities,
+            categories,
             chatRooms,
             bankAccounts,
             routeData,
@@ -195,11 +195,11 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
     }
 
     /**
-     * Process communities data and handle fetch list errors
+     * Process categories data and handle fetch list errors
      */
-    async function processCommunitiesData(tryCommunities: RequestState<ListCommunitiesResponse>): Promise<void> {
-        if (tryCommunities.state === REQUEST_STATE.SUCCESS) {
-            communities = tryCommunities.data;
+    async function processCategoriesData(tryCategories: RequestState<ListCategoriesResponse>): Promise<void> {
+        if (tryCategories.state === REQUEST_STATE.SUCCESS) {
+            categories = tryCategories.data;
         }
     }
 
@@ -310,7 +310,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
         path: string,
         siteRes?: GetSiteResponse,
         myUserInfo?: MyUserInfo,
-        communities?: ListCommunitiesResponse,
+        categories?: ListCategoriesResponse,
         chatRooms?: ListUserChatRoomsResponse,
         bankAccounts?: ListBankAccountsResponse,
         routeData: RouteData = {},
@@ -321,7 +321,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
             path,
             siteRes,
             myUserInfo,
-            communities,
+            categories,
             chatRooms,
             bankAccounts,
             routeData,

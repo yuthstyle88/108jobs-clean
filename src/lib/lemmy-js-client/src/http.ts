@@ -16,26 +16,26 @@ import {
 import type {
     AdminListUsersI,
     ChatHistoryQueryI,
-    CommunityIdQueryI,
+    CategoryIdQueryI,
     DeleteImageParamsI,
     GetBankAccountsI,
     GetBillingByRoomQueryI,
     GetCommentI,
     GetCommentsI,
-    GetCommunityI,
-    GetCommunityPendingFollowsCountI,
+    GetCategoryI,
+    GetCategoryPendingFollowsCountI,
     GetModlogI,
     GetPersonDetailsI,
     GetPostI,
     GetPostsI,
-    GetRandomCommunityI,
+    GetRandomCategoryI,
     GetRegistrationApplicationI,
     GetReportCountI,
     GetSiteMetadataI,
     LastReadQueryI,
     ListCommentLikesI,
-    ListCommunitiesI,
-    ListCommunityPendingFollowsI,
+    ListCategoriesI,
+    ListCategoryPendingFollowsI,
     ListCustomEmojisI,
     ListMediaI,
     ListNotificationsI,
@@ -57,31 +57,31 @@ import type {
 import {VERSION} from "./other_types";
 import type {AddAdmin} from "./types/AddAdmin";
 import type {AddAdminResponse} from "./types/AddAdminResponse";
-import type {AddModToCommunity} from "./types/AddModToCommunity";
-import type {AddModToCommunityResponse} from "./types/AddModToCommunityResponse";
+import type {AddModToCategory} from "./types/AddModToCategory";
+import type {AddModToCategoryResponse} from "./types/AddModToCategoryResponse";
 import type {AddressResponse} from "./types/AddressResponse";
 import type {AdminAllowInstanceParams} from "./types/AdminAllowInstanceParams";
 import type {AdminBlockInstanceParams} from "./types/AdminBlockInstanceParams";
 import type {AdminListUsers} from "./types/AdminListUsers";
 import type {AdminListUsersResponse} from "./types/AdminListUsersResponse";
-import type {ApproveCommunityPendingFollower} from "./types/ApproveCommunityPendingFollower";
+import type {ApproveCategoryPendingFollower} from "./types/ApproveCategoryPendingFollower";
 import type {ApproveRegistrationApplication} from "./types/ApproveRegistrationApplication";
 import type {AuthenticateWithOauth} from "./types/AuthenticateWithOauth";
-import type {BanFromCommunity} from "./types/BanFromCommunity";
-import type {BanFromCommunityResponse} from "./types/BanFromCommunityResponse";
+import type {BanFromCategory} from "./types/BanFromCategory";
+import type {BanFromCategoryResponse} from "./types/BanFromCategoryResponse";
 import type {BanksResponse} from "./types/BankList";
 import type {BanPerson} from "./types/BanPerson";
 import type {BanPersonResponse} from "./types/BanPersonResponse";
-import type {BlockCommunity} from "./types/BlockCommunity";
-import type {BlockCommunityResponse} from "./types/BlockCommunityResponse";
+import type {BlockCategory} from "./types/BlockCategory";
+import type {BlockCategoryResponse} from "./types/BlockCategoryResponse";
 import type {BlockPerson} from "./types/BlockPerson";
 import type {BlockPersonResponse} from "./types/BlockPersonResponse";
 import type {ChangePassword} from "./types/ChangePassword";
 import type {CommentReportResponse} from "./types/CommentReportResponse";
 import type {CommentResponse} from "./types/CommentResponse";
-import type {CommunityIdQuery} from "./types/CommunityIdQuery";
-import type {CommunityReportResponse} from "./types/CommunityReportResponse";
-import type {CommunityResponse} from "./types/CommunityResponse";
+import type {CategoryIdQuery} from "./types/CategoryIdQuery";
+import type {CategoryReportResponse} from "./types/CategoryReportResponse";
+import type {CategoryResponse} from "./types/CategoryResponse";
 import type {ContactForm} from "./types/ContactForm";
 import type {ContactResponse} from "./types/ContactResponse";
 import type {CountriesResponse} from "./types/CountriesResponse";
@@ -89,9 +89,9 @@ import type {BankAccountForm} from "./types/BankAccountForm";
 import type {CreateComment} from "./types/CreateComment";
 import type {CreateCommentLike} from "./types/CreateCommentLike";
 import type {CreateCommentReport} from "./types/CreateCommentReport";
-import type {CreateCommunity} from "./types/CreateCommunity";
-import type {CreateCommunityReport} from "./types/CreateCommunityReport";
-import type {CreateCommunityTag} from "./types/CreateCommunityTag";
+import type {CreateCategory} from "./types/CreateCategory";
+import type {CreateCategoryReport} from "./types/CreateCategoryReport";
+import type {CreateCategoryTag} from "./types/CreateCategoryTag";
 import type {CreateCustomEmoji} from "./types/CreateCustomEmoji";
 import type {CreateOAuthProvider} from "./types/CreateOAuthProvider";
 import type {CreateOrUpdateAddress} from "./types/CreateOrUpdateAddress";
@@ -104,8 +104,8 @@ import type {CustomEmojiResponse} from "./types/CustomEmojiResponse";
 import type {DeleteAccount} from "./types/DeleteAccount";
 import type {DeleteBankAccount} from "./types/DeleteBankAccount";
 import type {DeleteComment} from "./types/DeleteComment";
-import type {DeleteCommunity} from "./types/DeleteCommunity";
-import type {DeleteCommunityTag} from "./types/DeleteCommunityTag";
+import type {DeleteCategory} from "./types/DeleteCategory";
+import type {DeleteCategoryTag} from "./types/DeleteCategoryTag";
 import type {DeleteCustomEmoji} from "./types/DeleteCustomEmoji";
 import type {DeleteImageParams} from "./types/DeleteImageParams";
 import type {DeleteOAuthProvider} from "./types/DeleteOAuthProvider";
@@ -113,7 +113,7 @@ import type {DeletePost} from "./types/DeletePost";
 import type {DeleteTagline} from "./types/DeleteTagline";
 import type {DistinguishComment} from "./types/DistinguishComment";
 import type {EditComment} from "./types/EditComment";
-import type {EditCommunity} from "./types/EditCommunity";
+import type {EditCategory} from "./types/EditCategory";
 import type {EditCustomEmoji} from "./types/EditCustomEmoji";
 import type {EditOAuthProvider} from "./types/EditOAuthProvider";
 import type {EditPost} from "./types/EditPost";
@@ -121,7 +121,7 @@ import type {EditSite} from "./types/EditSite";
 import type {ExchangeKey} from "./types/ExchangeKey";
 import type {ExchangeKeyResponse} from "./types/ExchangeKeyResponse";
 import type {FeaturePost} from "./types/FeaturePost";
-import type {FollowCommunity} from "./types/FollowCommunity";
+import type {FollowCategory} from "./types/FollowCategory";
 import type {GenerateTotpSecretResponse} from "./types/GenerateTotpSecretResponse";
 import type {BankAccountsResponse} from "./types/GetBankAccountResponse";
 import type {GetCaptchaResponse} from "./types/GetCaptchaResponse";
@@ -129,10 +129,10 @@ import type {GetComment} from "./types/GetComment";
 import type {GetComments} from "./types/GetComments";
 import type {GetCommentsResponse} from "./types/GetCommentsResponse";
 import type {GetCommentsSlimResponse} from "./types/GetCommentsSlimResponse";
-import type {GetCommunity} from "./types/GetCommunity";
-import type {GetCommunityPendingFollowsCount} from "./types/GetCommunityPendingFollowsCount";
-import type {GetCommunityPendingFollowsCountResponse} from "./types/GetCommunityPendingFollowsCountResponse";
-import type {GetCommunityResponse} from "./types/GetCommunityResponse";
+import type {GetCategory} from "./types/GetCategory";
+import type {GetCategoryPendingFollowsCount} from "./types/GetCategoryPendingFollowsCount";
+import type {GetCategoryPendingFollowsCountResponse} from "./types/GetCategoryPendingFollowsCountResponse";
+import type {GetCategoryResponse} from "./types/GetCategoryResponse";
 import type {GetFederatedInstancesResponse} from "./types/GetFederatedInstancesResponse";
 import type {GetModlog} from "./types/GetModlog";
 import type {GetModlogResponse} from "./types/GetModlogResponse";
@@ -142,7 +142,7 @@ import type {GetPost} from "./types/GetPost";
 import type {GetPostResponse} from "./types/GetPostResponse";
 import type {GetPosts} from "./types/GetPosts";
 import type {GetPostsResponse} from "./types/GetPostsResponse";
-import type {GetRandomCommunity} from "./types/GetRandomCommunity";
+import type {GetRandomCategory} from "./types/GetRandomCategory";
 import type {GetRegistrationApplication} from "./types/GetRegistrationApplication";
 import type {GetReportCount} from "./types/GetReportCount";
 import type {GetReportCountResponse} from "./types/GetReportCountResponse";
@@ -153,16 +153,16 @@ import type {GetUnreadCountResponse} from "./types/GetUnreadCountResponse";
 import type {
     GetUnreadRegistrationApplicationCountResponse
 } from "./types/GetUnreadRegistrationApplicationCountResponse";
-import type {HideCommunity} from "./types/HideCommunity";
+import type {HideCategory} from "./types/HideCategory";
 import type {HidePost} from "./types/HidePost";
 import type {IdentityCardForm} from "./types/IdentityCardForm";
 import type {IdentityCardResponse} from "./types/IdentityCardResponse";
 import type {ListCommentLikes} from "./types/ListCommentLikes";
 import type {ListCommentLikesResponse} from "./types/ListCommentLikesResponse";
-import type {ListCommunities} from "./types/ListCommunities";
-import type {ListCommunitiesResponse} from "./types/ListCommunitiesResponse";
-import type {ListCommunityPendingFollows} from "./types/ListCommunityPendingFollows";
-import type {ListCommunityPendingFollowsResponse} from "./types/ListCommunityPendingFollowsResponse";
+import type {ListCategories} from "./types/ListCategories";
+import type {ListCategoriesResponse} from "./types/ListCategoriesResponse";
+import type {ListCategoryPendingFollows} from "./types/ListCategoryPendingFollows";
+import type {ListCategoryPendingFollowsResponse} from "./types/ListCategoryPendingFollowsResponse";
 import type {ListCustomEmojis} from "./types/ListCustomEmojis";
 import type {ListCustomEmojisResponse} from "./types/ListCustomEmojisResponse";
 import type {ListLoginsResponse} from "./types/ListLoginsResponse";
@@ -206,17 +206,17 @@ import type {PostReportResponse} from "./types/PostReportResponse";
 import type {PostResponse} from "./types/PostResponse";
 import type {ProfileData} from "./types/ProfileData";
 import type {PurgeComment} from "./types/PurgeComment";
-import type {PurgeCommunity} from "./types/PurgeCommunity";
+import type {PurgeCategory} from "./types/PurgeCategory";
 import type {PurgePerson} from "./types/PurgePerson";
 import type {PurgePost} from "./types/PurgePost";
 import type {Register} from "./types/Register";
 import type {RegistrationApplicationResponse} from "./types/RegistrationApplicationResponse";
 import type {RemoveComment} from "./types/RemoveComment";
-import type {RemoveCommunity} from "./types/RemoveCommunity";
+import type {RemoveCategory} from "./types/RemoveCategory";
 import type {RemovePost} from "./types/RemovePost";
 import type {ResendVerificationEmail} from "./types/ResendVerificationEmail";
 import type {ResolveCommentReport} from "./types/ResolveCommentReport";
-import type {ResolveCommunityReport} from "./types/ResolveCommunityReport";
+import type {ResolveCategoryReport} from "./types/ResolveCategoryReport";
 import type {ResolveObject} from "./types/ResolveObject";
 import type {ResolvePostReport} from "./types/ResolvePostReport";
 import type {SaveComment} from "./types/SaveComment";
@@ -230,9 +230,9 @@ import type {SiteResponse} from "./types/SiteResponse";
 import type {SuccessResponse} from "./types/SuccessResponse";
 import type {Tag} from "./types/Tag";
 import type {TaglineResponse} from "./types/TaglineResponse";
-import type {TransferCommunity} from "./types/TransferCommunity";
+import type {TransferCategory} from "./types/TransferCategory";
 import type {UpdateAvailable} from "./types/UpdateAvailable";
-import type {UpdateCommunityTag} from "./types/UpdateCommunityTag";
+import type {UpdateCategoryTag} from "./types/UpdateCategoryTag";
 import type {UpdateTagline} from "./types/UpdateTagline";
 import type {UpdateTerm} from "./types/UpdateTerm";
 import type {UpdateTotp} from "./types/UpdateTotp";
@@ -472,7 +472,7 @@ export class LemmyHttp extends Controller {
      * @summary Export a backup of your profile settings.
      *
      * Export a backup of your profile settings, including your saved content,
-     * followed communities, and blocks.
+     * followed categories, and blocks.
      */
     @Security("bearerAuth")
     @Get("/account/settings/export")
@@ -771,324 +771,324 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary Create a new community.
+     * @summary Create a new category.
      */
     @Security("bearerAuth")
-    @Post("/community")
-    @Tags("Community")
-    async createCommunity(
-        @Body() form: CreateCommunity,
+    @Post("/category")
+    @Tags("Category")
+    async createCategory(
+        @Body() form: CreateCategory,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<CreateCommunity, CommunityResponse>(
+        return this.#wrapper<CreateCategory, CategoryResponse>(
             HttpType.Post,
-            "/community",
+            "/category",
             form,
             options,
         );
     }
 
     /**
-     * @summary Get / fetch a community.
+     * @summary Get / fetch a category.
      */
     @Security("bearerAuth")
     @Security({})
-    @Get("/community")
-    @Tags("Community")
-    async getCommunity(
-        @Queries() form: GetCommunityI = {},
+    @Get("/category")
+    @Tags("Category")
+    async getCategory(
+        @Queries() form: GetCategoryI = {},
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<GetCommunity, GetCommunityResponse>(
+        return this.#wrapper<GetCategory, GetCategoryResponse>(
             HttpType.Get,
-            "/community",
+            "/category",
             form,
             options,
         );
     }
 
     /**
-     * @summary Edit a community.
+     * @summary Edit a category.
      */
     @Security("bearerAuth")
-    @Put("/community")
-    @Tags("Community")
-    async editCommunity(
-        @Body() form: EditCommunity,
+    @Put("/category")
+    @Tags("Category")
+    async editCategory(
+        @Body() form: EditCategory,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<EditCommunity, CommunityResponse>(
+        return this.#wrapper<EditCategory, CategoryResponse>(
             HttpType.Put,
-            "/community",
+            "/category",
             form,
             options,
         );
     }
 
     /**
-     * @summary List communities, with various filters.
+     * @summary List categories, with various filters.
      */
     @Security("bearerAuth")
     @Security({})
-    @Get("/community/list")
-    @Tags("Community")
-    async listCommunities(
-        @Queries() form: ListCommunitiesI = {},
+    @Get("/category/list")
+    @Tags("Category")
+    async listCategories(
+        @Queries() form: ListCategoriesI = {},
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<ListCommunities, ListCommunitiesResponse>(
+        return this.#wrapper<ListCategories, ListCategoriesResponse>(
             HttpType.Get,
-            "/community/list",
+            "/category/list",
             form,
             options,
         );
     }
 
     /**
-     * @summary List communities, with various filters.
+     * @summary List categories, with various filters.
      */
     @Security("bearerAuth")
     @Security({})
-    @Get("/community/list/children")
-    @Tags("Community")
-    async listChildrenCommunities(
-        @Queries() form: ListCommunitiesI = {},
+    @Get("/category/list/children")
+    @Tags("Category")
+    async listChildrenCategories(
+        @Queries() form: ListCategoriesI = {},
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<ListCommunities, ListCommunitiesResponse>(
+        return this.#wrapper<ListCategories, ListCategoriesResponse>(
             HttpType.Get,
-            "/community/list/children",
+            "/category/list/children",
             form,
             options,
         );
     }
 
     /**
-     * @summary Follow / subscribe to a community.
+     * @summary Follow / subscribe to a category.
      */
     @Security("bearerAuth")
-    @Post("/community/follow")
-    @Tags("Community")
-    async followCommunity(
-        @Body() form: FollowCommunity,
+    @Post("/category/follow")
+    @Tags("Category")
+    async followCategory(
+        @Body() form: FollowCategory,
         @Inject() @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<FollowCommunity, CommunityResponse>(
+        return this.#wrapper<FollowCategory, CategoryResponse>(
             HttpType.Post,
-            "/community/follow",
+            "/category/follow",
             form,
             options,
         );
     }
 
     /**
-     * @summary Get a community's pending follows count.
+     * @summary Get a category's pending follows count.
      */
     @Security("bearerAuth")
-    @Get("/community/pending-follows/count")
-    @Tags("Community")
-    async getCommunityPendingFollowsCount(
-        @Queries() form: GetCommunityPendingFollowsCountI,
+    @Get("/category/pending-follows/count")
+    @Tags("Category")
+    async getCategoryPendingFollowsCount(
+        @Queries() form: GetCategoryPendingFollowsCountI,
         @Inject() options?: RequestOptions,
     ) {
         return this.#wrapper<
-            GetCommunityPendingFollowsCount,
-            GetCommunityPendingFollowsCountResponse
-        >(HttpType.Get, "/community/pending-follows/count", form, options);
+            GetCategoryPendingFollowsCount,
+            GetCategoryPendingFollowsCountResponse
+        >(HttpType.Get, "/category/pending-follows/count", form, options);
     }
 
     /**
-     * @summary Get a community's pending followers.
+     * @summary Get a category's pending followers.
      */
     @Security("bearerAuth")
-    @Get("/community/pending-follows/list")
-    @Tags("Community")
-    async listCommunityPendingFollows(
-        @Queries() form: ListCommunityPendingFollowsI,
+    @Get("/category/pending-follows/list")
+    @Tags("Category")
+    async listCategoryPendingFollows(
+        @Queries() form: ListCategoryPendingFollowsI,
         @Inject() options?: RequestOptions,
     ) {
         return this.#wrapper<
-            ListCommunityPendingFollows,
-            ListCommunityPendingFollowsResponse
-        >(HttpType.Get, "/community/pending-follows/list", form, options);
+            ListCategoryPendingFollows,
+            ListCategoryPendingFollowsResponse
+        >(HttpType.Get, "/category/pending-follows/list", form, options);
     }
 
     /**
-     * @summary Approve a community pending follow request.
+     * @summary Approve a category pending follow request.
      */
     @Security("bearerAuth")
-    @Post("/community/pending-follows/approve")
-    @Tags("Community")
-    async approveCommunityPendingFollow(
-        @Body() form: ApproveCommunityPendingFollower,
+    @Post("/category/pending-follows/approve")
+    @Tags("Category")
+    async approveCategoryPendingFollow(
+        @Body() form: ApproveCategoryPendingFollower,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<ApproveCommunityPendingFollower, SuccessResponse>(
+        return this.#wrapper<ApproveCategoryPendingFollower, SuccessResponse>(
             HttpType.Post,
-            "/community/pending-follows/approve",
+            "/category/pending-follows/approve",
             form,
             options,
         );
     }
 
     /**
-     * @summary Block a community.
+     * @summary Block a category.
      */
     @Security("bearerAuth")
-    @Post("/account/block/community")
-    @Tags("Account", "Community")
-    async blockCommunity(
-        @Body() form: BlockCommunity,
+    @Post("/account/block/category")
+    @Tags("Account", "Category")
+    async blockCategory(
+        @Body() form: BlockCategory,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<BlockCommunity, BlockCommunityResponse>(
+        return this.#wrapper<BlockCategory, BlockCategoryResponse>(
             HttpType.Post,
-            "/account/block/community",
+            "/account/block/category",
             form,
             options,
         );
     }
 
     /**
-     * @summary Delete a community.
+     * @summary Delete a category.
      */
     @Security("bearerAuth")
-    @Post("/community/delete")
-    @Tags("Community")
-    async deleteCommunity(
-        @Body() form: DeleteCommunity,
+    @Post("/category/delete")
+    @Tags("Category")
+    async deleteCategory(
+        @Body() form: DeleteCategory,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<DeleteCommunity, CommunityResponse>(
+        return this.#wrapper<DeleteCategory, CategoryResponse>(
             HttpType.Post,
-            "/community/delete",
+            "/category/delete",
             form,
             options,
         );
     }
 
     /**
-     * @summary Hide a community from public / "All" view. Admins only.
+     * @summary Hide a category from public / "All" view. Admins only.
      */
     @Security("bearerAuth")
-    @Put("/community/hide")
-    @Tags("Community", "Admin")
-    async hideCommunity(
-        @Body() form: HideCommunity,
+    @Put("/category/hide")
+    @Tags("Category", "Admin")
+    async hideCategory(
+        @Body() form: HideCategory,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<HideCommunity, SuccessResponse>(
+        return this.#wrapper<HideCategory, SuccessResponse>(
             HttpType.Put,
-            "/community/hide",
+            "/category/hide",
             form,
             options,
         );
     }
 
     /**
-     * @summary A moderator remove for a community.
+     * @summary A moderator remove for a category.
      */
     @Security("bearerAuth")
-    @Post("/community/remove")
-    @Tags("Community", "Moderator")
-    async removeCommunity(
-        @Body() form: RemoveCommunity,
+    @Post("/category/remove")
+    @Tags("Category", "Moderator")
+    async removeCategory(
+        @Body() form: RemoveCategory,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<RemoveCommunity, CommunityResponse>(
+        return this.#wrapper<RemoveCategory, CategoryResponse>(
             HttpType.Post,
-            "/community/remove",
+            "/category/remove",
             form,
             options,
         );
     }
 
     /**
-     * @summary Transfer your community to an existing moderator.
+     * @summary Transfer your category to an existing moderator.
      */
     @Security("bearerAuth")
-    @Post("/community/transfer")
-    @Tags("Community", "Moderator")
-    async transferCommunity(
-        @Body() form: TransferCommunity,
+    @Post("/category/transfer")
+    @Tags("Category", "Moderator")
+    async transferCategory(
+        @Body() form: TransferCategory,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<TransferCommunity, GetCommunityResponse>(
+        return this.#wrapper<TransferCategory, GetCategoryResponse>(
             HttpType.Post,
-            "/community/transfer",
+            "/category/transfer",
             form,
             options,
         );
     }
 
     /**
-     * @summary Ban a profile from a community.
+     * @summary Ban a profile from a category.
      */
     @Security("bearerAuth")
-    @Post("/community/ban-profile")
-    @Tags("Community", "Moderator")
-    async banFromCommunity(
-        @Body() form: BanFromCommunity,
+    @Post("/category/ban-profile")
+    @Tags("Category", "Moderator")
+    async banFromCategory(
+        @Body() form: BanFromCategory,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<BanFromCommunity, BanFromCommunityResponse>(
+        return this.#wrapper<BanFromCategory, BanFromCategoryResponse>(
             HttpType.Post,
-            "/community/ban-profile",
+            "/category/ban-profile",
             form,
             options,
         );
     }
 
     /**
-     * @summary Add a moderator to your community.
+     * @summary Add a moderator to your category.
      */
     @Security("bearerAuth")
-    @Post("/community/mod")
-    @Tags("Community", "Moderator")
-    async addModToCommunity(
-        @Body() form: AddModToCommunity,
+    @Post("/category/mod")
+    @Tags("Category", "Moderator")
+    async addModToCategory(
+        @Body() form: AddModToCategory,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<AddModToCommunity, AddModToCommunityResponse>(
+        return this.#wrapper<AddModToCategory, AddModToCategoryResponse>(
             HttpType.Post,
-            "/community/mod",
+            "/category/mod",
             form,
             options,
         );
     }
 
     /**
-     * @summary Get a random community.
+     * @summary Get a random category.
      */
     @Security("bearerAuth")
     @Security({})
-    @Get("/community/random")
-    @Tags("Community")
-    async getRandomCommunity(
-        @Queries() form: GetRandomCommunityI,
+    @Get("/category/random")
+    @Tags("Category")
+    async getRandomCategory(
+        @Queries() form: GetRandomCategoryI,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<GetRandomCommunity, CommunityResponse>(
+        return this.#wrapper<GetRandomCategory, CategoryResponse>(
             HttpType.Get,
-            "/community/random",
+            "/category/random",
             form,
             options,
         );
     }
 
     /**
-     * @summary Create a report for a community.
+     * @summary Create a report for a category.
      */
     @Security("bearerAuth")
-    @Post("/community/report")
-    @Tags("Community")
-    async createCommunityReport(
-        @Body() form: CreateCommunityReport,
+    @Post("/category/report")
+    @Tags("Category")
+    async createCategoryReport(
+        @Body() form: CreateCategoryReport,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<CreateCommunityReport, CommunityReportResponse>(
+        return this.#wrapper<CreateCategoryReport, CategoryReportResponse>(
             HttpType.Post,
-            "/community/report",
+            "/category/report",
             form,
             options,
         );
@@ -1098,15 +1098,15 @@ export class LemmyHttp extends Controller {
      * @summary Resolve a report for a private message.
      */
     @Security("bearerAuth")
-    @Put("/community/report/resolve")
-    @Tags("Community", "Admin")
-    async resolveCommunityReport(
-        @Body() form: ResolveCommunityReport,
+    @Put("/category/report/resolve")
+    @Tags("Category", "Admin")
+    async resolveCategoryReport(
+        @Body() form: ResolveCategoryReport,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<ResolveCommunityReport, CommunityReportResponse>(
+        return this.#wrapper<ResolveCategoryReport, CategoryReportResponse>(
             HttpType.Put,
-            "/community/report/resolve",
+            "/category/report/resolve",
             form,
             options,
         );
@@ -1267,7 +1267,7 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary A moderator can feature a community post ( IE stick it to the top of a community ).
+     * @summary A moderator can feature a category post ( IE stick it to the top of a category ).
      */
     @Security("bearerAuth")
     @Post("/post/feature")
@@ -1572,7 +1572,7 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary Get / fetch comments, but without the post or community.
+     * @summary Get / fetch comments, but without the post or category.
      */
     @Security("bearerAuth")
     @Security({})
@@ -2470,18 +2470,18 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary Purge / Delete a community from the database.
+     * @summary Purge / Delete a category from the database.
      */
     @Security("bearerAuth")
-    @Post("/admin/purge/community")
+    @Post("/admin/purge/category")
     @Tags("Admin")
-    async purgeCommunity(
-        @Body() form: PurgeCommunity,
+    async purgeCategory(
+        @Body() form: PurgeCategory,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<PurgeCommunity, SuccessResponse>(
+        return this.#wrapper<PurgeCategory, SuccessResponse>(
             HttpType.Post,
-            "/admin/purge/community",
+            "/admin/purge/category",
             form,
             options,
         );
@@ -2667,54 +2667,54 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary Create a community post tag.
+     * @summary Create a category post tag.
      */
     @Security("bearerAuth")
-    @Post("/community/tag")
-    @Tags("Community")
-    createCommunityTag(
-        @Body() form: CreateCommunityTag,
+    @Post("/category/tag")
+    @Tags("Category")
+    createCategoryTag(
+        @Body() form: CreateCategoryTag,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<CreateCommunityTag, Tag>(
+        return this.#wrapper<CreateCategoryTag, Tag>(
             HttpType.Post,
-            "/community/tag",
+            "/category/tag",
             form,
             options,
         );
     }
 
     /**
-     * @summary Update a community post tag.
+     * @summary Update a category post tag.
      */
     @Security("bearerAuth")
-    @Put("/community/tag")
-    @Tags("Community")
-    updateCommunityTag(
-        @Body() form: UpdateCommunityTag,
+    @Put("/category/tag")
+    @Tags("Category")
+    updateCategoryTag(
+        @Body() form: UpdateCategoryTag,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<UpdateCommunityTag, Tag>(
+        return this.#wrapper<UpdateCategoryTag, Tag>(
             HttpType.Put,
-            "/community/tag",
+            "/category/tag",
             form,
             options,
         );
     }
 
     /**
-     * @summary Delete a post tag in a community.
+     * @summary Delete a post tag in a category.
      */
     @Security("bearerAuth")
-    @Delete("/community/tag")
-    @Tags("Community")
-    deleteCommunityTag(
-        @Body() form: DeleteCommunityTag,
+    @Delete("/category/tag")
+    @Tags("Category")
+    deleteCategoryTag(
+        @Body() form: DeleteCategoryTag,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<DeleteCommunityTag, Tag>(
+        return this.#wrapper<DeleteCategoryTag, Tag>(
             HttpType.Delete,
-            "/community/tag",
+            "/category/tag",
             form,
             options,
         );
@@ -2986,64 +2986,64 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary Upload new community icon.
+     * @summary Upload new category icon.
      */
     @Security("bearerAuth")
-    @Post("/community/icon")
-    @Tags("Community", "Media")
-    async uploadCommunityIcon(
-        @Queries() query: CommunityIdQueryI,
+    @Post("/category/icon")
+    @Tags("Category", "Media")
+    async uploadCategoryIcon(
+        @Queries() query: CategoryIdQueryI,
         @UploadedFile() image: UploadImage,
         @Inject() options?: RequestOptions,
     ): Promise<UploadImageResponse> {
-        return this.#uploadWithQuery("/community/icon", query, image, options);
+        return this.#uploadWithQuery("/category/icon", query, image, options);
     }
 
     /**
-     * @summary Delete the community icon.
+     * @summary Delete the category icon.
      */
     @Security("bearerAuth")
-    @Delete("/community/icon")
-    @Tags("Community", "Media")
-    async deleteCommunityIcon(
-        @Body() form: CommunityIdQuery,
+    @Delete("/category/icon")
+    @Tags("Category", "Media")
+    async deleteCategoryIcon(
+        @Body() form: CategoryIdQuery,
         @Inject() options?: RequestOptions,
     ): Promise<SuccessResponse> {
-        return this.#wrapper<CommunityIdQuery, SuccessResponse>(
+        return this.#wrapper<CategoryIdQuery, SuccessResponse>(
             HttpType.Delete,
-            "/community/icon",
+            "/category/icon",
             form,
             options,
         );
     }
 
     /**
-     * @summary Upload new community banner.
+     * @summary Upload new category banner.
      */
     @Security("bearerAuth")
-    @Post("/community/banner")
-    @Tags("Community", "Media")
-    async uploadCommunityBanner(
-        @Queries() query: CommunityIdQueryI,
+    @Post("/category/banner")
+    @Tags("Category", "Media")
+    async uploadCategoryBanner(
+        @Queries() query: CategoryIdQueryI,
         @UploadedFile() image: UploadImage,
         @Inject() options?: RequestOptions,
     ): Promise<UploadImageResponse> {
-        return this.#uploadWithQuery("/community/banner", query, image, options);
+        return this.#uploadWithQuery("/category/banner", query, image, options);
     }
 
     /**
-     * @summary Delete the community banner.
+     * @summary Delete the category banner.
      */
     @Security("bearerAuth")
-    @Delete("/community/banner")
-    @Tags("Community", "Media")
-    async deleteCommunityBanner(
-        @Body() form: CommunityIdQuery,
+    @Delete("/category/banner")
+    @Tags("Category", "Media")
+    async deleteCategoryBanner(
+        @Body() form: CategoryIdQuery,
         @Inject() options?: RequestOptions,
     ): Promise<SuccessResponse> {
-        return this.#wrapper<CommunityIdQuery, SuccessResponse>(
+        return this.#wrapper<CategoryIdQuery, SuccessResponse>(
             HttpType.Delete,
-            "/community/banner",
+            "/category/banner",
             form,
             options,
         );

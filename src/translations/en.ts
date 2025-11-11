@@ -26,7 +26,7 @@ export const en = {
     },
     translation: {
         validation: {
-            communityIdPositive: "Community ID must be a positive number",
+            categoryIdPositive: "Category ID must be a positive number",
             jobTitleMinLength: "Job title must be at least 5 characters",
             descriptionMinLength: "Job description must be at least 20 characters",
             budgetPositive: "Budget must be a positive number",
@@ -338,7 +338,7 @@ export const en = {
             influencerMarketing: "Influencer Marketing",
             trackingAnalysis: "Tracking Analysis",
             digitalMarketing: "Digital Marketing",
-            communityManager: "Community Manager",
+            categoryManager: "Category Manager",
             customerRelationshipManagement: "Customer Relationship Management (CRM)",
             socialMediaManager: "Social Media Manager",
             emailMarketing: "Email Marketing",
@@ -1191,8 +1191,8 @@ export const en = {
             titleBannerHomePage2: "Ready to turn your ideas into reality",
             exploreNow: "Explore now",
             featuresTitle: "Discover Our Features",
-            feature1Title: "Community Connection",
-            feature1Desc: "Connect with vibrant communities tailored to your interests.",
+            feature1Title: "Category Connection",
+            feature1Desc: "Connect with vibrant categories tailored to your interests.",
             feature2Title: "Personalized Experience",
             feature2Desc: "Enjoy a customized journey with recommendations just for you.",
             feature3Title: "Seamless Navigation",
@@ -1273,7 +1273,7 @@ export const en = {
             employerStep4List5:
                 "You can sue for the work. If the freelancer is not working as promised.",
             employerStep5Title: "Rate and Review",
-            employerStep5Description: `To develop ${getAppName()}' community`,
+            employerStep5Description: `To develop ${getAppName()}' category`,
             employerStep5List1:
                 "Rate and Review buyer for the benefit of other freelancers",
             employerStep5List2: `Rate and review your satisfaction with ${getAppName()} system to improve the service even further`,

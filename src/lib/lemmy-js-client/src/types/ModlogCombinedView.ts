@@ -2,38 +2,38 @@
 import type {AdminAllowInstanceView} from "./AdminAllowInstanceView";
 import type {AdminBlockInstanceView} from "./AdminBlockInstanceView";
 import type {AdminPurgeCommentView} from "./AdminPurgeCommentView";
-import type {AdminPurgeCommunityView} from "./AdminPurgeCommunityView";
+import type {AdminPurgeCategoryView} from "./AdminPurgeCategoryView";
 import type {AdminPurgePersonView} from "./AdminPurgePersonView";
 import type {AdminPurgePostView} from "./AdminPurgePostView";
-import type {ModAddCommunityView} from "./ModAddCommunityView";
+import type {ModAddCategoryView} from "./ModAddCategoryView";
 import type {ModAddView} from "./ModAddView";
-import type {ModBanFromCommunityView} from "./ModBanFromCommunityView";
+import type {ModBanFromCategoryView} from "./ModBanFromCategoryView";
 import type {ModBanView} from "./ModBanView";
-import type {ModChangeCommunityVisibilityView} from "./ModChangeCommunityVisibilityView";
+import type {ModChangeCategoryVisibilityView} from "./ModChangeCategoryVisibilityView";
 import type {ModFeaturePostView} from "./ModFeaturePostView";
 import type {ModLockPostView} from "./ModLockPostView";
 import type {ModRemoveCommentView} from "./ModRemoveCommentView";
-import type {ModRemoveCommunityView} from "./ModRemoveCommunityView";
+import type {ModRemoveCategoryView} from "./ModRemoveCategoryView";
 import type {ModRemovePostView} from "./ModRemovePostView";
-import type {ModTransferCommunityView} from "./ModTransferCommunityView";
+import type {ModTransferCategoryView} from "./ModTransferCategoryView";
 
 export type ModlogCombinedView =
-  | ({type_: "AdminAllowInstance"} & AdminAllowInstanceView)
-  | ({type_: "AdminBlockInstance"} & AdminBlockInstanceView)
-  | ({type_: "AdminPurgeComment"} & AdminPurgeCommentView)
-  | ({type_: "AdminPurgeCommunity"} & AdminPurgeCommunityView)
-  | ({type_: "AdminPurgePerson"} & AdminPurgePersonView)
-  | ({type_: "AdminPurgePost"} & AdminPurgePostView)
-  | ({type_: "ModAdd"} & ModAddView)
-  | ({type_: "ModAddCommunity"} & ModAddCommunityView)
-  | ({type_: "ModBan"} & ModBanView)
-  | ({type_: "ModBanFromCommunity"} & ModBanFromCommunityView)
-  | ({type_: "ModFeaturePost"} & ModFeaturePostView)
-  | ({
-  type_: "ModChangeCommunityVisibility";
-} & ModChangeCommunityVisibilityView)
-  | ({type_: "ModLockPost"} & ModLockPostView)
-  | ({type_: "ModRemoveComment"} & ModRemoveCommentView)
-  | ({type_: "ModRemoveCommunity"} & ModRemoveCommunityView)
-  | ({type_: "ModRemovePost"} & ModRemovePostView)
-  | ({type_: "ModTransferCommunity"} & ModTransferCommunityView);
+    | ({ type_: "AdminAllowInstance" } & AdminAllowInstanceView)
+    | ({ type_: "AdminBlockInstance" } & AdminBlockInstanceView)
+    | ({ type_: "AdminPurgeComment" } & AdminPurgeCommentView)
+    | ({ type_: "AdminPurgeCategory" } & AdminPurgeCategoryView)
+    | ({ type_: "AdminPurgePerson" } & AdminPurgePersonView)
+    | ({ type_: "AdminPurgePost" } & AdminPurgePostView)
+    | ({ type_: "ModAdd" } & ModAddView)
+    | ({ type_: "ModAddCategory" } & ModAddCategoryView)
+    | ({ type_: "ModBan" } & ModBanView)
+    | ({ type_: "ModBanFromCategory" } & ModBanFromCategoryView)
+    | ({ type_: "ModFeaturePost" } & ModFeaturePostView)
+    | ({
+    type_: "ModChangeCategoryVisibility";
+} & ModChangeCategoryVisibilityView)
+    | ({ type_: "ModLockPost" } & ModLockPostView)
+    | ({ type_: "ModRemoveComment" } & ModRemoveCommentView)
+    | ({ type_: "ModRemoveCategory" } & ModRemoveCategoryView)
+    | ({ type_: "ModRemovePost" } & ModRemovePostView)
+    | ({ type_: "ModTransferCategory" } & ModTransferCategoryView);

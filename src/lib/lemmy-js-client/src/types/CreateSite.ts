@@ -14,7 +14,7 @@ export type CreateSite = {
   name: string;
   sidebar?: string;
   description?: string;
-  communityCreationAdminOnly?: boolean;
+  categoryCreationAdminOnly?: boolean;
   requireEmailVerification?: boolean;
   applicationQuestion?: string;
   privateInstance?: boolean;

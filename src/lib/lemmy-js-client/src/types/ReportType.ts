@@ -8,4 +8,4 @@ export type ReportType =
   | "Posts"
   | "Comments"
   | "PrivateMessages"
-  | "Communities";
+  | "Categories";

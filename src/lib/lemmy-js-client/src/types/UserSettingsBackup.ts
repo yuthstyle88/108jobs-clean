@@ -19,10 +19,10 @@ export type UserSettingsBackup = {
   matrixId?: string;
   botAccount?: boolean;
   settings?: LocalUser;
-  followedCommunities: Array<string>;
+  followedCategories: Array<string>;
   savedPosts: Array<string>;
   savedComments: Array<string>;
-  blockedCommunities: Array<string>;
+  blockedCategories: Array<string>;
   blockedUsers: Array<string>;
   blockedInstances: Array<string>;
 };
