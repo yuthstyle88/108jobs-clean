@@ -28,8 +28,6 @@ import {useCategories} from "@/hooks/api/categories/useCategories";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {
     faEye,
-    faEdit,
-    faTrash,
     faToggleOn,
     faToggleOff,
     faBan,
@@ -38,8 +36,9 @@ import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useHttpDelete} from "@/hooks/api/http/useHttpDelete";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 import {toast} from "sonner";
-import { AdminLayout } from "@/modules/admin/components/layout/AdminLayout";
+import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
 import {useDebounce} from "@/hooks/utils/useDebounce";
+import {PaginationControls} from "@/components/PaginationControls";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -144,11 +143,11 @@ const AdminJobBoard = () => {
         [router, searchParams]
     );
 
-    const [budgetInputs, setBudgetInputs] = useState({ min: "", max: "" });
+    const [budgetInputs, setBudgetInputs] = useState({min: "", max: ""});
     const debouncedBudget = useDebounce(budgetInputs, 500);
 
     useEffect(() => {
-        const { min, max } = debouncedBudget;
+        const {min, max} = debouncedBudget;
         const minValue = min ? parseInt(min) : undefined;
         const maxValue = max ? parseInt(max) : undefined;
 
@@ -162,7 +161,7 @@ const AdminJobBoard = () => {
     }, [debouncedBudget, handleFilterChange, t]);
 
     const handleBudgetInput = (type: "min" | "max", value: string) => {
-        setBudgetInputs((prev) => ({ ...prev, [type]: value }));
+        setBudgetInputs((prev) => ({...prev, [type]: value}));
     };
 
 
@@ -487,28 +486,13 @@ const AdminJobBoard = () => {
                         </div>
 
                         {/* Pagination */}
-                        {(hasPreviousPage || hasNextPage) && (
-                            <div className="mt-6 flex justify-center gap-4">
-                                {hasPreviousPage && (
-                                    <button
-                                        onClick={handlePrevPage}
-                                        disabled={isLoading}
-                                        className="px-5 py-2 bg-primary text-white rounded-lg hover:bg-[#063a68] disabled:opacity-50"
-                                    >
-                                        {t("profileJob.previousButton")}
-                                    </button>
-                                )}
-                                {hasNextPage && (
-                                    <button
-                                        onClick={handleNextPage}
-                                        disabled={isLoading}
-                                        className="px-5 py-2 bg-primary text-white rounded-lg hover:bg-[#063a68] disabled:opacity-50"
-                                    >
-                                        {t("profileJob.nextButton")}
-                                    </button>
-                                )}
-                            </div>
-                        )}
+                        <PaginationControls
+                            hasPrevious={hasPreviousPage}
+                            hasNext={hasNextPage}
+                            onPrevious={handlePrevPage}
+                            onNext={handleNextPage}
+                            isLoading={isLoading}
+                        />
                     </div>
 
                     <div
