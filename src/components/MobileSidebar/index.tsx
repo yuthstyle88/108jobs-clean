@@ -17,7 +17,7 @@ import LanguageBottomSheet from "@/containers/SpBottomTab";
 import {useTranslation} from "react-i18next";
 import {getAppName} from "@/utils/appConfig";
 import {UserService} from "@/services";
-import {ChevronRight, DoorClosedIcon} from "lucide-react";
+import {DoorClosedIcon} from "lucide-react";
 
 type Props = {
     isOpen: boolean;
