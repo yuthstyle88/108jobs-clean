@@ -120,15 +120,16 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
                                 <FontAwesomeIcon icon={faCircleQuestion} className="w-5 h-5 text-primary"/>
                                 <span className="font-medium">{t("how.label")}</span>
                             </Link>
-
-                            <Link
-                                href={`/login`}
-                                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition text-gray-700"
-                                onClick={logout}
-                            >
-                                <DoorClosedIcon className="w-5 h-5 text-primary"/>
-                                <span>{t("global.menuLogout")}</span>
-                            </Link>
+                            {isLoggedIn && (
+                                <Link
+                                    href={`/login`}
+                                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition text-gray-700"
+                                    onClick={logout}
+                                >
+                                    <DoorClosedIcon className="w-5 h-5 text-primary"/>
+                                    <span>{t("global.menuLogout")}</span>
+                                </Link>
+                            )}
                         </nav>
 
                         {/* Divider */}
