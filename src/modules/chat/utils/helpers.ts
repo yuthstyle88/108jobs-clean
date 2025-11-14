@@ -1,12 +1,11 @@
-import  {RefObject} from "react";
+import {RefObject} from "react";
 import {HttpService} from "@/services";
 import {REQUEST_STATE, RequestState} from "@/services/HttpService";
 import {emitReadReceipt} from "@/modules/chat/events";
-import type {ChatMessageView, ChatRoomResponse} from "lemmy-js-client";
+import type {ChatMessageView} from "lemmy-js-client";
 import {ChatMessage} from "lemmy-js-client";
 import {NormalizedEnvelope} from "@/modules/chat/utils/chatSocketUtils";
 import {RoomView} from "@/modules/chat/types";
-import * as React from "react";
 
 // Type guard: narrow a NormalizedEnvelope to the typing envelope (explicit interface)
 export type TypingEnv = {
@@ -42,86 +41,33 @@ export function parseTypingDetail(env: NormalizedEnvelope, _fallbackRoomId: stri
 }
 
 // ---- helpers: status-change ----
-// export async function maybeHandleStatusChange(env: any, roomId: string): Promise<boolean> {
-//     try {
-//         const evName = String(env?.event ?? "");
-//         if (!evName.toLowerCase().includes("update")) return false;
-//
-//
-//         const api = require("@/modules/chat/store/roomsStore");
-//         const {upsertRoom} = api.useRoomsStore.getState();
-//
-//         const chatRoomRes = await HttpService.client.getChatRoom(roomId);
-//         if (chatRoomRes.state === REQUEST_STATE.SUCCESS) {
-//             const newRoom = chatRoomRes.data.room;
-//             upsertRoom(newRoom as RoomView);
-//         } else {
-//             console.error("[maybeHandleStatusChange] failed:", chatRoomRes);
-//         }
-//
-//         return true;
-//     } catch (err) {
-//         if (localStorage.getItem("chat_debug") === "1") {
-//             console.error("[maybeHandleStatusChange] error:", err);
-//         }
-//         return false;
-//     }
-// }
 export async function maybeHandleStatusChange(env: any, roomId: string): Promise<boolean> {
-    // --- Debug helper ---
-    const logStep = (label: string, value: any) => {
-        try {
-            const logs = JSON.parse(localStorage.getItem("maybeHandleStatusChange_debug") || "[]");
-            logs.push({
-                time: new Date().toISOString(),
-                label,
-                value
-            });
-            localStorage.setItem("maybeHandleStatusChange_debug", JSON.stringify(logs));
-        } catch (_) {
-            // ignore localStorage errors
-        }
-    };
-
     try {
-        logStep("env received", env);
-
         const evName = String(env?.event ?? "");
-        logStep("parsed event name", evName);
 
         const isUpdateEvent = evName.toLowerCase().includes("update");
-        logStep("is update event?", isUpdateEvent);
 
         if (!isUpdateEvent) {
-            logStep("skipped - not update event", null);
             return false;
         }
 
         // Load room store
-        logStep("loading store", {roomId});
-
         const api = require("@/modules/chat/store/roomsStore");
         const {upsertRoom} = api.useRoomsStore.getState();
 
         const now = new Date().toISOString();
         const chatRoomRes = await HttpService.client.getChatRoom(`${roomId}?date=${encodeURIComponent(now)}`);
 
-        logStep("chat room response", chatRoomRes);
-
         if (chatRoomRes.state === REQUEST_STATE.SUCCESS) {
             const newRoom = chatRoomRes.data.room;
-            logStep("upserting new room", newRoom);
             upsertRoom(newRoom as RoomView);
         } else {
             console.error("[maybeHandleStatusChange] failed:", chatRoomRes);
         }
 
-        logStep("finished successfully", null);
         return true;
 
     } catch (err) {
-        logStep("caught error", err);
-
         if (localStorage.getItem("chat_debug") === "1") {
             console.error("[maybeHandleStatusChange] error:", err);
         }
