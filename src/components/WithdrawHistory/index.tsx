@@ -53,7 +53,7 @@ const WithdrawHistory = () => {
         key: K,
         value: ListWithdrawRequestQuery[K]
     ) => {
-        setFilters((prev: CategoryNodeView) => ({...prev, [key]: value}));
+        setFilters((prev: ListWithdrawRequestQuery) => ({...prev, [key]: value}));
     };
 
     const handleRefresh = () => {

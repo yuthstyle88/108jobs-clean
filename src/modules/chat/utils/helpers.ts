@@ -42,7 +42,7 @@ export function parseTypingDetail(env: NormalizedEnvelope, _fallbackRoomId: stri
 }
 
 // ---- helpers: status-change ----
-export async function maybeHandleStatusChange(env: any, roomId: string, setRefreshRoomData: (data: ChatRoomView) => void): Promise<boolean> {
+export async function maybeHandleStatusChange(env: any, roomId: string): Promise<boolean> {
     try {
         const evName = String(env?.event ?? "");
         if (!evName.toLowerCase().includes("update")) return false;
@@ -54,7 +54,6 @@ export async function maybeHandleStatusChange(env: any, roomId: string, setRefre
         if (chatRoomRes.state === REQUEST_STATE.SUCCESS) {
             const newRoom = chatRoomRes.data.room;
             upsertRoom(newRoom as RoomView);
-            setRefreshRoomData(newRoom);
         } else {
             console.error("[maybeHandleStatusChange] failed:", chatRoomRes);
         }
