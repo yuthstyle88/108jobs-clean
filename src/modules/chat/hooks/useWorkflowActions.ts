@@ -151,7 +151,7 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(t('profileChat.startWorkflowFailed') || `Failed to start workflow: ${msg}`);
             return false;
         }
-    }, [postId, roomData, startWorkflow, roomId, setHasStarted, goToStatusAndBroadcast, t, sendMessage, localUser.id, roomData]);
+    }, [postId, startWorkflow, roomId, setHasStarted, goToStatusAndBroadcast, t, sendMessage, localUser.id, roomData]);
 
     const quotationSubmit = useCallback(async (data: any) => {
         setError(null);
@@ -196,7 +196,7 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(t('profileChat.quotationError') || 'Failed to send quotation. Please try again.');
             return false;
         }
-    }, [createInvoice, goToStatusAndBroadcast, roomData, localUser.id, roomId, setShowQuotationModal, t, sendMessage, roomData]);
+    }, [createInvoice, goToStatusAndBroadcast, localUser.id, roomId, setShowQuotationModal, t, sendMessage, roomData]);
 
     const approveQuotation = useCallback(async () => {
         try {
@@ -242,7 +242,7 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [approveQuotationApi, localUser.id, roomData, roomId, t, sendMessage, walletId, validateWorkflowId, goToStatusAndBroadcast, billingId, messages, roomData]);
+    }, [approveQuotationApi, localUser.id, roomId, t, sendMessage, walletId, validateWorkflowId, goToStatusAndBroadcast, billingId, messages, roomData]);
 
     const startWork = useCallback(async () => {
         try {
@@ -274,7 +274,7 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [messages, submitStartWorkApi, t, roomData, roomId, localUser.id, sendMessage, goToStatusAndBroadcast, validateWorkflowId, roomData]);
+    }, [messages, submitStartWorkApi, t, roomId, localUser.id, sendMessage, goToStatusAndBroadcast, validateWorkflowId, roomData]);
 
     const submitDelivery = useCallback(async () => {
         try {
@@ -318,7 +318,7 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [messages, selectedFile, roomData, localUser?.id, roomId, t, setSelectedFile, sendMessage, goToStatusAndBroadcast, validateWorkflowId, roomData]);
+    }, [messages, selectedFile, localUser?.id, roomId, t, setSelectedFile, sendMessage, goToStatusAndBroadcast, validateWorkflowId, roomData]);
 
     const requestRevision = useCallback(async () => {
         try {
@@ -346,7 +346,7 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [messages, t, roomId, roomData, localUser?.id, sendMessage, goToStatusAndBroadcast, validateWorkflowId, roomData]);
+    }, [messages, t, roomId, localUser?.id, sendMessage, goToStatusAndBroadcast, validateWorkflowId, roomData]);
 
     const approveWork = useCallback(async () => {
         try {
@@ -379,7 +379,7 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [messages, approveWorkApi, roomData, t, roomId, localUser?.id, sendMessage, goToStatusAndBroadcast, validateWorkflowId, billingId, roomData]);
+    }, [messages, approveWorkApi, t, roomId, localUser?.id, sendMessage, goToStatusAndBroadcast, validateWorkflowId, billingId, roomData]);
 
     const cancelJob = useCallback(async () => {
         try {
@@ -405,7 +405,7 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [messages, roomId, localUser?.id, roomData, t, sendMessage, goToStatusAndBroadcast, validateWorkflowId, currentStatus, roomData]);
+    }, [messages, roomId, localUser?.id, t, sendMessage, goToStatusAndBroadcast, validateWorkflowId, currentStatus, roomData]);
 
     return {
         startWorkflowAction,
