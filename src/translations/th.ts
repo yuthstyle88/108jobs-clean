@@ -3175,6 +3175,8 @@ export const th = {
             contactInfoEmail: "support@ibrowe.com",
             contactInfoPhone: "เบอร์โทรศัพท์ 02-114-7008",
             contactInfoWebsiteLinkText: `https://static.${getAppName()}.com/contents/support-center`,
+            tableOfContents: "สารบัญ",
+            selectSection: "เลือกหัวข้อ",
             privacyPage: {
                 useTitle: "การใช้ข้อมูลส่วนบุคคล",
                 disclosureTitle: "การเปิดเผยข้อมูลส่วนบุคคล",

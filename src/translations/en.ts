@@ -3253,6 +3253,8 @@ export const en = {
             contactInfoEmail: "support@ibrowe.com",
             contactInfoPhone: "Phone Number: 02-114-7008",
             contactInfoWebsiteLinkText: `https://static.${getAppName()}.com/contents/support-center`,
+            tableOfContents: "Table of Contents",
+            selectSection: "Select a section",
             privacyPage: {
                 useTitle: "Use of Personal Data",
                 disclosureTitle: "Disclosure of Personal Data",

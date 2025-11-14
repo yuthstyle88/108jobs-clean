@@ -59,7 +59,7 @@ const TermAndConditions = () => {
                     {/* Sidebar (Table of Contents) */}
                     <aside className="lg:w-64 flex-shrink-0 lg:sticky lg:top-20 hidden lg:block">
                         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-gray-100/50">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Table of Contents</h2>
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">{t("termsEmployer.tableOfContents")}</h2>
                             <ul className="space-y-2">
                                 {sections.map((section) => (
                                     <li key={section.id}>
@@ -85,9 +85,9 @@ const TermAndConditions = () => {
                                     document.getElementById(e.target.value)?.scrollIntoView({ behavior: "smooth" });
                                 }
                             }}
-                            aria-label="Select a section"
+                            aria-label={t("termsEmployer.selectSection")}
                         >
-                            <option value="">Select a section</option>
+                            <option value="">{t("termsEmployer.selectSection")}</option>
                             {sections.map((section) => (
                                 <option key={section.id} value={section.id}>
                                     {section.title}

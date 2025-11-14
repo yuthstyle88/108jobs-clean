@@ -3284,6 +3284,8 @@ export const vi = {
             contactInfoEmail: "support@ibrowe.com",
             contactInfoPhone: "Số điện thoại: 02-114-7008",
             contactInfoWebsiteLinkText: `https://static.${getAppName()}.com/contents/support-center`,
+            tableOfContents: "Mục lục",
+            selectSection: "Chọn mục",
             privacyPage: {
                 useTitle: "Sử dụng Dữ liệu Cá nhân",
                 disclosureTitle: "Tiết lộ Dữ liệu Cá nhân",
