@@ -24,7 +24,7 @@ export default function MessageClient({roomId}: { roomId: string }) {
             <ChatRoomView
                 post={room.post}
                 partner={partner}
-                roomData={room}
+                roomId={roomId}
                 localUser={user!}
             />
         </PhoenixChatBridgeProvider>

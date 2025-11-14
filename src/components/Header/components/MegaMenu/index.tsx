@@ -9,7 +9,6 @@ import Link from "next/link";
 import {JSX, useState} from "react";
 import Business from "./Business";
 import Chat from "./Chat";
-import Find from "./Find";
 import Hiring from "./Hiring";
 import Post from "./Post";
 
@@ -27,10 +26,6 @@ const MegaMenu = () => {
     string,
     {component: JSX.Element; image: StaticImageData}
   > = {
-    find: {
-      component: <Find/>,
-      image: MegaMenuImage.jobBg,
-    },
     post: {
       component: <Post/>,
       image: MegaMenuImage.buyerJob,
