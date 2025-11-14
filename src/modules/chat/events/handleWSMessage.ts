@@ -51,6 +51,7 @@ export interface HandlerDeps extends HandlerRefs {
     onRemoteTyping?: (detail: ChatTypingDetail) => void;
     upsertMessage: (msg: ChatMessage) => void;
     refetchRoom: () => Promise<RequestState<ChatRoomResponse> | undefined>
+    setCacheBuster: React.Dispatch<React.SetStateAction<number>>
 }
 
 /**
@@ -73,7 +74,8 @@ export function createHandleWSMessage(deps: HandlerDeps) {
         deliveryAckRef,
         ackCooldownRef,
         upsertMessage,
-        refetchRoom
+        refetchRoom,
+        setCacheBuster
     } = deps;
     const meId = Number(localUserId);
     const roomIdStr = String(roomId);
@@ -107,7 +109,7 @@ export function createHandleWSMessage(deps: HandlerDeps) {
             }
 
             // 1) status-change → refresh & return
-            if (await maybeHandleStatusChange(env, roomIdStr, refetchRoom)) {
+            if (await maybeHandleStatusChange(env, roomIdStr, refetchRoom, setCacheBuster)) {
                 return null;
             }
 

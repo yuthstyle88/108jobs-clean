@@ -1,4 +1,4 @@
-import type {RefObject} from "react";
+import {RefObject} from "react";
 import {HttpService} from "@/services";
 import {REQUEST_STATE, RequestState} from "@/services/HttpService";
 import {emitReadReceipt} from "@/modules/chat/events";
@@ -6,6 +6,7 @@ import type {ChatMessageView, ChatRoomResponse} from "lemmy-js-client";
 import {ChatMessage} from "lemmy-js-client";
 import {NormalizedEnvelope} from "@/modules/chat/utils/chatSocketUtils";
 import {RoomView} from "@/modules/chat/types";
+import * as React from "react";
 
 // Type guard: narrow a NormalizedEnvelope to the typing envelope (explicit interface)
 export type TypingEnv = {
@@ -66,7 +67,7 @@ export function parseTypingDetail(env: NormalizedEnvelope, _fallbackRoomId: stri
 //         return false;
 //     }
 // }
-export async function maybeHandleStatusChange(env: any, roomId: string, refetchRoom: () => Promise<RequestState<ChatRoomResponse> | undefined>): Promise<boolean> {
+export async function maybeHandleStatusChange(env: any, roomId: string, refetchRoom: () => Promise<RequestState<ChatRoomResponse> | undefined>, setCacheBuster: React.Dispatch<React.SetStateAction<number>>): Promise<boolean> {
     // --- Debug helper ---
     const logStep = (label: string, value: any) => {
         try {
@@ -101,6 +102,8 @@ export async function maybeHandleStatusChange(env: any, roomId: string, refetchR
 
         const api = require("@/modules/chat/store/roomsStore");
         const {upsertRoom} = api.useRoomsStore.getState();
+
+        setCacheBuster(Date.now());
         const result = await refetchRoom();
         // Fetch Chat Room Info
         logStep("chat room response", result);
