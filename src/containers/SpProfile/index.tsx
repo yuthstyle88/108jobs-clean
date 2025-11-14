@@ -16,7 +16,6 @@ import {useUserStore} from "@/store/useUserStore";
 const SpProfile = () => {
     const {userInfo} = useUserStore();
     const wallet = userInfo?.wallet;
-    const contact = userInfo?.profile.contact;
     const {person, localUser} = userInfo?.localUserView ?? {};
 
     const {lang: currentLang} = useLanguage();
@@ -59,7 +58,7 @@ const SpProfile = () => {
                           className="inline-block max-w-full whitespace-nowrap"
                     >
                         <strong className="text-sm font-sans text-text-primary">
-                            {contact?.email}
+                            {localUser?.email}
                         </strong>
                     </Link>
                 </div>
