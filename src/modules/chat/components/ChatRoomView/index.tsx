@@ -22,7 +22,7 @@
  *   - Mobile-first layout: workflow panel collapses on small screens.
  */
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {v4 as uuidv4} from "uuid";
 import {ProfileImage} from "@/constants/images";
@@ -294,9 +294,9 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     }, []);
 
     // Keep local `currentRoom` in sync with server-refreshed room metadata from the channel.
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (!refreshRoomData) return;
-        setCurrentRoom({...refreshRoomData});
+        setCurrentRoom({ ...refreshRoomData });
     }, [refreshRoomData]);
 
     // Mark active + read, and notify peer on join/leave (single source of truth)
@@ -610,7 +610,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     );
 
     // Provide JobFlowContent to the global sidebar
-    useEffect(() => {
+    useLayoutEffect(() => {
         setContent(
             <JobFlowContent
                 setIsFlowOpen={setIsFlowOpen}
@@ -619,9 +619,24 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                 currentRoom={currentRoom}
             />
         );
+
         return () => setContent(null);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentRoom, setContent, setIsFlowOpen, setShowJobDetailModal, isEmployer, isEmployerKnown, hasStarted, selectedFile, isDeletingFile, statusBeforeCancel, availableBalance, latestQuoteAmount, currentStatus]);
+    }, [
+        currentRoom,
+        setContent,
+        setIsFlowOpen,
+        setShowJobDetailModal,
+        isEmployer,
+        isEmployerKnown,
+        hasStarted,
+        selectedFile,
+        isDeletingFile,
+        statusBeforeCancel,
+        availableBalance,
+        latestQuoteAmount,
+        currentStatus,
+    ]);
 
     return (
         <>
