@@ -7,9 +7,10 @@ import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useCallback, useMemo, useState} from "react";
 import {format} from "date-fns";
 import type {
-    ListWithdrawRequestQuery,
-    WithdrawRequestView,
-    WithdrawStatus,
+  CategoryNodeView,
+  ListWithdrawRequestQuery,
+  WithdrawRequestView,
+  WithdrawStatus,
 } from "lemmy-js-client";
 import {BankId} from "@/lib/lemmy-js-client/src/types/BankId";
 
@@ -52,7 +53,7 @@ const WithdrawHistory = () => {
         key: K,
         value: ListWithdrawRequestQuery[K]
     ) => {
-        setFilters((prev) => ({...prev, [key]: value}));
+        setFilters((prev: CategoryNodeView) => ({...prev, [key]: value}));
     };
 
     const handleRefresh = () => {

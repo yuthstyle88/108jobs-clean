@@ -1,5 +1,6 @@
 import {create} from "zustand";
 import {isBrowser} from "@/utils/browser";
+import {safeStorage} from "@/utils/safeStorage";
 import {RoomView} from "@/modules/chat/types";
 
 // -----------------------------
@@ -22,7 +23,7 @@ const STORAGE_KEY = "chat_unread_v1";
 function loadPersisted(): Pick<UnreadState, "perRoom"> {
   if (!isBrowser()) return { perRoom: {} };
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = safeStorage.getItem(STORAGE_KEY);
     if (!raw) return { perRoom: {} };
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== "object") return { perRoom: {} };
@@ -34,7 +35,7 @@ function loadPersisted(): Pick<UnreadState, "perRoom"> {
 
 function persist(state: Pick<UnreadState, "perRoom">) {
   if (!isBrowser()) return;
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+  try { safeStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
 }
 
 export const useUnreadStore = create<UnreadState>((set, get) => {

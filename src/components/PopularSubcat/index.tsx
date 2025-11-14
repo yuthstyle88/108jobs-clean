@@ -8,6 +8,7 @@ import {useState} from "react";
 import Loading from "../Common/Loading/Loading";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import ErrorState from "@/components/ErrorState";
+import {CategoryNodeView} from "lemmy-js-client";
 
 type Props = {
     name: string;
@@ -23,7 +24,7 @@ const PopularSubCat = ({name}: Props) => {
     } = useHttpGet("listCategories");
 
     const popularServices = catalogData?.categories.find(
-        (catalog) => catalog.category.name.toLowerCase() === "popular services"
+        (catalog: CategoryNodeView) => catalog.category.name.toLowerCase() === "popular services"
     );
 
     if (isLoading) return <Loading/>;
@@ -61,7 +62,7 @@ const PopularSubCat = ({name}: Props) => {
                         <div
                             className="absolute left-0 mt-2 w-[250px] bg-white rounded-lg shadow-lg z-50 flex animate-fade-down">
                             <div className="w-64 py-4">
-                                {catalogData?.categories.map((subcategory) => {
+                                {catalogData?.categories.map((subcategory:CategoryNodeView) => {
                                     const fallbackSlug = subcategory.category.name
                                         .toLowerCase()
                                         .replace(/\s+/g,
@@ -85,7 +86,7 @@ const PopularSubCat = ({name}: Props) => {
 
                     {popularServices && (
                         <div className="pl-6 mt-4 grid gap-2 justify-start">
-                            {popularServices.children?.map((cat) => (
+                            {popularServices.children?.map((cat : CategoryNodeView) => (
                                 <Link prefetch={false}
                                       key={cat.category.id}
                                       href={`/job/${cat.category.id}`}
@@ -105,7 +106,7 @@ const PopularSubCat = ({name}: Props) => {
                 </h2>
                 {popularServices && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {popularServices.children?.map((cat) => (
+                        {popularServices.children?.map((cat:CategoryNodeView) => (
                             <Link prefetch={false}
                                   key={cat.category.id}
                                   href={`/job/${cat.category.id}`}

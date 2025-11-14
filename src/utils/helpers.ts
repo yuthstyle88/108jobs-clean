@@ -569,40 +569,44 @@ export const getJobTypeLabel = (jobType: string | null | undefined, t: (key: str
 export function buildCategoriesTree(listCategoriesResponse: ListCategoriesResponse | undefined) {
     const tree: CategoryNodeView[] = [];
     const map = new Map<CategoryId, CategoryNodeView>();
-    listCategoriesResponse?.categories.forEach(c => {
+    listCategoriesResponse?.categories.forEach((c: CategoryNodeView) => {
         map.set(c.category.id, {...c, children: []});
     });
 
-    listCategoriesResponse?.categories.forEach(c => {
-        const node = map.get(c.category.id);
-        if (!node) return;
+  listCategoriesResponse?.categories.forEach((c: CategoryNodeView) => {
+    const node = map.get(c.category.id);
+    if (!node) return;
 
+    const pathParts = c.category.path.split(".");
 
-        const pathParts = c.category.path.split('.');
-
-        if (pathParts.length === 2) {
-            tree.push(node);
-        } else {
-            const parentPath = pathParts.slice(0, -1).join('.');
-            const parent = Array.from(map.values()).find(
-                n => n.category.path === parentPath
-            );
-            if (parent) {
-                parent.children = parent.children || [];
-                parent.children.push(node);
-            }
-        }
-    });
+    if (pathParts.length === 2) {
+      tree.push(node);
+    } else {
+      const parentPath = pathParts.slice(0, -1).join(".");
+      const parent = Array.from(map.values()).find(
+        n => n.category.path === parentPath
+      );
+      if (parent) {
+        parent.children = parent.children || [];
+        parent.children.push(node);
+      }
+    }
+  });
 
     return tree;
 }
 
-export function getCategoriesAtLevel(catalogData: ListCategoriesResponse | undefined, level: number) {
+export function getCategoriesAtLevel(
+    catalogData: ListCategoriesResponse | undefined,
+    level: number
+): CategoryNodeView[] {
     if (!catalogData || level < 1) {
-        return [];
+        return [] as CategoryNodeView[];
     }
 
-    return catalogData.categories.filter(c => c.category.path.split('.').length === level);
+    return catalogData.categories.filter(
+        (c: CategoryNodeView) => c.category.path.split('.').length === level
+    );
 }
 
 /**

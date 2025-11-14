@@ -12,16 +12,16 @@ const SpUserAvatar = () => {
     const {person} = useUserStore();
 
     return (
-        <Link prefetch={false}
-              href="/profile"
-              className={`flex-1 flex items-center justify-center p-2 text-white text-[24px] cursor-pointer ${
-                  pathname === `/${lang}/profile` ? "bg-primary" : ""
-              }`}
-        >
-            <Image
-                src={person?.avatar || ProfileImage.avatar}
-                alt="avatar"
-                className="rounded-full w-8 h-8 object-cover"
+    <Link prefetch={false}
+          href={`/${lang}/profile`}
+          className={`flex-1 flex items-center justify-center p-2 text-white text-[24px] cursor-pointer ${
+              pathname === `/${lang}/profile` ? "bg-primary" : ""
+          }`}
+    >
+      <Image
+        src={person?.avatar || ProfileImage.avatar}
+        alt="avatar"
+        className="rounded-full w-8 h-8 object-cover"
                 width={500}
                 height={500}
             />

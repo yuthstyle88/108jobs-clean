@@ -106,22 +106,22 @@ const WithdrawCoins = () => {
     };
 
     const getStatusConfig = (status: WithdrawStatus) => {
-        const config = {
-            Pending: {color: "bg-amber-500 text-white border-amber-400/30", icon: Minus, label: "Pending"},
+        const config: Partial<Record<WithdrawStatus, { color: string; icon: typeof Minus; label: string }>> = {
+            Pending: { color: "bg-amber-500 text-white border-amber-400/30", icon: Minus, label: "Pending" },
             Completed: {
                 color: "bg-green-600 text-white border-emerald-500/30",
                 icon: CheckCircle,
-                label: "Approved"
+                label: "Approved",
             },
-            Rejected: {color: "bg-red-500 text-white border-rose-500/30", icon: XCircle, label: "Rejected"},
+            Rejected: { color: "bg-red-500 text-white border-rose-500/30", icon: XCircle, label: "Rejected" },
         };
-        return config[status] || {color: "bg-gray-500/15 text-gray-600", icon: Minus, label: status};
+        return config[status] ?? { color: "bg-gray-500/15 text-gray-600", icon: Minus, label: status };
     };
 
     const getBankName = (bankId: number) => bankList.find((b) => b.id === bankId)?.name ?? "Unknown Bank";
 
     const handleFilterChange = (key: keyof ListWithdrawRequestQuery, value: any) => {
-        setFilters((prev) => ({...prev, [key]: value}));
+        setFilters((prev: ListWithdrawRequestQuery) => ({...prev, [key]: value}));
     };
 
     const applyFilters = () => {
@@ -265,25 +265,27 @@ const WithdrawCoins = () => {
                                 icon: Minus,
                                 label: "Pending",
                                 color: "from-amber-400 to-orange-500",
-                                value: withdrawRequests.filter(r => r.withdrawRequest.status === "Pending").length
+                                value: withdrawRequests.filter((r: WithdrawRequestView) => r.withdrawRequest.status === "Pending").length
                             },
                             {
                                 icon: CheckCircle,
                                 label: "Approved",
                                 color: "from-emerald-400 to-teal-500",
-                                value: withdrawRequests.filter(r => r.withdrawRequest.status === "Completed").length
+                                value: withdrawRequests.filter((r: WithdrawRequestView) => r.withdrawRequest.status === "Completed").length
                             },
                             {
                                 icon: XCircle,
                                 label: "Rejected",
                                 color: "from-rose-400 to-pink-500",
-                                value: withdrawRequests.filter(r => r.withdrawRequest.status === "Rejected").length
+                                value: withdrawRequests.filter((r: WithdrawRequestView) => r.withdrawRequest.status === "Rejected").length
                             },
                             {
                                 icon: CreditCard,
                                 label: "Total Amount",
                                 color: "from-blue-500 to-indigo-600",
-                                value: withdrawRequests.reduce((sum, r) => sum + r.withdrawRequest.amount, 0).toLocaleString() + " coins"
+                                value: withdrawRequests
+                                    .reduce((sum: number, r: WithdrawRequestView) => sum + r.withdrawRequest.amount, 0)
+                                    .toLocaleString() + " coins"
                             },
                         ].map((stat, i) => (
                             <Card key={i}
@@ -324,7 +326,7 @@ const WithdrawCoins = () => {
                                     <p className="text-sm text-muted-foreground mt-1">{t("admin.withdraw.list.noResultsHint")}</p>
                                 </Card>
                             ) : (
-                                withdrawRequests.map((req) => {
+                                withdrawRequests.map((req: WithdrawRequestView) => {
                                     const w = req.withdrawRequest;
                                     const bank = req.bankAccount;
                                     const user = req.localUser;

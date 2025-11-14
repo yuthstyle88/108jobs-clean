@@ -17,6 +17,7 @@ import LanguageBottomSheet from "@/containers/SpBottomTab";
 import {useTranslation} from "react-i18next";
 import {getAppName} from "@/utils/appConfig";
 import {UserService} from "@/services";
+import {useLanguage} from "@/contexts/LanguageContext";
 
 type Props = {
     isOpen: boolean;
@@ -26,7 +27,8 @@ type Props = {
 const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
     const {t} = useTranslation();
     const isLoggedIn = UserService.Instance.isLoggedIn;
-    const [showLang, setShowLang] = useState(false);
+    const lang =  useLanguage();
+  const [showLang, setShowLang] = useState(false);
 
     return (
         <AnimatePresence>
@@ -65,7 +67,7 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
                         <nav className="flex flex-col p-4 space-y-3">
                             {isLoggedIn && (
                                 <Link
-                                    href="/chat"
+                                    href={`/${lang}/chat`}
                                     className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition text-gray-700"
                                     onClick={onClose}
                                 >
@@ -76,7 +78,7 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
 
 
                             <Link
-                                href="/job-board"
+                                href={`/${lang}/job-board`}
                                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition text-gray-700"
                                 onClick={onClose}
                             >
@@ -85,7 +87,7 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
                             </Link>
 
                             <Link
-                                href="/content/terms"
+                                href={`/${lang}/content/terms`}
                                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition text-gray-700"
                                 onClick={onClose}
                             >
@@ -94,7 +96,7 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
                             </Link>
 
                             <Link
-                                href="/content/privacy"
+                                href={`/${lang}/content/privacy`}
                                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition text-gray-700"
                                 onClick={onClose}
                             >
@@ -103,7 +105,7 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
                             </Link>
 
                             <Link
-                                href="/content/how"
+                                href={`/${lang}/content/how`}
                                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition text-gray-700"
                                 onClick={onClose}
                             >

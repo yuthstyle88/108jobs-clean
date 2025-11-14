@@ -43,7 +43,7 @@ const TopUpCoins = () => {
     const [selectedTransfer, setSelectedTransfer] = useState<TopUpRequestView | null>(null);
 
     const handleFilterChange = (key: keyof ListTopUpRequestQuery, value: any) => {
-        setFilters((prev) => ({...prev, [key]: value}));
+        setFilters((prev: ListTopUpRequestQuery) => ({...prev, [key]: value}));
     };
 
     const applyFilters = () => {

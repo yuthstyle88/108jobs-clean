@@ -92,7 +92,8 @@ const CatalogBanner = (props: Props) => {
                             </h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {activeCatalog?.children?.slice(0, 12).map(({ category }) => {
+                            {activeCatalog?.children?.slice(0, 12).map(
+                              ({ category }: { category: CategoryNodeView["category"] }) => {
                                 const backgroundImage = category.icon
                                     ? `url(${category.icon})`
                                     : `url("/categories-image/web-development-02032022.jpg")`;

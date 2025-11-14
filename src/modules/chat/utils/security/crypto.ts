@@ -1,6 +1,7 @@
 import {ID_PRIV_KEY_IDB, ID_PUB_SEC1_HEX_KEY} from "@/modules/chat/constants";
 const crypto = globalThis.crypto;
 import {UserService} from "@/services";
+import {safeStorage} from "@/utils/safeStorage";
 import {idbGet, idbSet} from "@/utils";
 
 export type AESKey = CryptoKey;
@@ -21,7 +22,7 @@ export async function ensureIdentityKeyPair(): Promise<{ privateKey: CryptoKey; 
   if (!subtle) throw new Error("WebCrypto not available");
 
   const existingPriv = await idbGet<CryptoKey>(ID_PRIV_KEY_IDB);
-  const existingPubHex = localStorage.getItem(ID_PUB_SEC1_HEX_KEY) || undefined;
+  const existingPubHex = safeStorage.getItem(ID_PUB_SEC1_HEX_KEY) || undefined;
   if (existingPriv && existingPubHex) return { privateKey: existingPriv, publicKeyHex: existingPubHex };
 
   // Generate extractable pair to export public, then re-import private as non-extractable
@@ -33,7 +34,7 @@ export async function ensureIdentityKeyPair(): Promise<{ privateKey: CryptoKey; 
   const privateKey = await subtle.importKey("pkcs8", pkcs8, { name: "ECDH", namedCurve: "P-256" }, false, ["deriveBits"]);
 
   await idbSet(ID_PRIV_KEY_IDB, privateKey);
-  localStorage.setItem(ID_PUB_SEC1_HEX_KEY, publicKeyHex);
+  try { safeStorage.setItem(ID_PUB_SEC1_HEX_KEY, publicKeyHex); } catch {}
   return { privateKey, publicKeyHex };
 }
 

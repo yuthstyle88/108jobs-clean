@@ -4,7 +4,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useTranslation} from "react-i18next";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useCallback, useMemo, useState} from "react";
-import {ListTopUpRequestQuery, TopUpRequestView} from "lemmy-js-client";
+import {CategoryNodeView, ListTopUpRequestQuery, TopUpRequestView} from "lemmy-js-client";
 import {format} from "date-fns";
 
 const TopUpHistory = () => {
@@ -33,7 +33,7 @@ const TopUpHistory = () => {
     const topUps: TopUpRequestView[] = data?.topUpRequests ?? [];
 
     const handleFilterChange = (key: keyof ListTopUpRequestQuery, value: any) => {
-        setFilters((prev) => ({...prev, [key]: value}));
+        setFilters((prev: CategoryNodeView) => ({...prev, [key]: value}));
     };
 
     const handleRefresh = () => {

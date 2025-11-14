@@ -4,6 +4,7 @@ import {faArrowRight} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Link from "next/link";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
+import {CategoryNodeView} from "lemmy-js-client";
 
 const Find = () => {
   const global = getNamespace(LanguageFile.GLOBAL);
@@ -15,7 +16,7 @@ const Find = () => {
 
   const popularCategories =
     catalogData?.categories?.find(
-      (catalog) => catalog.category.id === 1
+      (catalog: CategoryNodeView) => catalog.category.id === 1
     )?.children || [];
 
   return (
@@ -31,7 +32,7 @@ const Find = () => {
           {global?.labelNavBarItem1}
         </span>
         <div className="mt-2 flex flex-col mr-4">
-          {popularCategories.map((job, index) => (
+         {popularCategories.map((job: CategoryNodeView, index: number) => (
             <Link prefetch={false}
                   href={`/job/${job.category.id}`}
                   key={index}
