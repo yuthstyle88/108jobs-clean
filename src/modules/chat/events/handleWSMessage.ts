@@ -108,7 +108,7 @@ export function createHandleWSMessage(deps: HandlerDeps) {
             }
 
             // 1) status-change → refresh & return
-            if (await maybeHandleStatusChange(env, roomIdStr, setRefreshRoomData)) {
+            if (await maybeHandleStatusChange(env, roomIdStr)) {
                 return null;
             }
 

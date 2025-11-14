@@ -33,7 +33,7 @@ const TopUpHistory = () => {
     const topUps: TopUpRequestView[] = data?.topUpRequests ?? [];
 
     const handleFilterChange = (key: keyof ListTopUpRequestQuery, value: any) => {
-        setFilters((prev: CategoryNodeView) => ({...prev, [key]: value}));
+        setFilters((prev: ListTopUpRequestQuery) => ({...prev, [key]: value}));
     };
 
     const handleRefresh = () => {

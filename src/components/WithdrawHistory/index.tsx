@@ -53,7 +53,7 @@ const WithdrawHistory = () => {
         key: K,
         value: ListWithdrawRequestQuery[K]
     ) => {
-        setFilters((prev: CategoryNodeView) => ({...prev, [key]: value}));
+        setFilters((prev: ListWithdrawRequestQuery) => ({...prev, [key]: value}));
     };
 
     const handleRefresh = () => {
@@ -169,7 +169,7 @@ const WithdrawHistory = () => {
                         >
                             <option value="">{t("profileCoins.AllStatus")}</option>
                             <option value="Pending">{t("profileCoins.Pending")}</option>
-                            <option value="Commpleted">{t("profileCoins.Completed")}</option>
+                            <option value="Completed">{t("profileCoins.Completed")}</option>
                             <option value="Rejected">{t("profileCoins.Rejected")}</option>
                         </select>
                     </div>
