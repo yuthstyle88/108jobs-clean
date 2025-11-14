@@ -295,9 +295,9 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
 
     // Keep local `currentRoom` in sync with server-refreshed room metadata from the channel.
     useLayoutEffect(() => {
-        if (!refreshRoomData) return;
-        setCurrentRoom({ ...refreshRoomData });
-    }, [refreshRoomData]);
+        if (!roomData) return;
+        setCurrentRoom(roomData);
+    }, [roomData]);
 
     // Mark active + read, and notify peer on join/leave (single source of truth)
     useEffect(() => {
