@@ -16,7 +16,6 @@ import {useUserStore} from "@/store/useUserStore";
 const SpProfile = () => {
     const {userInfo} = useUserStore();
     const wallet = userInfo?.wallet;
-    const contact = userInfo?.profile.contact;
     const {person, localUser} = userInfo?.localUserView ?? {};
 
     const {lang: currentLang} = useLanguage();
@@ -59,7 +58,7 @@ const SpProfile = () => {
                           className="inline-block max-w-full whitespace-nowrap"
                     >
                         <strong className="text-sm font-sans text-text-primary">
-                            {contact?.email}
+                            {localUser?.email}
                         </strong>
                     </Link>
                 </div>
@@ -143,21 +142,6 @@ const SpProfile = () => {
                                 <span>{t("global.menuJobBoard")}</span>
                                 <ChevronRight className="w-6 h-6 text-gray-400"/>
                             </Link>
-                        </li>
-                    </ul>
-                </div>
-            </section>
-            <section className="block">
-                <div>
-                    <ul className="p-0 m-0 list-none">
-                        <li>
-                            <button
-                                onClick={logout}
-                                className="flex items-center justify-between w-full px-6 py-3 text-text-primary text-[15px] font-sans cursor-pointer"
-                            >
-                                <span>{t("global.menuLogout")}</span>
-                                <ChevronRight className="w-6 h-6 text-gray-400"/>
-                            </button>
                         </li>
                     </ul>
                 </div>
