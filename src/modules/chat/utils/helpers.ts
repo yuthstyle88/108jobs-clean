@@ -67,7 +67,7 @@ export function parseTypingDetail(env: NormalizedEnvelope, _fallbackRoomId: stri
 //         return false;
 //     }
 // }
-export async function maybeHandleStatusChange(env: any, roomId: string, refetchRoom: () => Promise<RequestState<ChatRoomResponse> | undefined>, setCacheBuster: React.Dispatch<React.SetStateAction<number>>): Promise<boolean> {
+export async function maybeHandleStatusChange(env: any, roomId: string, refetchRoom: (force: boolean) => Promise<RequestState<ChatRoomResponse> | undefined>, setCacheBuster: React.Dispatch<React.SetStateAction<number>>): Promise<boolean> {
     // --- Debug helper ---
     const logStep = (label: string, value: any) => {
         try {
@@ -104,7 +104,7 @@ export async function maybeHandleStatusChange(env: any, roomId: string, refetchR
         const {upsertRoom} = api.useRoomsStore.getState();
 
         setCacheBuster(Date.now());
-        const result = await refetchRoom();
+        const result = await refetchRoom(true);
         // Fetch Chat Room Info
         logStep("chat room response", result);
         if (result?.state === REQUEST_STATE.SUCCESS) {
