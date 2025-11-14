@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useRef} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faBars, faMagnifyingGlass, faBagShopping} from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
@@ -27,6 +27,16 @@ const NavBar: React.FC<NavBarProps> = ({
                                            className = "",
                                        }) => {
     const isLoggedIn = UserService.Instance.isLoggedIn;
+    // ป้องกันการกดปุ่มเมนูรัว ๆ ทำให้เกิดแล็กหรือสถานะเปิด/ปิดสลับเร็วเกินไป
+    const lastToggleTsRef = useRef(0);
+
+    const handleHamburgerClick = () => {
+        const now = Date.now();
+        // กันสแปมคลิกภายใน 400ms
+        if (now - lastToggleTsRef.current < 400) return;
+        lastToggleTsRef.current = now;
+        onToggleSidebar?.();
+    };
     return (
         <nav className={`flex items-center justify-between px-3 sm:py-2 ${className}`}>
             <Link href="/" aria-label="Home"
@@ -61,7 +71,7 @@ const NavBar: React.FC<NavBarProps> = ({
                 <button
                     type="button"
                     className="md:hidden w-8 h-8 sm:w-9 sm:h-9 grid place-items-center rounded-full text-white/90 hover:text-white hover:bg-white/10 focus:outline-none"
-                    onClick={onToggleSidebar}
+                    onClick={handleHamburgerClick}
                     aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
                 >
                     <FontAwesomeIcon icon={faBars} className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>

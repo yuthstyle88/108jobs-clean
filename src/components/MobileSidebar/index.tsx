@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useState} from "react";
+import React, {useRef, useState} from "react";
 import Link from "next/link";
 import {AnimatePresence, motion} from "framer-motion";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -30,6 +30,15 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
     const [showLang, setShowLang] = useState(false);
     const logout = () => UserService.Instance.logout();
 
+    // ป้องกันการกดปิด/เปิดรัว ๆ จาก overlay หรือปุ่มปิดที่ทำให้แอนิเมชันซ้อนจนหน่วง
+    const lastCloseTsRef = useRef(0);
+    const handleClose = () => {
+        const now = Date.now();
+        if (now - lastCloseTsRef.current < 400) return; // กันสแปม 400ms
+        lastCloseTsRef.current = now;
+        onClose();
+    };
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -40,7 +49,7 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
                         initial={{opacity: 0}}
                         animate={{opacity: 1}}
                         exit={{opacity: 0}}
-                        onClick={onClose}
+                        onClick={handleClose}
                     />
 
                     {/* Sidebar Panel */}
@@ -56,7 +65,7 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
                             <h2 className="text-lg font-semibold text-gray-800">Menu</h2>
                             <button
                                 className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition"
-                                onClick={onClose}
+                                onClick={handleClose}
                                 aria-label="Close sidebar"
                             >
                                 <FontAwesomeIcon icon={faXmark} className="w-5 h-5 text-gray-600"/>
@@ -69,7 +78,7 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
                                 <Link
                                     href={`/chat`}
                                     className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition text-gray-700"
-                                    onClick={onClose}
+                                    onClick={handleClose}
                                 >
                                     <FontAwesomeIcon icon={faComments} className="w-5 h-5 text-primary"/>
                                     <span className="font-medium">{t("global.menuChat")}</span>
@@ -80,7 +89,7 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
                             <Link
                                 href={`/job-board`}
                                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition text-gray-700"
-                                onClick={onClose}
+                                onClick={handleClose}
                             >
                                 <FontAwesomeIcon icon={faBriefcase} className="w-5 h-5 text-primary"/>
                                 <span className="font-medium">{t("global.menuJobBoard")}</span>
@@ -89,7 +98,7 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
                             <Link
                                 href={`/content/terms`}
                                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition text-gray-700"
-                                onClick={onClose}
+                                onClick={handleClose}
                             >
                                 <FontAwesomeIcon icon={faFileContract} className="w-5 h-5 text-primary"/>
                                 <span className="font-medium">{t("global.labelTermsOfService")}</span>
@@ -98,7 +107,7 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
                             <Link
                                 href={`/content/privacy`}
                                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition text-gray-700"
-                                onClick={onClose}
+                                onClick={handleClose}
                             >
                                 <FontAwesomeIcon icon={faShieldHalved} className="w-5 h-5 text-primary"/>
                                 <span className="font-medium">{t("global.labelPrivacyPolicy")}</span>
@@ -107,7 +116,7 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
                             <Link
                                 href={`/content/how`}
                                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition text-gray-700"
-                                onClick={onClose}
+                                onClick={handleClose}
                             >
                                 <FontAwesomeIcon icon={faCircleQuestion} className="w-5 h-5 text-primary"/>
                                 <span className="font-medium">{t("how.label")}</span>
