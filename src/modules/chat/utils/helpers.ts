@@ -41,41 +41,94 @@ export function parseTypingDetail(env: NormalizedEnvelope, _fallbackRoomId: stri
 }
 
 // ---- helpers: status-change ----
+// export async function maybeHandleStatusChange(env: any, roomId: string): Promise<boolean> {
+//     try {
+//         const evName = String(env?.event ?? "");
+//         if (!evName.toLowerCase().includes("update")) return false;
+//
+//
+//         const api = require("@/modules/chat/store/roomsStore");
+//         const {upsertRoom} = api.useRoomsStore.getState();
+//
+//         const chatRoomRes = await HttpService.client.getChatRoom(roomId);
+//         if (chatRoomRes.state === REQUEST_STATE.SUCCESS) {
+//             const newRoom = chatRoomRes.data.room;
+//             upsertRoom(newRoom as RoomView);
+//         } else {
+//             console.error("[maybeHandleStatusChange] failed:", chatRoomRes);
+//         }
+//
+//         return true;
+//     } catch (err) {
+//         if (localStorage.getItem("chat_debug") === "1") {
+//             console.error("[maybeHandleStatusChange] error:", err);
+//         }
+//         return false;
+//     }
+// }
 export async function maybeHandleStatusChange(env: any, roomId: string): Promise<boolean> {
-    try {
+    // --- Debug helper ---
+    const logStep = (label: string, value: any) => {
         try {
-            localStorage.setItem("maybeHandleStatusChange", JSON.stringify(env));
+            const logs = JSON.parse(localStorage.getItem("maybeHandleStatusChange_debug") || "[]");
+            logs.push({
+                time: new Date().toISOString(),
+                label,
+                value
+            });
+            localStorage.setItem("maybeHandleStatusChange_debug", JSON.stringify(logs));
         } catch (_) {
-            // ignore storage quota issues
+            // ignore localStorage errors
         }
-        const evName = String(env?.event ?? "");
-        try {
-            localStorage.setItem("maybeHandleStatusChange1", JSON.stringify(!evName.toLowerCase().includes("update")));
-        } catch (_) {
-            // ignore storage quota issues
-        }
-        if (!evName.toLowerCase().includes("update")) return false;
+    };
 
+    try {
+        logStep("env received", env);
+
+        const evName = String(env?.event ?? "");
+        logStep("parsed event name", evName);
+
+        const isUpdateEvent = evName.toLowerCase().includes("update");
+        logStep("is update event?", isUpdateEvent);
+
+        if (!isUpdateEvent) {
+            logStep("skipped - not update event", null);
+            return false;
+        }
+
+        // Load room store
+        logStep("loading store", { roomId });
 
         const api = require("@/modules/chat/store/roomsStore");
-        const {upsertRoom} = api.useRoomsStore.getState();
+        const { upsertRoom } = api.useRoomsStore.getState();
 
+        // Fetch Chat Room Info
         const chatRoomRes = await HttpService.client.getChatRoom(roomId);
+        logStep("chat room response", chatRoomRes);
+
         if (chatRoomRes.state === REQUEST_STATE.SUCCESS) {
             const newRoom = chatRoomRes.data.room;
+            logStep("upserting new room", newRoom);
+
             upsertRoom(newRoom as RoomView);
         } else {
+            logStep("chat room fetch failed", chatRoomRes);
             console.error("[maybeHandleStatusChange] failed:", chatRoomRes);
         }
 
+        logStep("finished successfully", null);
         return true;
+
     } catch (err) {
+        logStep("caught error", err);
+
         if (localStorage.getItem("chat_debug") === "1") {
             console.error("[maybeHandleStatusChange] error:", err);
         }
         return false;
     }
 }
+
 
 // ---- helpers: read receipt ----
 export function maybeHandleReadReceipt(env: any, fallbackRoomId: string): boolean {
