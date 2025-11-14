@@ -66,7 +66,7 @@ export function parseTypingDetail(env: NormalizedEnvelope, _fallbackRoomId: stri
 //         return false;
 //     }
 // }
-export async function maybeHandleStatusChange(env: any, roomId: string, fetchedRoomData: ChatRoomResponse | null, refetchRoom: () => Promise<RequestState<ChatRoomResponse> | undefined>): Promise<boolean> {
+export async function maybeHandleStatusChange(env: any, roomId: string, refetchRoom: () => Promise<RequestState<ChatRoomResponse> | undefined>): Promise<boolean> {
     // --- Debug helper ---
     const logStep = (label: string, value: any) => {
         try {
@@ -101,15 +101,14 @@ export async function maybeHandleStatusChange(env: any, roomId: string, fetchedR
 
         const api = require("@/modules/chat/store/roomsStore");
         const {upsertRoom} = api.useRoomsStore.getState();
-        await refetchRoom();
+        const result = await refetchRoom();
         // Fetch Chat Room Info
-        logStep("chat room response", fetchedRoomData);
-
-        const newRoom = fetchedRoomData?.room;
-        logStep("upserting new room", newRoom);
-
-        upsertRoom(newRoom as RoomView);
-
+        logStep("chat room response", result);
+        if (result?.state === REQUEST_STATE.SUCCESS) {
+            const newRoom = result?.data?.room;
+            logStep("upserting new room", newRoom);
+            upsertRoom(newRoom as RoomView);
+        }
 
         logStep("finished successfully", null);
         return true;

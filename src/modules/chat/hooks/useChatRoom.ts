@@ -71,7 +71,7 @@ export function useChatRoom({
     // Bind presence watcher (HTTP + focus/visibility + heartbeat). Safe for 0/undefined.
     useRoomPresence((peerUserId || undefined) as any);
 
-    const { data: fetchedRoomData, execute: refetchRoom } = useHttpGet("getChatRoom",[roomId]);
+    const { execute: refetchRoom } = useHttpGet("getChatRoom",[roomId]);
 
     const markPeerActive = useCallback(() => {
         const now = Date.now();
@@ -248,9 +248,8 @@ export function useChatRoom({
         deliveryAckRef,
         ackCooldownRef,
         upsertMessage,
-        fetchedRoomData,
         refetchRoom
-    }), [roomId, localUser.id, setRefreshRoomData, markPeerActive, upsertMessage, fetchedRoomData]);
+    }), [roomId, localUser.id, setRefreshRoomData, markPeerActive, upsertMessage]);
 
     useEffect(() => {
         if(!ws) return;

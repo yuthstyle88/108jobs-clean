@@ -50,7 +50,6 @@ export interface HandlerDeps extends HandlerRefs {
     /** optional: push typing state directly to UI in addition to DOM event */
     onRemoteTyping?: (detail: ChatTypingDetail) => void;
     upsertMessage: (msg: ChatMessage) => void;
-    fetchedRoomData: ChatRoomResponse | null
     refetchRoom: () => Promise<RequestState<ChatRoomResponse> | undefined>
 }
 
@@ -74,7 +73,6 @@ export function createHandleWSMessage(deps: HandlerDeps) {
         deliveryAckRef,
         ackCooldownRef,
         upsertMessage,
-        fetchedRoomData,
         refetchRoom
     } = deps;
     const meId = Number(localUserId);
@@ -109,7 +107,7 @@ export function createHandleWSMessage(deps: HandlerDeps) {
             }
 
             // 1) status-change → refresh & return
-            if (await maybeHandleStatusChange(env, roomIdStr, fetchedRoomData, refetchRoom)) {
+            if (await maybeHandleStatusChange(env, roomIdStr, refetchRoom)) {
                 return null;
             }
 
