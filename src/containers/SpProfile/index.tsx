@@ -146,6 +146,21 @@ const SpProfile = () => {
                     </ul>
                 </div>
             </section>
+            <section className="block">
+                <div>
+                    <ul className="p-0 m-0 list-none">
+                        <li>
+                            <button
+                                onClick={logout}
+                                className="flex items-center justify-between w-full px-6 py-3 text-text-primary text-[15px] font-sans cursor-pointer"
+                            >
+                                <span>{t("global.menuLogout")}</span>
+                                <ChevronRight className="w-6 h-6 text-gray-400"/>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </section>
         </main>
     );
 };

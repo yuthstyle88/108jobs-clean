@@ -114,9 +114,9 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
                             </Link>
 
                             <Link
-                                href={`/content/how`}
+                                href={`/login`}
                                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-100 transition text-gray-700"
-                                onClick={onClose}
+                                onClick={logout}
                             >
                                 <DoorClosedIcon className="w-5 h-5 text-primary"/>
                                 <span>{t("global.menuLogout")}</span>
