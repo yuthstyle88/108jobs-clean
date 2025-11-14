@@ -60,7 +60,6 @@ export function useHttpGet<K extends keyof WrappedLemmyHttp>(
         UserService.Instance?.authInfo?.auth ? key : null, // Only fetch if token exists
         fetcher,
         {
-            keepPreviousData: true,
             revalidateOnFocus: false,
             dedupingInterval: 0,
             ...options,

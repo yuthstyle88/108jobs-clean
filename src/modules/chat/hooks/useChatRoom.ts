@@ -71,7 +71,7 @@ export function useChatRoom({
     // Bind presence watcher (HTTP + focus/visibility + heartbeat). Safe for 0/undefined.
     useRoomPresence((peerUserId || undefined) as any);
     const [cacheBuster, setCacheBuster] = useState(Date.now());
-    const { execute: refetchRoom } = useHttpGet("getChatRoom", [roomId]);
+    const { execute: refetchRoom } = useHttpGet("getChatRoom", [`${roomId}?_=${cacheBuster}`]);
 
     const markPeerActive = useCallback(() => {
         const now = Date.now();
