@@ -54,7 +54,7 @@ const SpProfile = () => {
                         </strong>
                     </Link>
                     <Link prefetch={false}
-                          href={`/${currentLang}/user/${person?.name}`}
+                          href={`/${currentLang}/profile/${person?.name}`}
                           className="inline-block max-w-full whitespace-nowrap"
                     >
                         <strong className="text-sm font-sans text-text-primary">
