@@ -45,7 +45,7 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
                 <>
                     {/* Background overlay */}
                     <motion.div
-                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[800]" // Increased z-index
+                        className="fixed inset-0 bg-black/40 z-[800]" // Increased z-index
                         initial={{opacity: 0}}
                         animate={{opacity: 1}}
                         exit={{opacity: 0}}
@@ -54,7 +54,7 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
 
                     {/* Sidebar Panel */}
                     <motion.div
-                        className="fixed top-0 left-0 right-0 z-[1002] bg-white rounded-b-3xl shadow-xl" // Increased z-index
+                        className="fixed top-0 left-0 right-0 z-[1002] bg-white rounded-b-3xl" // Increased z-index
                         initial={{y: "-100%"}}
                         animate={{y: 0}}
                         exit={{y: "-100%"}}
@@ -62,7 +62,6 @@ const MobileSidebar: React.FC<Props> = ({isOpen, onClose}) => {
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                            <h2 className="text-lg font-semibold text-gray-800">Menu</h2>
                             <button
                                 className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition"
                                 onClick={handleClose}

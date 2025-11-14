@@ -28,8 +28,8 @@ export default function BottomSheet({
     return (
         <AnimatePresence>
             {open && (
-                <div className="fixed inset-0 z-[902] bg-black/50 flex justify-center items-end">
-                    <motion.div
+                <div className="fixed inset-0 z-[3000] bg-black/50 flex justify-center items-end pointer-events-auto">
+                <motion.div
                         ref={ref}
                         initial={{y: "100%"}}
                         animate={{y: 0}}
