@@ -22,6 +22,7 @@ import {useReadLastIdStore} from "@/modules/chat/store/readStore";
 import { usePartnerTyping } from '@/modules/chat/hooks/usePartnerTyping';
 import { useRoomPresence } from '@/modules/chat/hooks/useRoomPresence';
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 
 // Safe DOM CustomEvent dispatcher
 function dispatchDomEvent(name: string, detail: any) {
@@ -69,6 +70,8 @@ export function useChatRoom({
     }, [roomData?.participants, localUser?.id]);
     // Bind presence watcher (HTTP + focus/visibility + heartbeat). Safe for 0/undefined.
     useRoomPresence((peerUserId || undefined) as any);
+
+    const { data: fetchedRoomData, execute: refetchRoom } = useHttpGet("getChatRoom",[roomId]);
 
     const markPeerActive = useCallback(() => {
         const now = Date.now();
@@ -228,7 +231,6 @@ export function useChatRoom({
     const handleWSMessage = React.useMemo(() => createHandleWSMessage({
         roomId,
         localUserId: Number(localUser.id) || 0,
-        setRefreshRoomData,
         markPeerActive,
         onRemoteTyping: () => {},
         processedMsgRef,
@@ -245,8 +247,10 @@ export function useChatRoom({
         readAckRef,
         deliveryAckRef,
         ackCooldownRef,
-        upsertMessage
-    }), [roomId, localUser.id, setRefreshRoomData, markPeerActive, upsertMessage]);
+        upsertMessage,
+        fetchedRoomData,
+        refetchRoom
+    }), [roomId, localUser.id, setRefreshRoomData, markPeerActive, upsertMessage, fetchedRoomData]);
 
     useEffect(() => {
         if(!ws) return;

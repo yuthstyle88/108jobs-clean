@@ -1,8 +1,8 @@
 import type {RefObject} from "react";
 import {HttpService} from "@/services";
-import {REQUEST_STATE} from "@/services/HttpService";
+import {REQUEST_STATE, RequestState} from "@/services/HttpService";
 import {emitReadReceipt} from "@/modules/chat/events";
-import type {ChatMessageView} from "lemmy-js-client";
+import type {ChatMessageView, ChatRoomResponse} from "lemmy-js-client";
 import {ChatMessage} from "lemmy-js-client";
 import {NormalizedEnvelope} from "@/modules/chat/utils/chatSocketUtils";
 import {RoomView} from "@/modules/chat/types";
@@ -66,7 +66,7 @@ export function parseTypingDetail(env: NormalizedEnvelope, _fallbackRoomId: stri
 //         return false;
 //     }
 // }
-export async function maybeHandleStatusChange(env: any, roomId: string): Promise<boolean> {
+export async function maybeHandleStatusChange(env: any, roomId: string, fetchedRoomData: ChatRoomResponse | null, refetchRoom: () => Promise<RequestState<ChatRoomResponse> | undefined>): Promise<boolean> {
     // --- Debug helper ---
     const logStep = (label: string, value: any) => {
         try {
@@ -97,24 +97,19 @@ export async function maybeHandleStatusChange(env: any, roomId: string): Promise
         }
 
         // Load room store
-        logStep("loading store", { roomId });
+        logStep("loading store", {roomId});
 
         const api = require("@/modules/chat/store/roomsStore");
-        const { upsertRoom } = api.useRoomsStore.getState();
-
+        const {upsertRoom} = api.useRoomsStore.getState();
+        await refetchRoom();
         // Fetch Chat Room Info
-        const chatRoomRes = await HttpService.client.getChatRoom(roomId);
-        logStep("chat room response", chatRoomRes);
+        logStep("chat room response", fetchedRoomData);
 
-        if (chatRoomRes.state === REQUEST_STATE.SUCCESS) {
-            const newRoom = chatRoomRes.data.room;
-            logStep("upserting new room", newRoom);
+        const newRoom = fetchedRoomData?.room;
+        logStep("upserting new room", newRoom);
 
-            upsertRoom(newRoom as RoomView);
-        } else {
-            logStep("chat room fetch failed", chatRoomRes);
-            console.error("[maybeHandleStatusChange] failed:", chatRoomRes);
-        }
+        upsertRoom(newRoom as RoomView);
+
 
         logStep("finished successfully", null);
         return true;

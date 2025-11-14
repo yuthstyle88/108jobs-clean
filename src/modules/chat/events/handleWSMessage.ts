@@ -9,7 +9,7 @@ import {
     unwrapPhoenixFrame,
 } from "@/modules/chat/utils/chatSocketUtils";
 import {emitChatTyping,} from "@/modules/chat/events/index";
-import type {ChatMessage, ChatRoomView} from "lemmy-js-client";
+import type {ChatMessage, ChatRoomResponse} from "lemmy-js-client";
 import {
     buildMessageSignature,
     cleanupFetch,
@@ -20,7 +20,7 @@ import {
     tryFlushAutoAck
 } from "@/modules/chat/utils";
 import {ChatTypingDetail} from "@/modules/chat/types";
-import {useRoomsStore} from "@/modules/chat/store/roomsStore";
+import {RequestState} from "@/services/HttpService";
 
 export interface HandlerRefs {
     /** set of processed message signatures for dedupe */
@@ -45,13 +45,13 @@ export interface HandlerDeps extends HandlerRefs {
     roomId: string;
     /** current user id */
     localUserId: number;
-    /** inform UI that room data has been refreshed */
-    setRefreshRoomData: (data: ChatRoomView) => void;
     /** inform that peer is active (UI hint) */
     markPeerActive: () => void;
     /** optional: push typing state directly to UI in addition to DOM event */
     onRemoteTyping?: (detail: ChatTypingDetail) => void;
     upsertMessage: (msg: ChatMessage) => void;
+    fetchedRoomData: ChatRoomResponse | null
+    refetchRoom: () => Promise<RequestState<ChatRoomResponse> | undefined>
 }
 
 /**
@@ -61,7 +61,6 @@ export function createHandleWSMessage(deps: HandlerDeps) {
     const {
         roomId,
         localUserId,
-        setRefreshRoomData,
         markPeerActive,
         onRemoteTyping,
         processedMsgRef,
@@ -74,7 +73,9 @@ export function createHandleWSMessage(deps: HandlerDeps) {
         readAckRef,
         deliveryAckRef,
         ackCooldownRef,
-        upsertMessage
+        upsertMessage,
+        fetchedRoomData,
+        refetchRoom
     } = deps;
     const meId = Number(localUserId);
     const roomIdStr = String(roomId);
@@ -108,7 +109,7 @@ export function createHandleWSMessage(deps: HandlerDeps) {
             }
 
             // 1) status-change → refresh & return
-            if (await maybeHandleStatusChange(env, roomIdStr)) {
+            if (await maybeHandleStatusChange(env, roomIdStr, fetchedRoomData, refetchRoom)) {
                 return null;
             }
 
