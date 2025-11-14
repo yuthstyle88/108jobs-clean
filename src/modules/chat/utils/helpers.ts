@@ -39,95 +39,43 @@ export function parseTypingDetail(env: NormalizedEnvelope, _fallbackRoomId: stri
         return null;
     }
 }
-const CHAT_DEBUG = localStorage.getItem("chat_debug") === "1";
 
-// ---- helpers: status-change ----
-// export async function maybeHandleStatusChange(env: any, roomId: string): Promise<boolean> {
-//     try {
-//         const evName = String(env?.event ?? "");
-//         if (!evName.toLowerCase().includes("update")) return false;
-//
-//         const api = require("@/modules/chat/store/roomsStore");
-//         const {upsertRoom} = api.useRoomsStore.getState();
-//
-//         const chatRoomRes = await HttpService.client.getChatRoom(roomId);
-//         if (chatRoomRes.state === REQUEST_STATE.SUCCESS) {
-//             const newRoom = chatRoomRes.data.room;
-//             upsertRoom(newRoom as RoomView);
-//         } else {
-//             console.error("[maybeHandleStatusChange] failed:", chatRoomRes);
-//         }
-//
-//         return true;
-//     } catch (err) {
-//         if (localStorage.getItem("chat_debug") === "1") {
-//             console.error("[maybeHandleStatusChange] error:", err);
-//         }
-//         return false;
-//     }
-// }
 // ---- helpers: status-change ----
 export async function maybeHandleStatusChange(env: any, roomId: string): Promise<boolean> {
     try {
-        if (CHAT_DEBUG) {
-            console.log("[maybeHandleStatusChange] env:", env);
-        }
-
-        // Normalize event name for prod (fixing [object Object] issue)
-        const rawEvent = env?.event;
-        const evName =
-            typeof rawEvent === "string"
-                ? rawEvent
-                : (rawEvent?.kind ?? rawEvent?.type ?? "");
-
-        if (CHAT_DEBUG) {
-            console.log("[maybeHandleStatusChange] event name:", evName);
-        }
-
-        if (!evName.toLowerCase().includes("update")) {
-            if (CHAT_DEBUG) console.log("[maybeHandleStatusChange] ignored event:", evName);
-            return false;
-        }
-
-        // Debug dynamic require
-        let api;
         try {
-            api = require("@/modules/chat/store/roomsStore");
-            if (CHAT_DEBUG) {
-                console.log("[maybeHandleStatusChange] require ok:", api);
-            }
-        } catch (e) {
-            console.error("[maybeHandleStatusChange] require failed:", e);
-            return false;
+            localStorage.setItem("maybeHandleStatusChange", JSON.stringify(env));
+        } catch (_) {
+            // ignore storage quota issues
         }
-
-        const state = api?.useRoomsStore?.getState?.();
-        if (CHAT_DEBUG) console.log("[maybeHandleStatusChange] roomsStore state:", state);
-
-        if (!state || !state.upsertRoom) {
-            console.error("[maybeHandleStatusChange] upsertRoom missing in prod!", state);
-            return false;
+        const evName = String(env?.event ?? "");
+        try {
+            localStorage.setItem("maybeHandleStatusChange1", JSON.stringify(!evName.toLowerCase().includes("update")));
+        } catch (_) {
+            // ignore storage quota issues
         }
+        if (!evName.toLowerCase().includes("update")) return false;
+
+
+        const api = require("@/modules/chat/store/roomsStore");
+        const {upsertRoom} = api.useRoomsStore.getState();
 
         const chatRoomRes = await HttpService.client.getChatRoom(roomId);
-
-        if (CHAT_DEBUG) {
-            console.log("[maybeHandleStatusChange] API response:", chatRoomRes);
-        }
-
         if (chatRoomRes.state === REQUEST_STATE.SUCCESS) {
-            state.upsertRoom(chatRoomRes.data.room);
+            const newRoom = chatRoomRes.data.room;
+            upsertRoom(newRoom as RoomView);
         } else {
             console.error("[maybeHandleStatusChange] failed:", chatRoomRes);
         }
 
         return true;
     } catch (err) {
-        console.error("[maybeHandleStatusChange] error:", err);
+        if (localStorage.getItem("chat_debug") === "1") {
+            console.error("[maybeHandleStatusChange] error:", err);
+        }
         return false;
     }
 }
-
 
 // ---- helpers: read receipt ----
 export function maybeHandleReadReceipt(env: any, fallbackRoomId: string): boolean {
