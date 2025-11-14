@@ -27,7 +27,7 @@ import {useTranslation} from "react-i18next";
 import {v4 as uuidv4} from "uuid";
 import {ProfileImage} from "@/constants/images";
 import type {
-    ChatMessage, ChatParticipantView,
+    ChatMessage, ChatParticipantView, ChatRoomId,
     ChatRoomView,
     LocalUser,
     Post,
@@ -79,7 +79,7 @@ type MessageForm = { message: string };
 interface ChatRoomViewProps {
     post?: Post;
     partner: ChatParticipantView;
-    roomData: RoomView;
+    roomId: ChatRoomId;
     localUser: LocalUser;
 }
 
@@ -87,12 +87,13 @@ interface ChatRoomViewProps {
 const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                                                        post,
                                                        partner,
-                                                       roomData,
+                                                       roomId,
                                                        localUser
                                                    }) => {
     const {t} = useTranslation();
     const {person, userInfo} = useUserStore();
-    const {wasUnread, clearWasUnread, markRoomRead} = useRoomsStore();
+    const {wasUnread, clearWasUnread, markRoomRead, getRoom} = useRoomsStore();
+    const roomData = getRoom(roomId);
     const wallet = userInfo?.wallet;
     // --- Availability & basic send gating ---
     // Treat undefined availability as "available". Block sending if either side is unavailable.
@@ -101,7 +102,6 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     const canBeUsed = myAvailable && partner.memberPerson.available;
     // Set of message IDs received during this session, used by history hook to deduplicate pages.
     const receivedIds = useMemo(() => new Set<string>(), []);
-    const roomId = String(roomData?.room?.id ?? "");
     // Partner here
     const partnerId = partner.participant.memberId;
     const partnerPersonId = partner.memberPerson.id;
@@ -116,7 +116,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     const [hasStarted, setHasStarted] = useState<boolean>(false);
     // Flow sidebar is now managed globally via JobFlowSidebarProvider
     const {isOpen: isFlowOpen, setOpen: setIsFlowOpen, setContent} = useJobFlowSidebar();
-    const [currentRoom, setCurrentRoom] = useState<ChatRoomView>(roomData);
+    const [currentRoom, setCurrentRoom] = useState<ChatRoomView>(roomData as ChatRoomView);
     const {getByRoom} = useChatStore();
     const messages = getByRoom(roomId);
     const initialFetchRef = useRef(false);
@@ -295,9 +295,9 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
 
     // Keep local `currentRoom` in sync with server-refreshed room metadata from the channel.
     useLayoutEffect(() => {
-        if (!refreshRoomData) return;
-        setCurrentRoom({ ...refreshRoomData });
-    }, [refreshRoomData]);
+        if (!roomData) return;
+        setCurrentRoom(roomData);
+    }, [roomData]);
 
     // Mark active + read, and notify peer on join/leave (single source of truth)
     useEffect(() => {
