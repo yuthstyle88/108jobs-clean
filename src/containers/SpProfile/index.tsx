@@ -39,7 +39,7 @@ const SpProfile = () => {
                 <div
                     className="grid grid-cols-1 z-10 text-center absolute left-1/2 -translate-x-1/2 top-0 pt-6 justify-center">
                     <strong className="text-[1.125rem] text-white">{t("spPrivacy.myProfile")}</strong>
-                    <Link prefetch={false} href={`/${currentLang}/user/${person?.name}`}>
+                    <Link prefetch={false} href={`/${currentLang}/profile/${person?.name}`}>
                         <Image
                             src={person?.avatar || ProfileImage.avatar}
                             width={80}
@@ -48,7 +48,7 @@ const SpProfile = () => {
                             className="inline-flex justify-center items-center w-[80px] min-h-[80px]  rounded-full object-cover object-center mt-4"
                         />
                     </Link>
-                    <Link prefetch={false} href={`/${currentLang}/user/${person?.name}`}>
+                    <Link prefetch={false} href={`/${currentLang}/profile/${person?.name}`}>
                         <strong className="text-[1.125rem] text-third">
                             {person?.name}
                         </strong>
