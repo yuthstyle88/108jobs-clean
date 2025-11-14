@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { LANGUAGE_COOKIE } from "@/constants/language";
 import { isHttps } from "@/utils";
 import { langFromPath, resolveLanguage } from "@/utils/getLangCookies";
-import { getJwtCookieFromServer, isJwtExpired, parseJwtClaims } from "@/utils/helper-server";
+import {getJwtCookieFromServer, getJwtFromRequest, isJwtExpired, parseJwtClaims} from "@/utils/helper-server";
 
 const LOCALE_RE = /^\/([a-z]{2})(\/|$)/i;
 
@@ -19,9 +19,8 @@ export async function proxy(req: NextRequest) {
     const { pathname, search } = req.nextUrl;
     const pathLngCurrent = langFromPath(pathname);
 
-    const rawCookie = (await getJwtCookieFromServer()) ?? "";
-    const token = rawCookie.startsWith("Bearer ") ? rawCookie.slice(7).trim() : rawCookie;
-    const sid = Boolean(token) && !isJwtExpired(token);
+  const token = getJwtFromRequest(req) ?? "";
+  const sid = Boolean(token) && !isJwtExpired(token)
 
     let jwtLang: string | undefined;
     let isAdmin = false;

@@ -16,7 +16,7 @@ const Ads = () => {
       </p>
       <Link prefetch={false}
             rel="noopener noreferrer"
-            href="https://form.jotform.com/251484529705059"
+            href=""
             className="mt-6"
       >
         <span className="text-[0.875rem] font-medium text-third">

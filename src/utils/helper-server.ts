@@ -1,6 +1,7 @@
 import { cookies as nextCookies, headers as nextHeaders } from 'next/headers';
 import type {IncomingHttpHeaders} from "http";
 import {authCookieName, JWT} from "@/utils/config";
+import {NextRequest} from "next/server";
 
 
 /**
@@ -10,6 +11,19 @@ import {authCookieName, JWT} from "@/utils/config";
  * 2) Provided `headers` param (WHATWG Headers or Node IncomingHttpHeaders)
  * 3) next/headers() fallback to read raw cookie header
  */
+export function getJwtFromRequest(req: NextRequest): string | null {
+  // อ่าน cookie โดยตรงจาก NextRequest
+  const raw =
+    req.cookies.get(JWT)?.value ??
+    (authCookieName ? req.cookies.get(authCookieName)?.value ?? null : null);
+
+  if (!raw) return null;
+
+  let token = raw;
+  if (token.startsWith("Bearer ")) token = token.slice(7).trim();
+  return token || null;
+}
+
 export async function getJwtCookieFromServer(
   headers?: Headers | IncomingHttpHeaders | null
 ): Promise<string | null> {
