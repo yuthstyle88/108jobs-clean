@@ -62,6 +62,7 @@ export function useHttpGet<K extends keyof WrappedLemmyHttp>(
         {
             keepPreviousData: true,
             revalidateOnFocus: false,
+            dedupingInterval: 0,
             ...options,
         }
     );
@@ -75,7 +76,7 @@ export function useHttpGet<K extends keyof WrappedLemmyHttp>(
             ? (data.pagination as any)
             : undefined;
 
-    const execute = (force = false) => swr.mutate(undefined, force);
+    const execute = () => swr.mutate(undefined, {revalidate: true});
     const isMutating = swr.isValidating;
 
     return {
