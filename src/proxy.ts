@@ -11,7 +11,7 @@ function stripLocalePrefix(pathname: string) {
 }
 
 // Disable protection: make all routes public except admin
-const PROTECTED_PATHS: string[] = ['/chat', '/profile', '/account-setting'];
+const PROTECTED_PATHS: string[] = ['/chat', '/account-setting'];
 const ADMIN_PATHS: string[] = ['/admin'];
 const AUTH_PATHS = ['/login', '/register'];
 
