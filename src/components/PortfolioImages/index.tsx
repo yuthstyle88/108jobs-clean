@@ -153,7 +153,7 @@ export default function PortfolioImages() {
                                         <button
                                             type="button"
                                             onClick={(e) => {
-                                                e.stopPropagation(); // Prevent triggering full-screen modal
+                                                e.stopPropagation();
                                                 edit(item);
                                             }}
                                             className="p-1 text-primary hover:text-blue-800"
@@ -164,7 +164,7 @@ export default function PortfolioImages() {
                                         <button
                                             type="button"
                                             onClick={(e) => {
-                                                e.stopPropagation(); // Prevent triggering full-screen modal
+                                                e.stopPropagation();
                                                 remove(item.id);
                                             }}
                                             className="p-1 text-red-600 hover:text-red-800"

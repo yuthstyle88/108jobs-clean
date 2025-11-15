@@ -9,7 +9,7 @@ interface PortfolioImageModalProps {
     title: string;
     isOpen: boolean;
     onClose: () => void;
-    onImageChange: (e: ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>) => Promise<void>
+    onImageChange: (e: ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>) => Promise<void>;
     onConfirm: () => Promise<void>;
     initialImage: string | null;
     error: string | null;
@@ -31,6 +31,20 @@ export default function PortfolioImageModal({
     const {t} = useTranslation();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(initialImage || null);
+
+    // Local validation state
+    const [titleError, setTitleError] = useState<string | null>(null);
+
+    // Validate title
+    useEffect(() => {
+        if (imageTitle.trim() === '') {
+            setTitleError(t('profileInfo.imageTitleRequired') || 'Image title is required');
+        } else {
+            setTitleError(null);
+        }
+    }, [imageTitle, t]);
+
+    const isConfirmDisabled = !!error || !!titleError || !previewImage;
 
     // Handle file selection and preview
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,9 +79,9 @@ export default function PortfolioImageModal({
     const handleClose = () => {
         setPreviewImage(initialImage || null);
         fileInputRef.current!.value = '';
+        setTitleError(null);
         onClose();
     };
-
 
     useEffect(() => {
         setPreviewImage(initialImage || null);
@@ -89,6 +103,7 @@ export default function PortfolioImageModal({
 
                 <h2 className="text-lg font-medium text-text-primary mb-4">{t(title) || title}</h2>
 
+                {/* Image Upload Area */}
                 <div
                     className="w-full h-48 border border-gray-300 rounded-lg flex items-center justify-center cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors duration-200"
                     onClick={handleSelectFile}
@@ -111,33 +126,54 @@ export default function PortfolioImageModal({
                             className="w-full h-full object-cover rounded-lg"
                         />
                     ) : (
-                        <span className="text-gray-500 text-sm">
-                            {t('profileInfo.selectImage') || 'Select or drag an image'}
+                        <span className="text-gray-500 text-sm text-center px-4">
+                            {t('profileInfo.selectImage') || 'Click or drag an image here'}
                         </span>
                     )}
                 </div>
 
-                <input
-                    type="text"
-                    value={imageTitle}
-                    onChange={(e) => onTitleChange(e.target.value)}
-                    placeholder={t('profileInfo.imageTitle') || 'Enter image title'}
-                    className="w-full mt-4 border p-2 rounded text-primary"
-                />
+                {/* Image Title Input - REQUIRED */}
+                <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('profileInfo.imageTitle') || 'Image Title'}
+                        <span className="text-red-600 ml-1">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        value={imageTitle}
+                        onChange={(e) => onTitleChange(e.target.value)}
+                        placeholder={t('profileInfo.imageTitlePlaceholder') ||
+                            'e.g. "Website Redesign", "Mobile App UI", "Brand Logo Design"'}
+                        className={`w-full border p-2 rounded text-primary focus:ring-2 focus:ring-primary focus:border-primary outline-none transition ${
+                            titleError ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                    />
+                    {titleError && (
+                        <p className="text-red-600 text-xs mt-1">{titleError}</p>
+                    )}
+                </div>
 
+                {/* Server Error */}
                 {error && <p className="text-red-600 text-sm mt-4">{error}</p>}
 
-                <div className="flex justify-end gap-4 mt-4">
-                    <button onClick={handleClose} className="px-4 py-2 text-gray-600 border rounded-lg">
-                        {t('profileInfo.cancel')}
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-4 mt-6">
+                    <button
+                        onClick={handleClose}
+                        className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
+                        {t('profileInfo.cancel') || 'Cancel'}
                     </button>
                     <button
                         onClick={onConfirm}
-                        disabled={!!error}
-                        className={`px-4 py-2 rounded-lg text-white
-                        ${error ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary'}`}
+                        disabled={isConfirmDisabled}
+                        className={`px-4 py-2 rounded-lg text-white font-medium transition ${
+                            isConfirmDisabled
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-primary hover:bg-primary/90'
+                        }`}
                     >
-                        {title}
+                        {t(title) || title}
                     </button>
                 </div>
             </div>

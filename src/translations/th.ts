@@ -2135,6 +2135,8 @@ export const th = {
             editImage: "แก้ไขภาพ",
             updateImage: "อัปเดตภาพ",
             cancel: "ยกเลิก",
+            imageTitleRequired: "กรุณากรอกชื่อภาพ",
+            imageTitlePlaceholder: "เช่น \"ออกแบบเว็บใหม่\", \"UI แอปมือถือ\", \"โลโก้แบรนด์\"",
             sectionWorkSamples: "ตัวอย่างงาน",
             subtitleWorkSamples: "เพิ่มลิงก์ไปยังโปรเจกต์ก่อนหน้าของคุณเพื่อแสดงความเชี่ยวชาญ",
             sampleTitle: "ชื่อตัวอย่าง",

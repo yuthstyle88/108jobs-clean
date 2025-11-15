@@ -2186,6 +2186,8 @@ export const vi = {
             editImage: "Chỉnh sửa hình ảnh",
             updateImage: "Cập nhật hình ảnh",
             cancel: "Hủy",
+            imageTitleRequired: "Vui lòng nhập tiêu đề cho ảnh này",
+            imageTitlePlaceholder: "ví dụ: \"Thiết kế lại website\", \"Giao diện ứng dụng\", \"Logo thương hiệu\"",
             sectionWorkSamples: "Mẫu công việc",
             subtitleWorkSamples: "Thêm liên kết đến các dự án trước đây của bạn để thể hiện chuyên môn.",
             sampleTitle: "Tiêu đề mẫu",

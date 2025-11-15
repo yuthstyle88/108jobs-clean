@@ -2198,6 +2198,8 @@ export const en = {
             editImage: "Edit Image",
             updateImage: "Update Image",
             cancel: "Cancel",
+            imageTitleRequired: "Please enter a title for this image",
+            imageTitlePlaceholder: "e.g. \"Website Redesign\", \"Mobile App UI\", \"Brand Logo Design\"",
             sectionWorkSamples: "Work Samples",
             subtitleWorkSamples: "Add links to your previous projects to demonstrate your expertise.",
             sampleTitle: "Sample Title",
