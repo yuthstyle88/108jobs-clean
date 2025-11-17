@@ -9,11 +9,9 @@ import {LanguageFile} from "@/constants/language";
  * @returns The translated string
  */
 export const t = (namespace: LanguageFile, key: string, options?: Record<string, unknown>): string => {
-  const result = I18NextService.i18n.t(`${namespace}.${key}`,
-    options);
-
-  // ป้องกันข้อผิดพลาด ด้วยการแปลงค่าผลลัพธ์ให้เป็น string
-  return typeof result === 'string' ? result : String(result);
+    // ป้องกันข้อผิดพลาด ด้วยการแปลงค่าผลลัพธ์ให้เป็น string
+  return I18NextService.i18n.t(`${namespace}.${key}`,
+      options);
 };
 /**
  * Helper function to get a namespace object that can be used similar to the old useTranslateFile hook
@@ -54,7 +52,7 @@ export const getNamespace = (
           if (result === key) {
             console.warn(`Missing translation for key '${key}'`);
           }
-          return typeof result === "string" ? result : String(result);
+          return result;
         } catch (error) {
           console.error(`Translation error for key '${key}':`, error);
           return `[${prop}]`;

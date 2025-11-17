@@ -13,7 +13,7 @@ function stripLocalePrefix(pathname: string) {
 // Disable protection: make all routes public except admin
 const PROTECTED_PATHS: string[] = ['/chat', '/profile', '/account-setting'];
 const ADMIN_PATHS: string[] = ['/admin'];
-const AUTH_PATHS = ['/login', '/register'];
+const AUTH_PATHS = ['/login', '/register', '/password-management'];
 
 export async function proxy(req: NextRequest) {
     const { pathname, search } = req.nextUrl;
@@ -28,7 +28,7 @@ export async function proxy(req: NextRequest) {
     try {
         const claims = parseJwtClaims(token) as any;
         jwtLang = typeof claims?.lang === 'string' ? claims.lang : undefined;
-        isAdmin = Boolean(claims?.isAdmin); // <-- check admin flag from JWT
+        isAdmin = Boolean(claims?.isAdmin);
     } catch {}
 
     const cookieLng = req.cookies.get(LANGUAGE_COOKIE)?.value ?? '';

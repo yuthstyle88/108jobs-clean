@@ -7,6 +7,8 @@ import {faChevronDown} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import Image from "next/image";
 import Link from "next/link";
+import UserMegaMenu from "../UserMegaMenu";
+import UserImproveMenu from "../UserImproveMenu";
 import ProfileUser from "../ProfileUser";
 import {useTranslation} from "react-i18next";
 import ChatBadge from "@/components/Header/components/ChatBadge";
@@ -41,6 +43,7 @@ const UserProfileSection = () => {
                 </div>
                 <div
                     className="absolute left-0 right-0 w-screen opacity-0 scale-y-0 origin-top top-[60px] shadow-mega-menu px-[1rem] py-[1rem] flex text-[rgba(43,50,59,.95)] z-50 bg-white pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100 group-hover:scale-y-100 group-hover:min-h-[400px] transition-all duration-300">
+                    {showImprove && <UserImproveMenu/>}
                 </div>
             </div>
             <div className="group hidden lg:block min-w-0" onMouseEnter={onEnterRecruit} onMouseLeave={onLeaveRecruit}>
@@ -55,6 +58,7 @@ const UserProfileSection = () => {
                 </div>
                 <div
                     className="absolute left-0 right-0 w-screen opacity-0 scale-y-0 origin-top top-[60px] shadow-mega-menu px-[1rem] py-[1rem] flex text-[rgba(43,50,59,.95)] z-50 bg-white pointer-events-none group-hover:pointer-events-auto group-hover:opacity-100 group-hover:scale-y-100 group-hover:min-h-[400px] transition-all duration-300">
+                    {showRecruit && <UserMegaMenu/>}
                 </div>
             </div>
             <ChatBadge/>

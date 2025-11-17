@@ -11,8 +11,7 @@ interface ErrorProps {
 
 export default function Error({message}: ErrorProps) {
   const errorLanguageData = getNamespace(LanguageFile.ERROR);
-  const isError = message ? true : false;
-  // if (isError) return <div>Error loading language data</div>;
+  const isError = !!message;
 
   return (
     <div className="min-h-screen w-full h-full flex items-center justify-center bg-secondary">

@@ -2,18 +2,9 @@ import {t} from "@/utils/i18nHelper";
 import {LanguageFile} from "@/constants/language";
 
 export const ERROR_CONSTANTS = {
-  EMAIL_EXIST: () => t(LanguageFile.ERROR, "emailExists"),
-  EMAIL_VERIFIED: () => t(LanguageFile.ERROR, "emailVerified"),
-  EMAIL_REQUIRED: () => t(LanguageFile.ERROR, "emailRequired"),
-  USERNAME_EXIST: () => t(LanguageFile.ERROR, "usernameExists"),
-  INVALID_CODE: () => t(LanguageFile.ERROR, "invalidCode"),
-  SERVER_ERROR: () => t(LanguageFile.ERROR, "serverError"),
-  RESEND_FAILED: () => t(LanguageFile.ERROR, "resendFailed"),
-  LIMIT_SEND_EMAIL: () => t(LanguageFile.ERROR, "limitSendEmail"),
-  EMAIL_NOT_EXIST: () => t(LanguageFile.ERROR, "emailNotExist"),
-  INVALID_PASSWORD: () => t(LanguageFile.ERROR, "invalidPassword"),
-  INVALID_OLD_PASSWORD: () => t(LanguageFile.ERROR, "invalidOldPassword"),
-  CHANGE_PASSWORD_FAILED: () => t(LanguageFile.ERROR, "changePasswordFailed"),
-  CAPTCHA_WRONG: () => t(LanguageFile.ERROR, "captchaWrong"),
-  USERNAME_INVALID: () => t(LanguageFile.ERROR, "usernameInvalid"),
+    INVALID_CODE: () => t(LanguageFile.ERROR, "invalidCode"),
+    SERVER_ERROR: () => t(LanguageFile.ERROR, "serverError"),
+    LIMIT_SEND_EMAIL: () => t(LanguageFile.ERROR, "limitSendEmail"),
+    EMAIL_NOT_EXIST: () => t(LanguageFile.ERROR, "emailNotExist"),
+    CHANGE_PASSWORD_FAILED: () => t(LanguageFile.ERROR, "changePasswordFailed"),
 };

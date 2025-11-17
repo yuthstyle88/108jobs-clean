@@ -36,7 +36,8 @@ export default async function RootLayout({
     const isoData = await isoDataInitializer();
     const langCookie = await getLangCookies();
     const userLang = isoData?.myUserInfo?.localUserView?.localUser?.interfaceLanguage as string | undefined;
-    const initialLang = langCookie || lang || userLang;
+    console.log("lang", lang, "langCookie", langCookie, "userLang", userLang)
+    const initialLang = lang || langCookie || userLang;
     return (
         <html lang={initialLang} suppressHydrationWarning>
         <head>

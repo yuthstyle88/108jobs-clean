@@ -44,7 +44,7 @@ const NavBar: React.FC<NavBarProps> = ({
                 <Image
                     src={AssetIcon.logo}
                     alt="logo"
-                    className="w-18 h-18" // Smaller on mobile
+                    className="w-18 h-18"
                     width={200}
                     height={200}
                     priority
@@ -70,11 +70,11 @@ const NavBar: React.FC<NavBarProps> = ({
                 )}
                 <button
                     type="button"
-                    className="md:hidden w-8 h-8 sm:w-9 sm:h-9 grid place-items-center rounded-full text-white/90 hover:text-white hover:bg-white/10 focus:outline-none"
+                    className="md:hidden w-10 h-10 sm:w-9 sm:h-9 grid place-items-center rounded-full text-white/90 hover:text-white hover:bg-white/10 focus:outline-none"
                     onClick={handleHamburgerClick}
                     aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
                 >
-                    <FontAwesomeIcon icon={faBars} className="w-3.5 h-3.5 sm:w-4 sm:h-4"/>
+                    <FontAwesomeIcon icon={faBars} className="w-6 h-6 sm:w-4 sm:h-4"/>
                 </button>
             </div>
         </nav>

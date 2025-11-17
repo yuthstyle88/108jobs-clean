@@ -10,9 +10,6 @@ export * from "./types";
 export * from "@/modules/chat/utils/security/crypto";
 export * from "@/modules/chat/utils/security/keystore";
 
-// validation
-export * from "./validation/addressSchema";
-
 // grouped subfolders
 export * from "./string/interpolate";
 export * from "./dom/scrollSmooth";
