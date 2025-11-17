@@ -17,13 +17,13 @@ interface WorkflowActionPanelProps {
 
 // Label map (สามารถต่อกับ i18n ได้)
 const ACTION_LABELS: Record<WorkFlowAction, string> = {
-    submitQuotation: "Submit Quotation",
-    approveOrder: "Approve Order",
-    startWork: "Start Work",
-    submitDelivery: "Submit Delivery",
-    requestRevision: "Request Revision",
-    releasePayment: "Release Payment",
-    cancel: "Cancel Job",
+    submitQuotation: "profileChat.sendQuotation",
+    approveOrder: "profileChat.approveQuotation",
+    startWork: "profileChat.startWork",
+    submitDelivery: "profileChat.submitDelivery",
+    requestRevision: "profileChat.requestRevision",
+    releasePayment: "profileChat.releasePayment",
+    cancel: "profileChat.cancelJob",
     restart: "Restart",
 };
 
@@ -73,7 +73,7 @@ export const WorkflowActionPanel: React.FC<WorkflowActionPanelProps> = ({
                         <div key={a} className="w-full transition-transform hover:translate-y-[-1px]">
                             <ActionButton
                                 action={a}
-                                label={ACTION_LABELS[a] || a}
+                                label={t(ACTION_LABELS[a] || a)}
                                 loading={loading === true || loading === a}
                                 variant={a === 'cancel' ? 'destructive' : 'default'}
                                 className={
