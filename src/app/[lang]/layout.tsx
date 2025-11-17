@@ -14,6 +14,8 @@ import {getLangCookies} from "@/utils/getLangCookies";
 import {UserServiceProvider} from "@/contexts/UserServiceContext";
 import {GlobalLoaderProvider} from "@/hooks/ui/GlobalLoaderContext";
 import {TooltipProvider} from "@/components/ui/Tooltip";
+import {I18NextService} from "@/services";
+import {Metadata} from "next";
 
 const kanit = Kanit({
     subsets: ["latin", "vietnamese", "thai"],
@@ -24,6 +26,21 @@ const kanit = Kanit({
     fallback: ['system-ui', 'arial', 'sans-serif'],
     adjustFontFallback: true,
 })
+
+export async function generateMetadata(
+    { params }: { params: { lang: string } }
+): Promise<Metadata> {
+    const lang = params.lang || "en";
+
+    await I18NextService.init();
+    await I18NextService.i18n.changeLanguage(lang);
+
+    const t = I18NextService.i18n.t.bind(I18NextService.i18n);
+
+    return {
+        title: t("global.labelProductFastwork") || process.env.NEXT_PUBLIC_SITE_NAME,
+    };
+}
 
 export default async function RootLayout({
                                              children,
@@ -36,10 +53,9 @@ export default async function RootLayout({
     const isoData = await isoDataInitializer();
     const langCookie = await getLangCookies();
     const userLang = isoData?.myUserInfo?.localUserView?.localUser?.interfaceLanguage as string | undefined;
-    console.log("lang", lang, "langCookie", langCookie, "userLang", userLang)
     const initialLang = lang || langCookie || userLang;
     return (
-        <html lang={initialLang} suppressHydrationWarning>
+        <html lang={lang} suppressHydrationWarning>
         <head>
             <meta name="viewport" content="width=device-width, initial-scale=1"/>
             <link rel="preconnect" href="https://fonts.googleapis.com"/>
