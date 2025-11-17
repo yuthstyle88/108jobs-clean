@@ -10,7 +10,7 @@ import {useScrollHandler} from "./hooks/useScrollHandler";
 
 const Header = ({ type, forceShowSearch = false }: { type: string; forceShowSearch?: boolean }) => {
     const { isLoggedIn, userInfo } = useAuthInfo();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { scrollY, showSearch } = useScrollHandler(forceShowSearch);
     const bg = scrollY > 0 ? "bg-primary" : type === "transparent" ? "bg-transparent" : "bg-primary";
 
@@ -19,7 +19,7 @@ const Header = ({ type, forceShowSearch = false }: { type: string; forceShowSear
             <nav className="mx-4 sm:mx-6 lg:mx-8 flex flex-wrap items-center justify-between h-auto py-2">
                 <section className="flex items-center gap-x-4 w-full sm:w-auto">
                     <div className="block md:hidden">
-                        <Link prefetch={true} href="/" className="shrink-0">
+                        <Link prefetch={true} href={`/${i18n.language}`} className="shrink-0">
                             <Image
                                 src={AssetIcon.logo}
                                 alt="logo"

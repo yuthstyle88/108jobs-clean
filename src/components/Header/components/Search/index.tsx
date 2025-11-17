@@ -17,7 +17,7 @@ type SearchForm = {
 
 const Search = ({ showSearch = false, className = "" }: Props) => {
     const router = useRouter();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const searchParams = useSearchParams();
     const titleSearch = searchParams.get("titleSearch") || "";
     const [isSearchOpen, setIsSearchOpen] = useState(showSearch);
@@ -53,7 +53,7 @@ const Search = ({ showSearch = false, className = "" }: Props) => {
     const onSubmit = (data: SearchForm) => {
         const trimmed = data.query.trim();
         if (trimmed) {
-            router.push(`/job-board?q=${trimmed}`);
+            router.push(`/${i18n.language}/job-board?q=${trimmed}`);
             setIsSearchOpen(false);
         }
     };
