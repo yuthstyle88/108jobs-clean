@@ -82,7 +82,6 @@ export function LanguageProvider({
 
     const setLang = (newLang: string) => {
         if(!VALID_LANGUAGES.includes(newLang)) return;
-        console.log("setLang: ", newLang, " lang:", lang)
         if(newLang === lang) return;
         setLangCookie(newLang);
         setLangState(newLang);

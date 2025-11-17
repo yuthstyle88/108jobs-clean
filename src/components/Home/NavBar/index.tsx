@@ -8,6 +8,7 @@ import Search from "@/components/Header/components/Search";
 import SpUserAvatar from "@/containers/SpHeader/components/SpUserProfile";
 import {CircleUserRound} from "lucide-react";
 import {UserService} from "@/services";
+import {useLanguage} from "@/contexts/LanguageContext";
 
 /**
  * Minimal NavBar: renders a mobile menu toggle button.
@@ -29,7 +30,7 @@ const NavBar: React.FC<NavBarProps> = ({
     const isLoggedIn = UserService.Instance.isLoggedIn;
     // ป้องกันการกดปุ่มเมนูรัว ๆ ทำให้เกิดแล็กหรือสถานะเปิด/ปิดสลับเร็วเกินไป
     const lastToggleTsRef = useRef(0);
-
+    const {lang} = useLanguage();
     const handleHamburgerClick = () => {
         const now = Date.now();
         // กันสแปมคลิกภายใน 400ms
@@ -39,7 +40,7 @@ const NavBar: React.FC<NavBarProps> = ({
     };
     return (
         <nav className={`flex items-center justify-between px-3 sm:py-2 ${className}`}>
-            <Link href="/" aria-label="Home"
+            <Link href={`/${lang}`} aria-label="Home"
                   className="text-white/90 hover:text-white focus:outline-none rounded-full hover:bg-white/10">
                 <Image
                     src={AssetIcon.logo}

@@ -7,11 +7,13 @@ import {useTranslation} from "react-i18next";
 import LanguageDropdown from "../LanguageDropDown";
 import UserProfileSection from "./components/UserProfileSection";
 import {useScrollHandler} from "./hooks/useScrollHandler";
+import {useLanguage} from "@/contexts/LanguageContext";
 
-const Header = ({ type, forceShowSearch = false }: { type: string; forceShowSearch?: boolean }) => {
-    const { isLoggedIn, userInfo } = useAuthInfo();
-    const { t, i18n } = useTranslation();
-    const { scrollY, showSearch } = useScrollHandler(forceShowSearch);
+const Header = ({type, forceShowSearch = false}: { type: string; forceShowSearch?: boolean }) => {
+    const {isLoggedIn, userInfo} = useAuthInfo();
+    const {lang} = useLanguage();
+    const {t} = useTranslation();
+    const {scrollY, showSearch} = useScrollHandler(forceShowSearch);
     const bg = scrollY > 0 ? "bg-primary" : type === "transparent" ? "bg-transparent" : "bg-primary";
 
     return (
@@ -19,7 +21,7 @@ const Header = ({ type, forceShowSearch = false }: { type: string; forceShowSear
             <nav className="mx-4 sm:mx-6 lg:mx-8 flex flex-wrap items-center justify-between h-auto py-2">
                 <section className="flex items-center gap-x-4 w-full sm:w-auto">
                     <div className="block md:hidden">
-                        <Link prefetch={true} href={`/${i18n.language}`} className="shrink-0">
+                        <Link prefetch={true} href={`/${lang}`} className="shrink-0">
                             <Image
                                 src={AssetIcon.logo}
                                 alt="logo"
@@ -31,7 +33,7 @@ const Header = ({ type, forceShowSearch = false }: { type: string; forceShowSear
                         </Link>
                     </div>
                     <div className="hidden md:flex items-center gap-x-4 w-full md:w-auto">
-                        <Link prefetch={true} href="/" className="shrink-0">
+                        <Link prefetch={true} href={`/${lang}`} className="shrink-0">
                             <Image
                                 src={AssetIcon.logo}
                                 alt="logo"
@@ -45,11 +47,11 @@ const Header = ({ type, forceShowSearch = false }: { type: string; forceShowSear
                 </section>
                 <section className="flex items-center gap-4 w-full sm:w-auto mt-4 sm:mt-0 justify-end">
                     {!isLoggedIn && (
-                        <Link prefetch={false} href="/job-board" className="text-white text-sm hover:text-gray-200 hover:text-black">
+                        <Link prefetch={false} href="/job-board" className="text-white text-sm hover:text-gray-200">
                             {t("global.labelJobBoardCenter")}
                         </Link>
                     )}
-                    {isLoggedIn && <UserProfileSection />}
+                    {isLoggedIn && <UserProfileSection/>}
                     {/* Admin Dashboard Button */}
                     {userInfo?.localUserView.localUser.admin && (
                         <Link
@@ -69,7 +71,7 @@ const Header = ({ type, forceShowSearch = false }: { type: string; forceShowSear
                             </Link>
                         </>
                     )}
-                    {!isLoggedIn && <LanguageDropdown />}
+                    {!isLoggedIn && <LanguageDropdown/>}
                 </section>
             </nav>
         </header>
