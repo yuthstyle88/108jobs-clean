@@ -79,79 +79,99 @@ const JobBoardProposal = ({postId, jobCreatorId}: JobBoardProposalProps) => {
     }
 
     return (
-        <main className="mt-10 text-[18px] text-text-secondary flex flex-col gap-6 max-w-4xl mx-auto">
+        <main className="mt-6 md:mt-10 max-w-4xl mx-auto px-4 md:px-0">
+            {/* Empty State */}
             {!isLoading && (!proposals?.comments || proposals.comments.length === 0) && (
-                <div className="text-center text-lg font-medium text-text-secondary bg-gray-50 py-6 rounded-lg">
-                    {t("jobBoardDetail.noProposal")}
+                <div className="text-center py-12 bg-gray-50 rounded-xl">
+                    <p className="text-lg font-medium text-text-secondary">
+                        {t("jobBoardDetail.noProposal")}
+                    </p>
                 </div>
             )}
 
+            {/* Proposals List */}
             {proposals?.comments && proposals.comments.length > 0 && (
                 <div className="space-y-6">
                     {proposals.comments.map((cv: CommentView) => (
                         <div
                             key={cv.comment.id}
-                            className="p-6 rounded-lg border border-border-secondary bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
+                            className="bg-white border border-border-secondary rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
                         >
-                            <section className="grid grid-cols-[3fr_1fr] gap-6 md:gap-8">
-                                <div className="flex flex-col gap-4">
-                                    <div className="flex flex-row items-center gap-3">
-                                        <Image
-                                            src={cv.creator?.avatar || ProfileImage.avatar}
-                                            alt={cv.creator?.name || "avatar"}
-                                            width={40}
-                                            height={40}
-                                            className="w-10 h-10 object-cover rounded-full border border-border-secondary"
-                                        />
-                                        <div>
-                                            <p className="text-lg font-semibold text-text-primary font-sans">
-                                                {cv.creator?.displayName || cv.creator?.name || "Unknown"}
-                                            </p>
-                                            <p className="text-sm text-text-secondary font-sans">
-                                                @{cv.creator?.name || "unknown"}
+                            <div className="p-5 md:p-6">
+                                {/* Mobile-First Flex Layout */}
+                                <div className="flex flex-col gap-5">
+                                    {/* Top: Avatar + Name + Date */}
+                                    <div className="flex items-start justify-between gap-4">
+                                        {/* Clickable Profile */}
+                                        <button
+                                            onClick={() => {
+                                                const username = cv.creator?.name || "unknown";
+                                                route.push(`/${currentLang}/profile/${username}`);
+                                            }}
+                                            className="flex items-center gap-3 flex-1 min-w-0 -m-2 p-2 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                                            aria-label={`Go to profile @${cv.creator?.name}`}
+                                        >
+                                            <Image
+                                                src={cv.creator?.avatar || ProfileImage.avatar}
+                                                alt={cv.creator?.name || "avatar"}
+                                                width={56}
+                                                height={56}
+                                                className="w-14 h-14 rounded-full object-cover border-2 border-border-secondary flex-shrink-0"
+                                            />
+                                            <div className="text-left min-w-0">
+                                                <p className="text-lg font-semibold text-text-primary truncate">
+                                                    {cv.creator?.displayName || cv.creator?.name || "Unknown"}
+                                                </p>
+                                                <p className="text-sm text-text-secondary truncate">
+                                                    @{cv.creator?.name || "unknown"}
+                                                </p>
+                                            </div>
+                                        </button>
+
+                                        {/* Date - Mobile Top Right */}
+                                        <div className="text-right">
+                                            <p className="text-xs text-text-secondary font-medium whitespace-nowrap">
+                                                {new Date(cv.comment.publishedAt).toLocaleString(currentLocale, {
+                                                    month: "short",
+                                                    day: "numeric",
+                                                    year: "numeric",
+                                                    hour: "numeric",
+                                                    minute: "numeric",
+                                                    hour12: true,
+                                                })}
                                             </p>
                                         </div>
                                     </div>
-                                    <p className="text-base font-normal text-text-primary font-sans break-words whitespace-pre-wrap leading-relaxed">
-                                        {cv.comment.content}
-                                    </p>
-                                </div>
 
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex flex-col items-end gap-1">
-                                        <p className="text-sm text-text-secondary font-sans">
-                                            {new Date(cv.comment.publishedAt).toLocaleString(currentLocale, {
-                                                year: "numeric",
-                                                month: "short",
-                                                day: "numeric",
-                                                hour: "numeric",
-                                                minute: "numeric",
-                                                hour12: true,
-                                            })}
-                                        </p>
+                                    {/* Proposal Content */}
+                                    <div
+                                        className="text-text-primary text-base leading-relaxed break-words whitespace-pre-wrap">
+                                        {cv.comment.content}
                                     </div>
+
+                                    {/* Chat Button - Only for Job Creator */}
                                     {currentUser?.id === jobCreatorId && (cv as any)?.creator?.id !== currentUser?.id && (
-                                        <button
-                                            type="button"
-                                            onClick={() => handleStartChat(cv)}
-                                            disabled={startingChatFor === (cv as any)?.creator?.id}
-                                            className="self-end inline-flex items-center bg-primary text-white text-sm font-medium px-3 py-2 rounded-md hover:bg-[#063a68] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-                                            aria-label="Start chat with proposer"
-                                            title="Start chat"
-                                        >
-                                            <MessageCircleMore className="w-4 h-4 mr-2"/>
-                                            {startingChatFor === (cv as any)?.creator?.id ? "..." : t("profile.startChat")}
-                                        </button>
+                                        <div className="flex justify-end mt-2">
+                                            <button
+                                                onClick={() => handleStartChat(cv)}
+                                                disabled={startingChatFor === (cv as any)?.creator?.id}
+                                                className="inline-flex items-center gap-2 bg-primary text-white text-sm font-medium px-5 py-3 rounded-xl hover:bg-[#063a68] disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm active:scale-95"
+                                            >
+                                                <MessageCircleMore className="w-5 h-5"/>
+                                                {startingChatFor === (cv as any)?.creator?.id ? "..." : t("profile.startChat")}
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
-                            </section>
+                            </div>
                         </div>
                     ))}
                 </div>
             )}
 
+            {/* Pagination */}
             {pagination && (
-                <div className="mt-8 flex justify-center">
+                <div className="mt-10 flex justify-center">
                     <Pagination
                         prevPage={pagination.prevPage}
                         nextPage={pagination.nextPage}
