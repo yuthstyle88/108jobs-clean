@@ -19,15 +19,17 @@ export function langFromPath(pathname: string): Lang | null {
 
 function normalizeLang(s?: string | null): Lang {
     const v = (s ?? '').toLowerCase().split('-')[0];
-    return (SUPPORTED as readonly string[]).includes(v) ? (v as Lang) : 'en';
+    // Default to 'th' for this project instead of 'en'
+    return (SUPPORTED as readonly string[]).includes(v) ? (v as Lang) : 'th';
 }
-// Priority: Browser > Cookie > JWT > Path > Default('en')
+// Priority: Path > Cookie > JWT > Browser > Default('th')
+// Rationale: URL is the source of truth for the active locale; cookie mirrors it.
 export function resolveLanguage(args: { req: NextRequest; cookieLang?: string; jwtLang?: string; pathname: string }): Lang {
-    const browserLng = langFromBrowser(args.req);
+    const pathLng = langFromPath(args.pathname);
     const cookieLng = args.cookieLang;
     const jwtLng = args.jwtLang;
-    const pathLng = langFromPath(args.pathname);
-    return normalizeLang(browserLng || cookieLng || jwtLng || pathLng);
+    const browserLng = langFromBrowser(args.req);
+    return normalizeLang(pathLng || cookieLng || jwtLng || browserLng);
 }
 
 export async function getLangCookies(): Promise<SupportedLang | null> {

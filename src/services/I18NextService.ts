@@ -163,10 +163,16 @@ export class I18NextService {
   }
   public static async init() {
     const instance = new I18NextService();
-    await instance.#i18n
-    .use(LanguageDetector)
-    .use(LazyLoader)
-    .init({
+    // Build the i18next plugin chain conditionally to avoid importing react-i18next on the server.
+    let chain = instance.#i18n.use(LanguageDetector);
+    if (isBrowser()) {
+      // Important: connect i18next to React so components re-render on language change (client-only)
+      const { initReactI18next } = await import("react-i18next");
+      chain = chain.use(initReactI18next);
+    }
+    chain = chain.use(LazyLoader);
+
+    const baseOptions: any = {
       debug: false,
       compatibilityJSON: "v4",
       supportedLngs: languages.map((l) => l.code),
@@ -179,7 +185,17 @@ export class I18NextService {
       resources: {en} as Resource,
       interpolation: {format},
       partialBundledLanguages: true,
-    });
+    };
+    if (isBrowser()) {
+      // React-specific options ensure UI updates without Suspense stalls
+      baseOptions.react = {
+        useSuspense: false,
+        bindI18n: "languageChanged loaded",
+        bindI18nStore: "added removed",
+      };
+    }
+
+    await chain.init(baseOptions);
     instance.#i18n.on('missingKey', (lng, namespace, key, fallbackValue) => {
       console.warn(lng, namespace, key, fallbackValue);
     })

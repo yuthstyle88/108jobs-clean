@@ -1,10 +1,9 @@
 "use client";
 import BottomSheet from "@/components/ui/BottomSheet";
-import {LANGUAGES, VALID_LANGUAGES} from "@/constants/language";
+import {LANGUAGES} from "@/constants/language";
 import {useLanguage} from "@/contexts/LanguageContext";
 import {X} from "lucide-react";
 import Image from "next/image";
-import {usePathname, useRouter} from "next/navigation";
 
 interface Props {
     open: boolean;
@@ -13,8 +12,6 @@ interface Props {
 
 export default function LanguageBottomSheet({open, onClose}: Props) {
     const {lang: currentLang, setLang} = useLanguage();
-    const router = useRouter();
-    const pathname = usePathname();
     const handleSelectLang = (langCode: string) => {
         if (langCode === currentLang) {
             onClose();
@@ -22,16 +19,6 @@ export default function LanguageBottomSheet({open, onClose}: Props) {
         }
 
         setLang(langCode);
-
-        const segments = pathname.split("/").filter(Boolean);
-        if (VALID_LANGUAGES.includes(segments[0])) {
-            segments[0] = langCode;
-        } else {
-            segments.unshift(langCode);
-        }
-        const newPath = "/" + segments.join("/");
-
-        router.push(newPath);
         onClose();
     };
 

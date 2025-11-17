@@ -63,7 +63,7 @@ export function getClientCurrentLanguage(forceRefresh = false): SupportedLang {
 
   const resolved = (urlLang || cookieLang  || navLang || 'th') as SupportedLang;
   cachedClientLang = resolved;
-  cachedKey = key;
+  cachedKey = key
   return resolved;
 }
 
