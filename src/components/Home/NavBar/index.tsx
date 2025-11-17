@@ -62,7 +62,7 @@ const NavBar: React.FC<NavBarProps> = ({
                 ) : (
                     <Link
                         prefetch={false}
-                        href="/login"
+                        href={`/${lang}/login`}
                         className="flex items-center justify-center p-2 text-white cursor-pointer min-w-[44px]"
                         aria-label="Login"
                     >

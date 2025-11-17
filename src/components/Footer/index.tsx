@@ -11,8 +11,10 @@ import React from "react";
 import {useTranslation} from "react-i18next";
 import {useCategories} from "@/hooks/api/categories/useCategories";
 import {getCategoriesAtLevel, toCamelCaseLastSegment} from "@/utils/helpers";
+import {useLanguage} from "@/contexts/LanguageContext";
 
 const Footer = () => {
+    const {lang} = useLanguage();
     const {t} = useTranslation();
     const categoriesResponse = useCategories();
     const catalogData = getCategoriesAtLevel(categoriesResponse.categories ?? undefined, 3);
@@ -29,7 +31,7 @@ const Footer = () => {
                             <Link
                                 prefetch={false}
                                 key={item.category.id}
-                                href={`/job-board?category=${item.category.id}`}
+                                href={`/${lang}/job-board?category=${item.category.id}`}
                                 aria-label={`View ${item.category.name} jobs`}
                             >
                                 <li key={index}>

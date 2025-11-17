@@ -12,9 +12,10 @@ import JobBoardTab from "@/components/JobBoardTab";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useTranslation} from "react-i18next";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
+import {useLanguage} from "@/contexts/LanguageContext";
 
 const MyJobs = () => {
-    const {t} = useTranslation();
+    const {t, i18n} = useTranslation();
     const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined);
     const router = useRouter();
 
@@ -124,7 +125,7 @@ const MyJobs = () => {
                                                         </svg>
                                                         <Link
                                                             prefetch={false}
-                                                            href={`/job-board/${job.post.id}`}
+                                                            href={`/${i18n.language}/job-board/${job.post.id}`}
                                                             className="text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors duration-200 max-w-[300px] line-clamp-1"
                                                         >
                                                             {job.post.name}

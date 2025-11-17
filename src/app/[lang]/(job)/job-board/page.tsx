@@ -33,7 +33,7 @@ interface FilterState {
 }
 
 const JobBoard = () => {
-    const {t} = useTranslation();
+    const {t, i18n} = useTranslation();
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -217,7 +217,7 @@ const JobBoard = () => {
                     <div className="flex-shrink-0">
                         <Link
                             prefetch={false}
-                            href="/job-board/create-job"
+                            href={`/${i18n.language}/job-board/create-job`}
                             className="inline-flex items-center bg-primary text-white py-3 px-6 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 shadow-md hover:shadow-lg"
                         >
                             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -464,7 +464,7 @@ const JobBoard = () => {
                                                         <div className="min-w-0 flex-1">
                                                             <Link
                                                                 prefetch={false}
-                                                                href={`/job-board/${job.post.id}`}
+                                                                href={`/${i18n.language}/job-board/${job.post.id}`}
                                                                 className="hover:text-primary font-medium text-base text-text-primary font-sans block truncate"
                                                                 onClick={(e) => e.stopPropagation()}
                                                             >

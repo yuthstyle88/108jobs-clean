@@ -5,8 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import {useState} from "react";
 import {useTranslation} from "react-i18next";
+import {useLanguage} from "@/contexts/LanguageContext";
 
 const HowSellAndBuy = () => {
+    const {lang} = useLanguage();
     const {t} = useTranslation();
     const [selectedTab, setSelectedTab] = useState(0);
 
@@ -224,7 +226,7 @@ const HowSellAndBuy = () => {
                         </div>
                     </div>
                     <div className="col-start-2 col-end-3 mt-12 block md:flex justify-end items-end px-4 md:px-0">
-                        <Link prefetch={false} href="/" className="">
+                        <Link prefetch={false} href={`/${lang}`} className="">
                             <button
                                 className="submit-button-custom py-2 px-4 w-full md:w-fit flex flex-row justify-center md:justify-start gap-2">
                                 <p>{t('how.chooseServiceButton')}</p>

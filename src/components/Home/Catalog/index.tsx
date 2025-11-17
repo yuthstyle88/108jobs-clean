@@ -6,6 +6,7 @@ import Link from "next/link";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { toCamelCaseLastSegment } from "@/utils/helpers";
+import {useLanguage} from "@/contexts/LanguageContext";
 
 type Props = {
     serviceCatalogs: CategoryNodeView[];
@@ -21,6 +22,7 @@ const CatalogBanner = (props: Props) => {
         activeCatalogIndex,
         setActiveCatalogIndex,
     } = props;
+    const {lang} = useLanguage();
     const { t } = useTranslation();
 
     return (
@@ -102,7 +104,7 @@ const CatalogBanner = (props: Props) => {
                                     <Link
                                         prefetch={false}
                                         key={category.id}
-                                        href={`/job-board?category=${category.id}`}
+                                        href={`/${lang}/job-board?category=${category.id}`}
                                         className="group relative block rounded-2xl overflow-hidden h-20 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-400"
                                         aria-label={`View ${category.name} jobs`}
                                     >
