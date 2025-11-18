@@ -1,6 +1,6 @@
 "use client";
 
-import { faCoins, faUniversity, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faCoins, faUniversity, faPlus, faShieldAlt, faShield } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "react-i18next";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
@@ -33,28 +33,32 @@ const WithdrawalModal = ({
     const { t } = useTranslation();
     const router = useRouter();
 
-    const [bankId, setBankId] = useState<BankAccountId>(
-        banks[0]?.userBankAccount.id ?? 0
-    );
+    // Filter only verified banks for selection, but keep default selection logic
+    const verifiedBanks = banks.filter(b => b.userBankAccount.isVerified);
+    const hasVerifiedBank = verifiedBanks.length > 0;
 
-    // keep default bank in sync when banks change
+    const [bankId, setBankId] = useState<BankAccountId>(0);
+
+    // Auto-select first verified bank when banks change
     useEffect(() => {
-        if (banks.length && !bankId) setBankId(banks[0].userBankAccount.id);
-    }, [banks, bankId]);
+        if (hasVerifiedBank && (!bankId || !verifiedBanks.find(b => b.userBankAccount.id === bankId))) {
+            setBankId(verifiedBanks[0].userBankAccount.id);
+        }
+    }, [banks, hasVerifiedBank, verifiedBanks, bankId]);
 
-    // ---- validation --------------------------------------------------
+    // ---- Validation ---------------------------------------------------------
     const amountNum = parseFloat(withdrawAmount) || 0;
     const isValid =
         amountNum > 0 &&
         amountNum <= balance &&
+        hasVerifiedBank &&
         !!bankId &&
         withdrawReason.trim().length > 0;
 
-    // ---- handlers ----------------------------------------------------
+    // ---- Handlers -----------------------------------------------------------
     const handleConfirm = () => {
         if (!isValid) return;
         onSubmit();
-        // reset & close
         setWithdrawAmount("");
         setWithdrawReason("");
         onClose();
@@ -76,89 +80,125 @@ const WithdrawalModal = ({
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-fadeIn">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
                     {t("profileCoins.withdrawRequest") || "Withdrawal Request"}
                 </h2>
 
                 {/* ---------- Amount ---------- */}
-                <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="mb-5">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                         {t("profileCoins.amount") || "Amount (Coins)"}
                     </label>
                     <div className="relative">
                         <input
                             type="text"
                             value={withdrawAmount}
-                            onChange={(e) =>
-                                setWithdrawAmount(e.target.value.replace(/[^0-9]/g, ""))
-                            }
+                            onChange={(e) => setWithdrawAmount(e.target.value.replace(/[^0-9]/g, ""))}
                             placeholder="100"
-                            className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-800"
+                            className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-800 text-lg font-medium"
                         />
                         <FontAwesomeIcon
                             icon={faCoins}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-yellow-600"
+                            className="absolute left-4 top-1/2 -translate-y-1/2 text-yellow-600 text-lg"
                         />
                     </div>
-                    {withdrawAmount && amountNum > balance && (
-                        <p className="text-xs text-red-500 mt-1">
-                            {t("profileCoins.available") || "Available"}: {balance.toLocaleString()}{" "}
-                            coins
-                        </p>
-                    )}
+                    <div className="mt-2 flex justify-between text-sm">
+                        <span className="text-gray-500">
+                            {t("profileCoins.available") || "Available"}: <strong>{balance.toLocaleString()}</strong> coins
+                        </span>
+                        {withdrawAmount && amountNum > balance && (
+                            <span className="text-red-600 font-medium">Insufficient balance</span>
+                        )}
+                    </div>
                 </div>
 
-                {/* ---------- Bank ---------- */}
-                <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                {/* ---------- Bank Selection ---------- */}
+                <div className="mb-5">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                         {t("profileCoins.selectBank") || "Select Bank Account"}
                     </label>
 
-                    {banks.length > 0 ? (
+                    {hasVerifiedBank ? (
                         <div className="relative">
                             <select
                                 value={bankId}
                                 onChange={(e) => setBankId(Number(e.target.value))}
-                                className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-800 appearance-none"
+                                className="w-full pl-12 pr-12 py-4 bg-gray-50 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-800 appearance-none font-medium"
                             >
-                                {banks.map((b) => (
+                                {verifiedBanks.map((b) => (
                                     <option key={b.userBankAccount.id} value={b.userBankAccount.id}>
-                                        {b.bank.name} - {b.userBankAccount.accountNumber} (
-                                        {b.userBankAccount.accountName})
+                                        {b.bank.name} •••• {b.userBankAccount.accountNumber.slice(-4)} ({b.userBankAccount.accountName})
                                     </option>
                                 ))}
                             </select>
                             <FontAwesomeIcon
                                 icon={faUniversity}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+                                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 text-lg pointer-events-none"
                             />
-                            <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                                <svg
-                                    className="w-5 h-5 text-gray-400"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M19 9l-7 7-7-7"
-                                    />
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </div>
                         </div>
+                    ) : banks.length > 0 ? (
+                        /* Has banks but none verified */
+                        <div className="space-y-3">
+                            <div className="p-4 bg-orange-50 border-2 border-orange-200 rounded-xl">
+                                <div className="flex items-start gap-3">
+                                    <FontAwesomeIcon icon={faShield} className="w-5 h-5 text-orange-600 mt-0.5" />
+                                    <div>
+                                        <p className="font-medium text-orange-900">{t("profileCoins.bankVerificationNotice.title")}</p>
+                                        <p className="text-sm text-orange-800 mt-1">
+                                            {t("profileCoins.bankVerificationNotice.description")}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Show unverified banks (disabled) */}
+                            <div className="space-y-2">
+                                {banks.map((b) => (
+                                    <div
+                                        key={b.userBankAccount.id}
+                                        className="flex items-center justify-between p-4 bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl opacity-60"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <FontAwesomeIcon icon={faShieldAlt} className="text-gray-400" />
+                                            <div>
+                                                <p className="font-medium text-gray-700">{b.bank.name}</p>
+                                                <p className="text-sm text-gray-500">
+                                                    {b.userBankAccount.accountNumber} • {b.userBankAccount.accountName}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span className="text-xs font-medium text-orange-600 bg-orange-100 px-3 py-1 rounded-full">
+                                            {t("sellerBankAccount.unverified")}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={handleAddBank}
+                                className="w-full flex items-center justify-center gap-2 py-3 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition"
+                            >
+                                <FontAwesomeIcon icon={faPlus} />
+                                {t("sellerBankAccount.buttonAddBank") || "Add New Bank Account"}
+                            </button>
+                        </div>
                     ) : (
-                        <div className="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                            <p className="text-sm text-yellow-800">
-                                {t("profileCoins.noBank") || "No bank account added"}
+                        /* No banks at all */
+                        <div className="p-5 bg-yellow-50 border-2 border-yellow-300 rounded-xl text-center">
+                            <p className="text-yellow-900 font-medium mb-3">
+                                {t("profileCoins.noBank") || "No bank account added yet"}
                             </p>
                             <button
                                 onClick={handleAddBank}
-                                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition"
+                                className="inline-flex items-center gap-2 px-5 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition"
                             >
                                 <FontAwesomeIcon icon={faPlus} />
-                                {t("sellerBankAccount.buttonAddBank") || "Add Bank"}
+                                {t("sellerBankAccount.buttonAddBank") || "Add Bank Account"}
                             </button>
                         </div>
                     )}
@@ -166,34 +206,34 @@ const WithdrawalModal = ({
 
                 {/* ---------- Reason ---------- */}
                 <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                         {t("profileCoins.reason") || "Reason for Withdrawal"}
                     </label>
                     <textarea
                         value={withdrawReason}
                         onChange={(e) => setWithdrawReason(e.target.value)}
-                        placeholder="e.g., Monthly payout, project completion..."
+                        placeholder="e.g., Monthly earnings payout, project completion..."
                         rows={3}
-                        className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-800 resize-none"
+                        className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-800 resize-none"
                     />
                 </div>
 
                 {/* ---------- Buttons ---------- */}
-                <div className="flex space-x-3">
+                <div className="flex gap-3">
                     <button
                         onClick={handleConfirm}
                         disabled={!isValid}
-                        className={`flex-1 py-3 rounded-lg font-medium transition-all ${
+                        className={`flex-1 py-4 rounded-xl font-bold text-lg transition-all shadow-md ${
                             isValid
-                                ? "bg-red-600 text-white hover:bg-red-700 hover:scale-105"
+                                ? "bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 hover:shadow-lg transform hover:-translate-y-0.5"
                                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
                         }`}
                     >
-                        {t("global.buttonConfirm") || "Confirm"}
+                        {t("global.buttonConfirm") || "Confirm Withdrawal"}
                     </button>
                     <button
                         onClick={handleCancel}
-                        className="flex-1 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all"
+                        className="flex-1 py-4 bg-gray-200 text-gray-700 rounded-xl font-bold text-lg hover:bg-gray-300 transition-all"
                     >
                         {t("global.buttonCancel") || "Cancel"}
                     </button>

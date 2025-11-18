@@ -1863,6 +1863,10 @@ export const vi = {
             Rejected: "Bị từ chối",
             RequestID: "Mã yêu cầu",
             Bank: "Ngân hàng",
+            bankVerificationNotice: {
+                title: "Cần xác minh tài khoản",
+                description: "Chỉ tài khoản ngân hàng đã xác minh mới được nhận tiền rút. Vui lòng chờ duyệt hoặc thêm tài khoản mới.",
+            },
         },
         manageUsers: {
             title: "Người dùng",

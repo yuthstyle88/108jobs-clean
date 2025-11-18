@@ -1868,6 +1868,10 @@ export const en = {
             Rejected: "Rejected",
             RequestID: "Request ID",
             Bank: "Bank",
+            bankVerificationNotice: {
+                title: "Verification Required",
+                description: "Only verified bank accounts can receive withdrawals. Please wait for verification or add a new one.",
+            },
         },
 
         manageUsers: {

@@ -1812,6 +1812,10 @@ export const th = {
             Rejected: "ถูกปฏิเสธ",
             RequestID: "รหัสคำขอ",
             Bank: "ธนาคาร",
+            bankVerificationNotice: {
+                title: "ต้องยืนยันตัวตน",
+                description: "เฉพาะบัญชีธนาคารที่ยืนยันแล้วเท่านั้นที่สามารถรับเงินได้ กรุณารอการตรวจสอบหรือเพิ่มบัญชีใหม่",
+            },
         },
         manageUsers: {
             title: "ผู้ใช้",
