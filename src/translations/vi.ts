@@ -1048,6 +1048,8 @@ export const vi = {
             yes: "Có",
             no: "Không",
             labelAdminDashboard: "Bảng Điều Khiển Admin",
+            verified: "Đã xác minh",
+            unverified: "Đang chờ xác minh",
         },
         guarantee: {
             fastworkGuaranteeTitle: `Đảm bảo của ${getAppName()}`,
@@ -2462,6 +2464,16 @@ export const vi = {
             confirmDeleteDescription: "Bạn có chắc chắn muốn xóa tài khoản ngân hàng này? Hành động này không thể hoàn tác.",
             bankAccountAlreadyExistsForThisBank:
                 "Bạn đã có tài khoản ngân hàng đăng ký với ngân hàng này. Vui lòng sử dụng ngân hàng khác hoặc chỉnh sửa tài khoản hiện tại.",
+            accountsCount: "Đã thêm {{count}}/{{max}} tài khoản",
+            reachedMax3BankAccounts: "Bạn chỉ có thể thêm tối đa {{max}} tài khoản ngân hàng.",
+            verified: "Đã xác minh",
+            unverified: "Chưa xác minh",
+            addFirstBankAccount: "Thêm tài khoản ngân hàng đầu tiên để bắt đầu",
+            defaultAccount: "Tài khoản mặc định",
+            limitReached: "Đã đạt giới hạn",
+            verificationWarningTitle: "Yêu cầu xác minh tài khoản",
+            verificationWarningAdd: "Sau khi thêm tài khoản ngân hàng, bạn cần chờ admin xác minh (thường trong 24-48h). Khi được duyệt, bạn mới có thể rút tiền về tài khoản này.",
+            verificationWarningEdit: "Sau khi sửa tài khoản ngân hàng, bạn cần chờ admin duyệt lại. Trong thời gian chờ duyệt, tài khoản này sẽ tạm thời không thể dùng để rút tiền.",
         },
         sellerCommitmentLetter: {
             incomeTaxDescription: `Để nhận thanh toán thông qua hệ thống ${getAppName()} , freelancer phải xác nhận và đồng ý tự cung cấp thông tin thu nhập của mình để cơ quan thuế xem xét tuân thủ các yêu cầu pháp lý.`,

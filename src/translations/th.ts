@@ -1031,6 +1031,8 @@ export const th = {
             yes: "ใช่",
             no: "ไม่",
             labelAdminDashboard: "แดชบอร์ดแอดมิน",
+            verified: "ยืนยันแล้ว",
+            unverified: "รอยืนยัน",
         },
         guarantee: {
             fastworkGuaranteeTitle: `${getAppName()} Guarantee`,
@@ -2409,6 +2411,16 @@ export const th = {
             confirmDeleteDescription: "คุณแน่ใจหรือไม่ว่าต้องการลบบัญชีธนาคารนี้? การดำเนินการนี้ไม่สามารถยกเลิกได้",
             bankAccountAlreadyExistsForThisBank:
                 "คุณมีบัญชีธนาคารที่ลงทะเบียนกับธนาคารนี้อยู่แล้ว กรุณาใช้ธนาคารอื่นหรือแก้ไขบัญชีที่มีอยู่",
+            accountsCount: "เพิ่มแล้ว {{count}} จาก {{max}} บัญชี",
+            reachedMax3BankAccounts: "คุณสามารถเพิ่มบัญชีธนาคารได้สูงสุด {{max}} บัญชี",
+            verified: "ยืนยันแล้ว",
+            unverified: "ยังไม่ยืนยัน",
+            addFirstBankAccount: "เพิ่มบัญชีธนาคารแรกเพื่อเริ่มต้นใช้งาน",
+            defaultAccount: "บัญชีหลัก",
+            limitReached: "ถึงขีดจำกัดแล้ว",
+            verificationWarningTitle: "ต้องยืนยันบัญชี",
+            verificationWarningAdd: "หลังเพิ่มบัญชีธนาคาร ต้องรอแอดมินตรวจสอบ (ปกติ 24-48 ชม.) เมื่ออนุมัติแล้วจึงจะถอนเงินเข้าบัญชีนี้ได้",
+            verificationWarningEdit: "หลังแก้ไขบัญชี ต้องรอแอดมินตรวจสอบใหม่ ระหว่างรอจะไม่สามารถถอนเงินเข้าบัญชีนี้ได้",
         },
         sellerCommitmentLetter: {
             incomeTaxDescription: `เพื่อรับชำระเงินผ่านระบบของ ${getAppName()} ฟรีแลนซ์จะต้องยืนยันและยอมรับในการให้ข้อมูลรายได้ของตนเองเพื่อให้หน่วยงานภาษีตรวจสอบการปฏิบัติตามข้อกำหนดทางกฎหมาย`,

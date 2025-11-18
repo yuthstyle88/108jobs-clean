@@ -8,6 +8,7 @@ import Modal from "@/components/ui/Modal";
 import {Bank} from "@/lib/lemmy-js-client/src";
 import {CustomInput} from "@/components/ui/InputField";
 import {useTranslation} from "react-i18next";
+import {Clock} from "lucide-react";
 
 // Zod schema with dynamic account number validation
 const getSchema = (bankList: Bank[], t: (key: string) => string) =>
@@ -109,6 +110,25 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
                     : t("sellerBankAccount.buttonAddBank")
             }
         >
+            {isOpen && (
+                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                    <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 mt-0.5">
+                            <Clock className="w-5 h-5 text-amber-700"/>
+                        </div>
+                        <div className="text-sm text-amber-900 leading-relaxed">
+                            <p className="font-medium mb-1">
+                                {t("sellerBankAccount.verificationWarningTitle", "Yêu cầu xác minh tài khoản")}
+                            </p>
+                            <p>
+                                {initialData
+                                    ? t("sellerBankAccount.verificationWarningEdit")
+                                    : t("sellerBankAccount.verificationWarningAdd")}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
             <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4 text-text-primary">
                 <div>
                     <label className="block text-sm font-medium mb-1">
@@ -136,6 +156,7 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
                         </p>
                     )}
                 </div>
+
 
                 <div>
                     <CustomInput

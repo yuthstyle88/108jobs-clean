@@ -1054,6 +1054,8 @@ export const en = {
             yes: "Yes",
             no: "No",
             labelAdminDashboard: "Admin Dashboard",
+            verified: "Verified",
+            unverified: "Pending Verification",
         },
         guarantee: {
             fastworkGuaranteeTitle: `${getAppName()} Guarantee`,
@@ -2468,6 +2470,16 @@ export const en = {
             confirmDeleteDescription: "Are you sure you want to delete this bank account? This action cannot be undone.",
             bankAccountAlreadyExistsForThisBank:
                 "You already have a bank account registered with this bank. Please use a different bank or edit the existing account.",
+            accountsCount: "{{count}} of {{max}} accounts added",
+            reachedMax3BankAccounts: "You can only add up to {{max}} bank accounts.",
+            verified: "Verified",
+            unverified: "Not Verified",
+            addFirstBankAccount: "Add your first bank account to get started",
+            defaultAccount: "Default Account",
+            limitReached: "Limit reached",
+            verificationWarningTitle: "Account Verification Required",
+            verificationWarningAdd: "After adding a bank account, it must be verified by admin (usually within 24-48 hours). Only verified accounts can be used for withdrawals.",
+            verificationWarningEdit: "After editing a bank account, it will need re-verification. During review, this account cannot be used for withdrawals.",
         },
         sellerCommitmentLetter: {
             incomeTaxDescription: `To receive payments via the ${getAppName()} system, freelancers must verify and agree to provide their income information for tax authorities to review compliance with legal requirements.`,

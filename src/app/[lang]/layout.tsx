@@ -28,9 +28,10 @@ const kanit = Kanit({
 })
 
 export async function generateMetadata(
-    { params }: { params: { lang: string } }
+    props: { params: Promise<{ lang: string }> }
 ): Promise<Metadata> {
-    const lang = params.lang || "en";
+
+    const { lang } = await props.params;
 
     await I18NextService.init();
     await I18NextService.i18n.changeLanguage(lang);
