@@ -4,6 +4,7 @@ import {X} from "lucide-react";
 import * as React from "react";
 
 import {cn} from "@/lib/utils";
+import {VisuallyHidden} from "@radix-ui/react-visually-hidden";
 
 const Sheet = SheetPrimitive.Root;
 
@@ -53,19 +54,31 @@ interface SheetContentProps
 }
 
 const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Content>, SheetContentProps>(
-    ({side = "right", className, children, ...props}, ref) => (
-        <SheetPortal>
-            <SheetOverlay/>
-            <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({side}), className)} {...props}>
-                {children}
-                <SheetPrimitive.Close
-                    className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity data-[state=open]:bg-secondary hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
-                    <X className="h-4 w-4"/>
-                    <span className="sr-only">Close</span>
-                </SheetPrimitive.Close>
-            </SheetPrimitive.Content>
-        </SheetPortal>
-    ),
+    ({side = "right", className, children, ...props}, ref) => {
+        // Ensure accessibility: Radix Dialog.Content requires either a Dialog.Title child
+        // or an aria-label on Content. Provide a safe default aria-label if none is set.
+        const contentProps = {
+            "aria-label": (props as any)["aria-label"] ?? "Dialog",
+            ...props,
+        } as React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>;
+
+        return (
+            <SheetPortal>
+                <SheetOverlay/>
+                <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({side}), className)} {...contentProps}>
+                    <VisuallyHidden>
+                        <SheetPrimitive.Title>Dialog</SheetPrimitive.Title>
+                    </VisuallyHidden>
+                    {children}
+                    <SheetPrimitive.Close
+                        className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity data-[state=open]:bg-secondary hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
+                        <X className="h-4 w-4"/>
+                        <span className="sr-only">Close</span>
+                    </SheetPrimitive.Close>
+                </SheetPrimitive.Content>
+            </SheetPortal>
+        );
+    },
 );
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 

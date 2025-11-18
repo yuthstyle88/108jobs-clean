@@ -14,8 +14,9 @@ import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/compon
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const SIDEBAR_WIDTH = "12rem";
-const SIDEBAR_WIDTH_MOBILE = "8rem";
+const SIDEBAR_WIDTH = "20rem";
+// Increase mobile sidebar width for better usability on small screens
+const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "5rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
@@ -150,6 +151,7 @@ const Sidebar = React.forwardRef<
                 <SheetContent
                     data-sidebar="sidebar"
                     data-mobile="true"
+                    aria-label="Navigation menu"
                     className="w-[--sidebar-width] bg-primary p-0 text-sidebar-foreground [&>button]:hidden"
                     style={
                         {
@@ -327,7 +329,7 @@ const SidebarContent = React.forwardRef<HTMLDivElement, React.ComponentProps<"di
             ref={ref}
             data-sidebar="content"
             className={cn(
-                "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
+                "flex min-h-0 flex-1 flex-col gap-2 overflow-auto text-white md:text-gray-600 group-data-[collapsible=icon]:overflow-hidden",
                 className,
             )}
             {...props}

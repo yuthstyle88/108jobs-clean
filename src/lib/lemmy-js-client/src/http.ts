@@ -284,6 +284,8 @@ import {ListWithdrawRequestResponse} from "./types/ListWithdrawRequestResponse";
 import {SubmitWithdrawRequest} from "./types/SubmitWithdrawRequest";
 import {AdminWithdrawWallet} from "./types/AdminWithdrawWallet";
 import {RejectWithdrawalRequest} from "./types/RejectWithdrawalRequest";
+import {ListBankAccountQuery} from "./types/ListBankAccountQuery";
+import {VerifyBankAccount} from "./types/VerifyBankAccount";
 
 enum HttpType {
     Get = "GET",
@@ -634,6 +636,42 @@ export class LemmyHttp extends Controller {
         return this.#wrapper<ListWithdrawRequestQuery, ListWithdrawRequestResponse>(
             HttpType.Get,
             "/admin/wallet/withdraw-requests",
+            form,
+            options,
+        );
+    }
+
+    /**
+     * @summary List all BankAccounts (admin view).
+     */
+    @Security("bearerAuth")
+    @Get("/admin/bank-account/list")
+    @Tags("Admin", "BankAccounts")
+    async adminListBankAccounts(
+        @Queries() form: ListBankAccountQuery = {},
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<ListBankAccountQuery, ListBankAccountsResponse>(
+            HttpType.Get,
+            "/admin/bank-account/list",
+            form,
+            options,
+        );
+    }
+
+    /**
+     * Admin top up
+     */
+    @Security("bearerAuth")
+    @Post("/admin/bank-account/verify")
+    @Tags("Admin", "Top-up")
+    async adminVerifyBankAccount(
+        @Body() form: VerifyBankAccount,
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<VerifyBankAccount, SuccessResponse>(
+            HttpType.Post,
+            "/admin/bank-account/verify",
             form,
             options,
         );

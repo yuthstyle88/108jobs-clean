@@ -18,21 +18,16 @@ export function AdminLayout({children}: AdminLayoutProps) {
 }
 
 function InnerLayout({children}: { children: React.ReactNode }) {
-    const {state, isMobile} = useSidebar();
-
-    const paddingLeft = isMobile
-        ? 0
-        : state === "collapsed"
-            ? "calc(var(--sidebar-width-icon) + var(--sidebar-border-width))"
-            : "calc(var(--sidebar-width) + var(--sidebar-border-width))";
+    // The shared Sidebar component already reserves horizontal space using an in-flow overlay.
+    // Avoid adding extra padding-left here to prevent a visible gap between the header/content and the sidebar.
+    useSidebar();
 
     return (
         <div className="min-h-screen flex w-full">
             <AdminSidebar/>
 
             <div
-                className="flex-1 flex flex-col transition-[padding-left] duration-200 ease-linear"
-                style={{paddingLeft}}
+                className="flex-1 flex flex-col"
             >
                 <AdminHeader/>
                 <main className="flex-1 p-6 overflow-auto">

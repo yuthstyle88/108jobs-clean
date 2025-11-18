@@ -8,7 +8,7 @@ import {
     Plus,
     Minus,
     LayoutDashboard,
-    Handbag
+    Handbag, CreditCard
 } from "lucide-react";
 
 import {
@@ -39,6 +39,12 @@ const navigationItems = [
         description: "Review and manage user profiles"
     },
     {
+        title: "Bank Accounts",
+        url: "/admin/bank-accounts",
+        icon: CreditCard,
+        description: "Manage user bank accounts"
+    },
+    {
         title: "Top-up Coins",
         url: "/admin/topup-coins",
         icon: Plus,
@@ -65,8 +71,8 @@ export function AdminSidebar() {
     const pathWithoutLocale = "/" + pathname.split("/").slice(2).join("/");
 
     return (
-        <Sidebar className={collapsed ? "w-16" : "w-72"} collapsible="icon">
-            <SidebarContent className="bg-gradient-card border-r border-border text-gray-600">
+        <Sidebar collapsible="icon">
+            <SidebarContent className="bg-gradient-card ">
                 <div className="p-6 border-b border-border bg-primary">
                     <div className="flex items-center gap-3">
                         {!collapsed && (
