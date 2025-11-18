@@ -79,7 +79,7 @@ const JobBoardDetail = ({jobId}: Props) => {
                             </Badge>
                             {jobDetailData?.postView.post.isEnglishRequired && (
                                 <Badge variant="outline"
-                                       className="text-xs font-medium px-3 py-1 rounded-full border-gray-300">
+                                       className="text-xs bg-yellow-900 font-medium px-3 py-1 rounded-full border-gray-300">
                                     {t("jobBoardDetail.englishRequire")}
                                 </Badge>
                             )}
