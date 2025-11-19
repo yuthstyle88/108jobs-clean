@@ -12,7 +12,7 @@ import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
 import {PaginationControls} from "@/components/PaginationControls";
 import {useCallback, useState} from "react";
 import {cn} from "@/lib/utils";
-import {BankAccountId} from "@/lib/lemmy-js-client/src";
+import {BankAccountId} from "lemmy-js-client";
 
 type ViewMode = "unverified" | "verified";
 

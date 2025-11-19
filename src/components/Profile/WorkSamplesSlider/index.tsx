@@ -8,7 +8,7 @@ import React from 'react';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import dynamic from 'next/dynamic';
-import {WorkSample} from "@/lib/lemmy-js-client/src";
+import {WorkSample} from "lemmy-js-client";
 import {NextArrow, PrevArrow} from "@/components/Common/Button/SliderArrows";
 
 const SlickSlider = dynamic(() => import('react-slick'), {ssr: false});

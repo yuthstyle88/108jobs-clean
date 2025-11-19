@@ -14,7 +14,7 @@ import {
 import {TransferConfirmModal} from "@/modules/admin/components/Modal/TransferConfirmModal";
 import {PaginationControls} from "@/components/PaginationControls";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";
-import {AdminTopUpWallet} from "@/lib/lemmy-js-client/src/types/AdminTopUpWallet";
+import {AdminTopUpWallet} from "lemmy-js-client";
 import {REQUEST_STATE} from "@/services/HttpService";
 import {TopupGuide} from "@/modules/admin/components/TopupGuide";
 import {useTranslation} from "react-i18next";

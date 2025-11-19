@@ -9,7 +9,7 @@ import {getAuthJWTCookie, IsoData} from "@/utils";
 import {useSiteStore} from "@/store/useSiteStore";
 import {useCategoriesStore} from "@/store/useCategoriesStore";
 import {useBankAccountsStore} from "@/store/useBankAccountStore";
-import {BankAccountView} from "@/lib/lemmy-js-client/src";
+import {BankAccountView} from "lemmy-js-client";
 
 // Instance type for the singleton user service
 type UserClient = UserService;

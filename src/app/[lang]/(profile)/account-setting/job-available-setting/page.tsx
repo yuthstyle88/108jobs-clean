@@ -7,7 +7,7 @@ import { REQUEST_STATE } from "@/services/HttpService";
 import { useUserStore } from "@/store/useUserStore";
 import useNotification from "@/hooks/ui/useNotification";
 import { useHttpPost } from "@/hooks/api/http/useHttpPost";
-import { SaveUserSettings } from "@/lib/lemmy-js-client/src";
+import { SaveUserSettings } from "lemmy-js-client";
 
 const JobAvailable = () => {
     const { person, setPerson } = useUserStore();

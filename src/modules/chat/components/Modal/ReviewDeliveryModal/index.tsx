@@ -1,7 +1,7 @@
 import {useTranslation} from 'react-i18next';
 import {v4 as uuidv4} from 'uuid';
 import {StatusKey} from "@/modules/chat/components/FreelanceChatFlow";
-import {LocalUserId} from "@/lib/lemmy-js-client/src";
+import {LocalUserId} from "lemmy-js-client";
 import React from "react";
 import {emitChatNewMessage} from "@/modules/chat/events";
 

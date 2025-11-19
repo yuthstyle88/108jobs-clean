@@ -1,5 +1,5 @@
 import React from "react";
-import {Person, PersonId} from "@/lib/lemmy-js-client/src";
+import {Person, PersonId} from "lemmy-js-client";
 import {useTranslation} from "react-i18next";
 import {useRouter} from "next/navigation";
 import {dmRoomId} from "@/utils/helpers";

@@ -3,7 +3,7 @@
 import useNotification from '@/hooks/ui/useNotification';
 import { useHttpPost } from '@/hooks/api/http/useHttpPost';
 import { REQUEST_STATE } from '@/services/HttpService';
-import { Person, PortfolioPic, SaveUserSettings, WorkSample } from '@/lib/lemmy-js-client/src';
+import { Person, PortfolioPic, SaveUserSettings, WorkSample } from 'lemmy-js-client';
 import { useCallback, useEffect, useState } from 'react';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';

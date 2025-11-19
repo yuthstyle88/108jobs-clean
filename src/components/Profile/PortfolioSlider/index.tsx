@@ -4,7 +4,7 @@ import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {faEdit} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
-import {PortfolioPic} from "@/lib/lemmy-js-client/src";
+import {PortfolioPic} from "lemmy-js-client";
 import dynamic from "next/dynamic";
 import {NextArrow, PrevArrow} from "@/components/Common/Button/SliderArrows";
 const SlickSlider = dynamic(() => import('react-slick'), { ssr: false });

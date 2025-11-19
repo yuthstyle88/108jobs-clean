@@ -47,6 +47,7 @@ export type {BanFromCategory} from "./types/BanFromCategory";
 export type {BanFromCategoryResponse} from "./types/BanFromCategoryResponse";
 export type {BanPerson} from "./types/BanPerson";
 export type {BanPersonResponse} from "./types/BanPersonResponse";
+export type {BankId} from "./types/BankId";
 export type {BankAccountId} from "./types/BankAccountId";
 export type {BlockCategory} from "./types/BlockCategory";
 export type {BlockCategoryResponse} from "./types/BlockCategoryResponse";

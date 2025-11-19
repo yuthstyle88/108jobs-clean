@@ -7,12 +7,11 @@ import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useCallback, useMemo, useState} from "react";
 import {format} from "date-fns";
 import type {
-  CategoryNodeView,
-  ListWithdrawRequestQuery,
-  WithdrawRequestView,
-  WithdrawStatus,
+    BankId,
+    ListWithdrawRequestQuery,
+    WithdrawRequestView,
+    WithdrawStatus,
 } from "lemmy-js-client";
-import {BankId} from "@/lib/lemmy-js-client/src/types/BankId";
 
 const WithdrawHistory = () => {
     const {t} = useTranslation();

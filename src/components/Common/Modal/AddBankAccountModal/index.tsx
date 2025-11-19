@@ -5,7 +5,7 @@ import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import React, {useEffect} from "react";
 import Modal from "@/components/ui/Modal";
-import {Bank} from "@/lib/lemmy-js-client/src";
+import {Bank} from "lemmy-js-client";
 import {CustomInput} from "@/components/ui/InputField";
 import {useTranslation} from "react-i18next";
 import {Clock} from "lucide-react";
