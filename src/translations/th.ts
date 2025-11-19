@@ -731,6 +731,7 @@ export const th = {
             previewButton: "ดูตัวอย่าง",
             submitButton: "ส่ง",
             postNameAlreadyExists: "ชื่องานมีอยู่แล้ว",
+            interfaceLanguageLabel: "กรุณาเลือกภาษา",
         },
         employeeRegister: {
             howDidYouHearAboutUs:
@@ -1033,6 +1034,9 @@ export const th = {
             labelAdminDashboard: "แดชบอร์ดแอดมิน",
             verified: "ยืนยันแล้ว",
             unverified: "รอยืนยัน",
+            English: "English",
+            Thailand: "ไทย",
+            Vietnam: "เวียดนาม"
         },
         guarantee: {
             fastworkGuaranteeTitle: `${getAppName()} Guarantee`,
@@ -2265,6 +2269,8 @@ export const th = {
             noJobsDescriptionNoFilters: "กลับมาตรวจสอบอีกครั้งในภายหลังเพื่อโอกาสใหม่ ๆ",
             budgetNegativeError: "งบประมาณต้องไม่เป็นค่าติดลบ",
             loadingJobs: "กำลังโหลดงานของคุณ...",
+            dropdownLanguage: "ภาษาของงาน",
+            allLanguages: "ทุกภาษา",
         },
         profileNavbar: {
             accountInfo: "ข้อมูลบัญชี",

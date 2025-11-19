@@ -735,6 +735,7 @@ export const vi = {
             previewButton: "Xem trước",
             submitButton: "Gửi",
             postNameAlreadyExists: "Tên công việc đã tồn tại",
+            interfaceLanguageLabel: "Vui lòng chọn ngôn ngữ",
         },
         employeeRegister: {
             howDidYouHearAboutUs:
@@ -1050,6 +1051,9 @@ export const vi = {
             labelAdminDashboard: "Bảng Điều Khiển Admin",
             verified: "Đã xác minh",
             unverified: "Đang chờ xác minh",
+            English: "Tiếng Anh",
+            Thailand: "Tiếng Thái",
+            Vietnam: "Tiếng Việt",
         },
         guarantee: {
             fastworkGuaranteeTitle: `Đảm bảo của ${getAppName()}`,
@@ -2316,6 +2320,8 @@ export const vi = {
             tableHeaderActionCloseJob: "Đóng công việc",
             budgetNegativeError: "Ngân sách không được âm",
             loadingJobs: "Đang tải công việc của bạn...",
+            dropdownLanguage: "Ngôn ngữ công việc",
+            allLanguages: "Tất cả ngôn ngữ",
         },
         profileNavbar: {
             accountInfo: "Thông tin tài khoản",

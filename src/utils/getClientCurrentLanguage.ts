@@ -1,47 +1,48 @@
 'use client'
 import {LANGUAGE_COOKIE, LANGUAGES, VALID_LANGUAGES} from "@/constants/language";
-import { SupportedLang } from "@/lib/metadata";
-import { isBrowser } from "@/utils/browser";
+import {SupportedLang} from "@/lib/metadata";
+import {isBrowser} from "@/utils/browser";
+import {LanguageId} from "@/lib/lemmy-js-client/src";
 
 // Micro-cache keyed only by meaningful bits (URL prefix, cookie lang, LS lang, navigator hint)
 let cachedClientLang: SupportedLang | undefined;
 let cachedKey: string | undefined;
 
 function pickValid(v?: string | null): SupportedLang | undefined {
-  return v && VALID_LANGUAGES.includes(v) ? (v as SupportedLang) : undefined;
+    return v && VALID_LANGUAGES.includes(v) ? (v as SupportedLang) : undefined;
 }
 
 function readCookie(name: string): string | undefined {
-  try {
-    const cookie = typeof document !== 'undefined' ? document.cookie || '' : '';
-    const nameEq = `${name}=`;
-    const parts = cookie.split('; ');
-    for (let i = 0; i < parts.length; i++) {
-      if (parts[i].startsWith(nameEq)) return decodeURIComponent(parts[i].slice(nameEq.length));
+    try {
+        const cookie = typeof document !== 'undefined' ? document.cookie || '' : '';
+        const nameEq = `${name}=`;
+        const parts = cookie.split('; ');
+        for (let i = 0; i < parts.length; i++) {
+            if (parts[i].startsWith(nameEq)) return decodeURIComponent(parts[i].slice(nameEq.length));
+        }
+        return undefined;
+    } catch {
+        return undefined;
     }
-    return undefined;
-  } catch {
-    return undefined;
-  }
 }
 
 function readUrlLang(pathname: string): string | undefined {
-  const firstSeg = pathname.split('/').filter(Boolean)[0];
-  return firstSeg && VALID_LANGUAGES.includes(firstSeg) ? firstSeg : undefined;
+    const firstSeg = pathname.split('/').filter(Boolean)[0];
+    return firstSeg && VALID_LANGUAGES.includes(firstSeg) ? firstSeg : undefined;
 }
 
 
 function readNavigatorLang(): string | undefined {
-  try {
-    if (typeof navigator === 'undefined') return undefined;
-    const nav = (navigator.language || navigator.languages?.[0] || '').toLowerCase();
-    if (nav.startsWith('th')) return 'th';
-    if (nav.startsWith('vi') || nav.startsWith('vn')) return 'vi';
-    if (nav.startsWith('en')) return 'en';
-    return undefined;
-  } catch {
-    return undefined;
-  }
+    try {
+        if (typeof navigator === 'undefined') return undefined;
+        const nav = (navigator.language || navigator.languages?.[0] || '').toLowerCase();
+        if (nav.startsWith('th')) return 'th';
+        if (nav.startsWith('vi') || nav.startsWith('vn')) return 'vi';
+        if (nav.startsWith('en')) return 'en';
+        return undefined;
+    } catch {
+        return undefined;
+    }
 }
 
 /**
@@ -49,27 +50,27 @@ function readNavigatorLang(): string | undefined {
  * URL prefix > cookie > localStorage > navigator > 'th'
  */
 export function getClientCurrentLanguage(forceRefresh = false): SupportedLang {
-  // SSR-safe guard
-  if (!isBrowser()) return 'th';
+    // SSR-safe guard
+    if (!isBrowser()) return 'th';
 
-  const pathname = typeof window !== 'undefined' ? (window.location?.pathname || '') : '';
+    const pathname = typeof window !== 'undefined' ? (window.location?.pathname || '') : '';
 
-  const cookieLang = pickValid(readCookie(LANGUAGE_COOKIE));
-  const urlLang = pickValid(readUrlLang(pathname));
-  const navLang = pickValid(readNavigatorLang());
+    const cookieLang = pickValid(readCookie(LANGUAGE_COOKIE));
+    const urlLang = pickValid(readUrlLang(pathname));
+    const navLang = pickValid(readNavigatorLang());
 
-  const key = `${urlLang ?? ''}|${cookieLang ?? ''}|${navLang ?? ''}`;
-  if (!forceRefresh && cachedKey === key && cachedClientLang) return cachedClientLang;
+    const key = `${urlLang ?? ''}|${cookieLang ?? ''}|${navLang ?? ''}`;
+    if (!forceRefresh && cachedKey === key && cachedClientLang) return cachedClientLang;
 
-  const resolved = (urlLang || cookieLang  || navLang || 'th') as SupportedLang;
-  cachedClientLang = resolved;
-  cachedKey = key
-  return resolved;
+    const resolved = (urlLang || cookieLang || navLang || 'th') as SupportedLang;
+    cachedClientLang = resolved;
+    cachedKey = key
+    return resolved;
 }
 
 export function invalidateClientLanguageCache(): void {
-  cachedClientLang = undefined;
-  cachedKey = undefined;
+    cachedClientLang = undefined;
+    cachedKey = undefined;
 }
 
 const LANGS_PATTERN = `(?:${VALID_LANGUAGES.join('|')})`;
@@ -89,7 +90,16 @@ export function buildLangRedirectTarget(newLang: string, href: string): string |
     }
 }
 
-export function getNumericCode(langCode: string): number | null {
+export function getNumericCode(langCode: string): number | undefined {
     const language = LANGUAGES[langCode as keyof typeof LANGUAGES];
-    return language && "numericCode" in language ? language.numericCode : null;
+    return language && "numericCode" in language ? language.numericCode : undefined;
 }
+
+export function getLangCodeByNumericCode(numericCode: LanguageId): string | undefined {
+    const entry = Object.values(LANGUAGES).find(
+        (lang) => lang.numericCode === numericCode
+    );
+
+    return entry ? entry.code : undefined;
+}
+

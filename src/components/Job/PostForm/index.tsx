@@ -8,14 +8,16 @@ import {CreatePost, IntendedUse, JobType, PostId, PostView} from "lemmy-js-clien
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCoins, faExclamationCircle, faInfoCircle} from "@fortawesome/free-solid-svg-icons";
 import {z} from "zod";
-import {useLanguage} from "@/contexts/LanguageContext";
 import {getCategoriesAtLevel, toCamelCaseLastSegment} from "@/utils/helpers";
 import {useTranslation} from "react-i18next";
 import {REQUEST_STATE} from "@/services/HttpService";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 import {useCategories} from "@/hooks/api/categories/useCategories";
-import {getNumericCode} from "@/utils/getClientCurrentLanguage";
 import {useUserStore} from "@/store/useUserStore";
+import {Globe} from "lucide-react";
+import {cn} from "@/lib/utils";
+import {getNumericCode} from "@/utils/getClientCurrentLanguage";
+import {toLanguageArray} from "@/constants/language";
 
 
 interface PostFormProps {
@@ -43,6 +45,7 @@ const postJobSchema = (t: (key: string) => string) => z.object({
     intendedUse: z.nativeEnum(IntendedUse),
     url: z.preprocess((v) => (typeof v === "string" && v.trim() === "" ? undefined : v), z.string().url(t("validation.urlInvalid")).optional()),
     isEnglishRequired: z.boolean().optional(),
+    languageId: z.number().optional() ?? undefined,
     deadline: z
         .string()
         .optional()
@@ -66,7 +69,8 @@ export const PostForm: React.FC<PostFormProps> = ({
                                                       postView,
                                                       mode
                                                   }) => {
-    const {person} = useUserStore();
+    const {person, user} = useUserStore();
+    const {t} = useTranslation();
     if (mode === "edit") {
         const isOwner = postView?.creator.id === person?.id;
         if (!isOwner) {
@@ -75,10 +79,7 @@ export const PostForm: React.FC<PostFormProps> = ({
     }
 
     const router = useRouter();
-    const {lang} = useLanguage();
-    const {t} = useTranslation();
-    const languageId = getNumericCode(lang) || 1;
-
+    const languages = toLanguageArray();
     const {execute: createPost} = useHttpPost("createPost");
     const {execute: editPost} = useHttpPost("editPost");
     const title = mode === "create"
@@ -89,9 +90,10 @@ export const PostForm: React.FC<PostFormProps> = ({
     const [postId, setPostId] = useState<PostId>(0);
     const categoriesResponse = useCategories();
     const catalogData = getCategoriesAtLevel(categoriesResponse.categories ?? undefined, 3);
-
     // Create schema with translations
     const jobSchema = postJobSchema(t);
+
+    const defaultLanguage = getNumericCode(user?.interfaceLanguage ?? "en");
 
     const formMethods = useForm<z.input<typeof jobSchema>, never, z.output<typeof jobSchema>>({
         resolver: zodResolver(jobSchema),
@@ -107,6 +109,7 @@ export const PostForm: React.FC<PostFormProps> = ({
             deadline: "",
             url: "",
             isEnglishRequired: false,
+            languageId: defaultLanguage,
         },
     });
 
@@ -132,6 +135,7 @@ export const PostForm: React.FC<PostFormProps> = ({
                     deadline: post.deadline ? post.deadline.split("T")[0] : "",
                     workingFrom: post.jobType,
                     intendedUse: post.intendedUse,
+                    languageId: post?.languageId
                 });
                 setPostId(post.id);
             }
@@ -156,7 +160,7 @@ export const PostForm: React.FC<PostFormProps> = ({
                     url: data.url,
                     intendedUse: data.intendedUse,
                     budget: data.budget,
-                    languageId,
+                    languageId: data.languageId,
                 };
 
                 const response = postId
@@ -176,7 +180,7 @@ export const PostForm: React.FC<PostFormProps> = ({
                 errorMessage(null, null, t("global.submissionFailed") ?? "Submission failed!");
             }
         },
-        [createPost, editPost, handleCreateSuccess, successMessage, errorMessage, postId, t, languageId]
+        [createPost, editPost, handleCreateSuccess, successMessage, errorMessage, postId, t]
     );
 
     return (
@@ -198,7 +202,7 @@ export const PostForm: React.FC<PostFormProps> = ({
                     </div>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-                        <input type="hidden" name="languageId" value={languageId}/>
+
                         {/* Job Title */}
                         <div className="mb-6">
                             <label
@@ -549,6 +553,46 @@ export const PostForm: React.FC<PostFormProps> = ({
                                         {t("createJob.intendedUseUnknown")}
                                     </span>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div className="mb-8">
+                            <label className="block text-gray-700 font-medium mb-3 items-center gap-2">
+                                <Globe className="w-5 h-5 text-gray-500"/>
+                                {t("createJob.interfaceLanguageLabel") || "Interface Language"}
+                            </label>
+
+                            <div
+                                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 bg-gray-50 p-5 rounded-xl">
+                                {languages.map((lang) => {
+                                    const isSelected = Number(watch("languageId")) === lang.numericCode;
+
+                                    console.log("")
+
+                                    return (
+                                        <label
+                                            key={lang.numericCode}
+                                            onClick={() => setValue("languageId", lang.numericCode)}
+                                            className={cn(
+                                                "flex flex-col items-center justify-center gap-3 p-5 rounded-xl border-2 cursor-pointer transition-all duration-200",
+                                                isSelected
+                                                    ? "border-blue-500 bg-blue-50 shadow-md"
+                                                    : "border-gray-200 bg-white hover:border-gray-300"
+                                            )}
+                                        >
+                                            <input
+                                                type="radio"
+                                                className="sr-only"
+                                                checked={isSelected}
+                                                readOnly
+                                            />
+
+                                            <span className="text-sm font-medium text-gray-700">
+                                                {t(`global.${lang.label}`)}
+                                            </span>
+                                        </label>
+                                    );
+                                })}
                             </div>
                         </div>
 

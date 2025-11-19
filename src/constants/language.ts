@@ -14,5 +14,10 @@ export const LANGUAGES = {
     vi: {code: "vi", label: "Vietnam", flag: vn, numericCode: 84},
 };
 
+export function toLanguageArray() {
+    return Object.values(LANGUAGES);
+}
+
+
 export const VALID_LANGUAGES = ["th", "vi", "en"];
 export const LANGUAGE_COOKIE = "current-language";

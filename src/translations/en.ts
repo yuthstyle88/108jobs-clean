@@ -742,6 +742,7 @@ export const en = {
             previewButton: "Preview",
             submitButton: "Submit",
             postNameAlreadyExists: "Job name already exists",
+            interfaceLanguageLabel: "Please select a language",
         },
         employeeRegister: {
             howDidYouHearAboutUs:
@@ -1056,6 +1057,9 @@ export const en = {
             labelAdminDashboard: "Admin Dashboard",
             verified: "Verified",
             unverified: "Pending Verification",
+            English: "English",
+            Thailand: "Thai",
+            Vietnam: "Vietnamese"
         },
         guarantee: {
             fastworkGuaranteeTitle: `${getAppName()} Guarantee`,
@@ -2325,6 +2329,8 @@ export const en = {
             noJobsDescriptionNoFilters: "Check back later for new opportunities",
             budgetNegativeError: "Budget cannot be negative.",
             loadingJobs: "Loading your jobs...",
+            dropdownLanguage: "Job Language",
+            allLanguages: "All Languages",
         },
         profileNavbar: {
             accountInfo: "Account Information",
