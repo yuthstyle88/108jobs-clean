@@ -445,7 +445,7 @@ const JobBoard = () => {
 
                     {!isLoading && totalJobs > 0 && (
                         <div className="mb-4 text-sm text-gray-600">
-                            Showing {totalJobs} job{totalJobs !== 1 ? 's' : ''}{hasPreviousPage && ` (page ${cursorHistory.length + 1})`}
+                            {t("admin.showingJobs", {count: totalJobs, page: cursorHistory.length + 1})}
                         </div>
                     )}
 
@@ -545,12 +545,13 @@ const JobBoard = () => {
                                                                 />
                                                             </svg>
                                                         </div>
-                                                        <div className="min-w-0 flex-1">
+                                                        <div className="min-w-0 flex-1 max-w-[200px]">
                                                             <Link
                                                                 prefetch={false}
                                                                 href={`/${i18n.language}/job-board/${job.post.id}`}
                                                                 className="hover:text-primary font-medium text-base text-text-primary font-sans block truncate"
                                                                 onClick={(e) => e.stopPropagation()}
+                                                                title={job.post.name || job.post.embedTitle || "Untitled"}
                                                             >
                                                                 {job.post.name || job.post.embedTitle || "Untitled"}
                                                             </Link>
