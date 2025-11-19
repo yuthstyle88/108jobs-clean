@@ -23,6 +23,7 @@ import {useCategories} from "@/hooks/api/categories/useCategories";
 import {useUserStore} from "@/store/useUserStore";
 import {getNumericCode} from "@/utils/getClientCurrentLanguage";
 import {toLanguageArray} from "@/constants/language";
+import {useDebounce} from "@/hooks/utils/useDebounce";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -44,8 +45,6 @@ const JobBoard = () => {
     const languages = toLanguageArray();
 
     const encoded = searchParams.get("q");
-    // Avoid double-encoding: values from URLSearchParams are already decoded once by Next.js
-    // So use the raw value (trimmed) directly when sending to backend; backend/client will encode as needed.
     const sanitizedQuery = encoded ? encoded.trim() : "";
     const defaultLanguageId = getNumericCode(user?.interfaceLanguage ?? "en");
 
@@ -66,6 +65,8 @@ const JobBoard = () => {
     const categoriesResponse = useCategories();
     const catalogData = getCategoriesAtLevel(categoriesResponse.categories ?? undefined, 3);
 
+    const debouncedFilters = useDebounce(filters, 500);
+
     const {
         state: searchState,
         data: jobPostsPagination,
@@ -73,13 +74,13 @@ const JobBoard = () => {
     } = useHttpGet("search", {
         type: "Posts",
         q: sanitizedQuery,
-        categoryId: filters.category,
-        languageId: filters.languageId,
+        categoryId: debouncedFilters.category,
+        languageId: debouncedFilters.languageId,
         pageCursor: currentCursor,
-        budgetMin: filters.budgetMin,
-        budgetMax: filters.budgetMax,
-        jobType: filters.jobType,
-        intendedUse: filters.intendedUse,
+        budgetMin: debouncedFilters.budgetMin,
+        budgetMax: debouncedFilters.budgetMax,
+        jobType: debouncedFilters.jobType,
+        intendedUse: debouncedFilters.intendedUse,
         limit: ITEMS_PER_PAGE,
     });
 
@@ -89,59 +90,49 @@ const JobBoard = () => {
 
     const handleFilterChange = useCallback(
         (key: keyof FilterState, value: unknown) => {
-            let updatedFilters: FilterState;
+            const newFilters: FilterState = {
+                ...filters,
+                [key]:
+                    key === "category"
+                        ? typeof value === "string" && value
+                            ? parseInt(value)
+                            : undefined
+                        : value,
+            };
 
-            setFilters((prev) => {
-                updatedFilters = {
-                    ...prev,
-                    [key]:
-                        key === "category"
-                            ? typeof value === "string" && value
-                                ? parseInt(value)
-                                : undefined
-                            : value,
-                };
-                return updatedFilters;
-            });
+            setFilters(newFilters);
 
-            queueMicrotask(() => {
-                const params = new URLSearchParams(searchParams);
+            const params = new URLSearchParams(searchParams);
 
-                // ----- CATEGORY -----
-                if (updatedFilters.category)
-                    params.set("category", updatedFilters.category.toString());
-                else params.delete("category");
+            if (newFilters.category)
+                params.set("category", newFilters.category.toString());
+            else params.delete("category");
 
-                if (updatedFilters.languageId)
-                    params.set("languageId", updatedFilters.languageId.toString());
-                else params.delete("languageId");
+            if (newFilters.languageId)
+                params.set("languageId", newFilters.languageId.toString());
+            else params.delete("languageId");
 
-                // ----- JOB TYPE -----
-                if (updatedFilters.jobType)
-                    params.set("jobType", updatedFilters.jobType);
-                else params.delete("jobType");
+            if (newFilters.jobType)
+                params.set("jobType", newFilters.jobType);
+            else params.delete("jobType");
 
-                // ----- INTENDED USE -----
-                if (updatedFilters.intendedUse)
-                    params.set("intendedUse", updatedFilters.intendedUse);
-                else params.delete("intendedUse");
+            if (newFilters.intendedUse)
+                params.set("intendedUse", newFilters.intendedUse);
+            else params.delete("intendedUse");
 
-                // ----- BUDGET MIN -----
-                if (updatedFilters.budgetMin !== undefined)
-                    params.set("budgetMin", updatedFilters.budgetMin.toString());
-                else params.delete("budgetMin");
+            if (newFilters.budgetMin !== undefined)
+                params.set("budgetMin", newFilters.budgetMin.toString());
+            else params.delete("budgetMin");
 
-                // ----- BUDGET MAX -----
-                if (updatedFilters.budgetMax !== undefined)
-                    params.set("budgetMax", updatedFilters.budgetMax.toString());
-                else params.delete("budgetMax");
+            if (newFilters.budgetMax !== undefined)
+                params.set("budgetMax", newFilters.budgetMax.toString());
+            else params.delete("budgetMax");
 
-                router.push(`?${params.toString()}`, {scroll: false});
+            router.push(`?${params.toString()}`, {scroll: false});
 
-                if (key === "budgetMin") setBudgetError(null);
-            });
+            if (key === "budgetMin") setBudgetError(null);
         },
-        [router, searchParams]
+        [router, searchParams, filters]
     );
 
 
