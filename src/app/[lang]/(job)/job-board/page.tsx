@@ -449,173 +449,240 @@ const JobBoard = () => {
                         </div>
                     )}
 
-                    <div className="overflow-x-auto border-1 border-borderPrimary rounded-lg">
+                    {/* Replace the entire table section with this responsive block */}
+                    <div className="overflow-x-auto border border-borderPrimary rounded-lg">
                         {isLoading ? (
                             <div className="py-12 text-center">
                                 <LoadingBlur text={""}/>
                             </div>
-                        ) : (
-                            <table className="min-w-full divide-y divide-gray-200" role="table"
-                                   aria-label="Job listings">
-                                <thead className="bg-gray-50">
-                                <tr>
-                                    <th
-                                        scope="col"
-                                        className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider"
-                                    >
-                                        {t("profileJob.tableHeaderTitle")}
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider"
-                                    >
-                                        {t("profileJob.tableHeaderCategory")}
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider"
-                                    >
-                                        {t("profileJob.tableHeaderJobType")}
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider"
-                                    >
-                                        {t("profileJob.tableHeaderBudget")}
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider"
-                                    >
-                                        {t("profileJob.tableHeaderProposals")}
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider min-w-[120px]"
-                                    >
-                                        {t("profileJob.tableHeaderPostDate")}
-                                    </th>
-                                    <th
-                                        scope="col"
-                                        className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider min-w-[120px]"
-                                    >
-                                        {t("profileJob.tableHeaderDeadline")}
-                                    </th>
-                                    <th scope="col" className="relative px-6 py-3">
-                                        <span className="sr-only">{t("profileJob.tableHeaderActions")}</span>
-                                    </th>
-                                </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                {jobPostsPagination?.results?.length ? (
-                                    jobPostsPagination?.results
-                                        ?.filter((job: SearchCombinedView): job is Extract<SearchCombinedView, {
-                                            type_: "Post"
-                                        }> => job.type_ === "Post")
-                                        .map((job: Extract<SearchCombinedView, { type_: "Post" }>) => (
-                                            <tr
-                                                key={job.post.id}
-                                                onClick={() => handleJobClick(job.post.id)}
-                                                className="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
-                                                role="button"
-                                                tabIndex={0}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter' || e.key === ' ') {
-                                                        e.preventDefault();
-                                                        handleJobClick(job.post.id);
-                                                    }
-                                                }}
-                                                aria-label={`View job: ${job.post.name || job.post.embedTitle || "Untitled"}`}
-                                            >
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="flex items-start">
-                                                        <div className="mr-2 mt-1 flex-shrink-0">
-                                                            <svg
-                                                                className="h-5 w-5 text-gray-400"
-                                                                viewBox="0 0 24 24"
-                                                                fill="none"
-                                                                aria-hidden="true"
-                                                            >
-                                                                <path
-                                                                    d="M9 12h6m-3-3v6M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                                                    stroke="currentColor"
-                                                                    strokeWidth="2"
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                />
-                                                            </svg>
-                                                        </div>
-                                                        <div className="min-w-0 flex-1 max-w-[200px]">
+                        ) : jobPostsPagination?.results?.length ? (
+                            <>
+                                {/* Desktop & Tablet: Table Layout */}
+                                <div className="hidden md:block">
+                                    <table className="min-w-full divide-y divide-gray-200" role="table"
+                                           aria-label="Job listings">
+                                        <thead className="bg-gray-50">
+                                        <tr>
+                                            <th scope="col"
+                                                className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                                {t("profileJob.tableHeaderTitle")}
+                                            </th>
+                                            <th scope="col"
+                                                className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                                {t("profileJob.tableHeaderCategory")}
+                                            </th>
+                                            <th scope="col"
+                                                className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                                {t("profileJob.tableHeaderJobType")}
+                                            </th>
+                                            <th scope="col"
+                                                className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                                {t("profileJob.tableHeaderBudget")}
+                                            </th>
+                                            <th scope="col"
+                                                className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
+                                                {t("profileJob.tableHeaderProposals")}
+                                            </th>
+                                            <th scope="col"
+                                                className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                                                {t("profileJob.tableHeaderPostDate")}
+                                            </th>
+                                            <th scope="col"
+                                                className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                                                {t("profileJob.tableHeaderDeadline")}
+                                            </th>
+                                        </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                        {jobPostsPagination.results
+                                            .filter((job: SearchCombinedView): job is Extract<SearchCombinedView, {
+                                                type_: "Post"
+                                            }> => job.type_ === "Post")
+                                            .map((job) => (
+                                                <tr
+                                                    key={job.post.id}
+                                                    onClick={() => handleJobClick(job.post.id)}
+                                                    className="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+                                                >
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="flex items-start">
+                                                            <div className="mr-3 mt-1 flex-shrink-0">
+                                                                <svg className="h-5 w-5 text-gray-400"
+                                                                     viewBox="0 0 24 24" fill="none">
+                                                                    <path
+                                                                        d="M9 12h6m-3-3v6M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                                        stroke="currentColor" strokeWidth="2"
+                                                                        strokeLinecap="round" strokeLinejoin="round"/>
+                                                                </svg>
+                                                            </div>
                                                             <Link
                                                                 prefetch={false}
                                                                 href={`/${i18n.language}/job-board/${job.post.id}`}
-                                                                className="hover:text-primary font-medium text-base text-text-primary font-sans block truncate"
                                                                 onClick={(e) => e.stopPropagation()}
+                                                                className="hover:text-primary font-medium text-base text-text-primary block truncate max-w-[220px]"
                                                                 title={job.post.name || job.post.embedTitle || "Untitled"}
                                                             >
                                                                 {job.post.name || job.post.embedTitle || "Untitled"}
                                                             </Link>
                                                         </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">
+                                                        {t(`catalogs.${toCamelCaseLastSegment(job.category.path)}`) || "-"}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">
+                                                        {getJobTypeLabel(job.post.jobType, t)}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900 font-medium">
+                                                        {formatBudget(job.post.budget)}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-base text-text-primary">
+                                                        {job.post.comments}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-base text-text-primary">
+                                                        {formatDate(job.post.publishedAt)}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-base text-text-primary">
+                                                        {job.post.deadline ? formatDate(job.post.deadline) : "-"}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Mobile: Card Layout */}
+                                <div className="md:hidden space-y-4 p-2">
+                                    {jobPostsPagination.results
+                                        .filter((job: SearchCombinedView): job is Extract<SearchCombinedView, {
+                                            type_: "Post"
+                                        }> => job.type_ === "Post")
+                                        .map((job) => {
+                                            const jobTypeLabel = getJobTypeLabel(job.post.jobType, t);
+
+                                            const badgeColor = {
+                                                [JobType.FullTime]: "bg-emerald-100 text-emerald-800",
+                                                [JobType.PartTime]: "bg-blue-100 text-blue-800",
+                                                [JobType.Contract]: "bg-purple-100 text-purple-800",
+                                                [JobType.Freelance]: "bg-amber-100 text-amber-800",
+                                            }[job.post.jobType] || "bg-gray-100 text-gray-800";
+
+                                            return (
+                                                <div
+                                                    key={job.post.id}
+                                                    onClick={() => handleJobClick(job.post.id)}
+                                                    className="relative bg-white rounded-2xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-gray-300 cursor-pointer transition-all duration-300 group overflow-hidden"
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === "Enter" || e.key === " ") {
+                                                            e.preventDefault();
+                                                            handleJobClick(job.post.id);
+                                                        }
+                                                    }}
+                                                >
+                                                    {/* Top section with title + badge (safe zone for long titles) */}
+                                                    <div
+                                                        className="px-5 pt-5 pb-3 flex items-start justify-between gap-3">
+                                                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                                                            <div
+                                                                className="flex-shrink-0 w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center group-hover:bg-gray-100 transition-colors">
+                                                                <svg className="w-5 h-5 text-gray-500" fill="none"
+                                                                     stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round"
+                                                                          strokeWidth={2}
+                                                                          d="M9 12h6m-3-3v6M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                                </svg>
+                                                            </div>
+
+                                                            <h3 className="text-lg font-bold text-text-primary leading-tight line-clamp-2 pr-20">
+                                                                {job.post.name || job.post.embedTitle || "Untitled"}
+                                                            </h3>
+                                                        </div>
+
+                                                        {/* Job Type Badge – positioned absolutely but with safe margin */}
+                                                        <div className="absolute top-4 right-4 z-10">
+                                                            <span
+                                                                className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${badgeColor}`}>
+                                                                {jobTypeLabel}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">
-                                                    {t(`catalogs.${toCamelCaseLastSegment(job.category.path)}`) || "-"}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">
-                                                    {getJobTypeLabel(job.post.jobType, t)}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900 font-medium">
-                                                    {formatBudget(job.post.budget)}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-base text-text-primary">
-                                                    {job.post.comments}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-base text-text-primary">
-                                                    {formatDate(job.post.publishedAt)}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-base text-text-primary">
-                                                    {job.post.deadline ? formatDate(job.post.deadline) : "-"}
-                                                </td>
-                                            </tr>
-                                        ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={8} className="col-span-full text-center text-gray-500 py-8">
-                                            <div className="flex flex-col items-center">
-                                                <svg className="w-12 h-12 text-gray-300 mb-4" fill="none"
-                                                     stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth="2"
-                                                        d="M9 12h6m-3-3v6M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                                    />
-                                                </svg>
-                                                <p className="text-lg font-medium">
-                                                    {hasActiveFilters || sanitizedQuery
-                                                        ? t("profileJob.noJobsTitleWithFilters")
-                                                        : t("profileJob.noJobsTitleNoFilters")}
-                                                </p>
-                                                <p className="text-sm">
-                                                    {hasActiveFilters || sanitizedQuery
-                                                        ? t("profileJob.noJobsDescriptionWithFilters") +
-                                                        (sanitizedQuery ? ` Try searching for something else or adjusting filters.` : "")
-                                                        : t("profileJob.noJobsDescriptionNoFilters")}
-                                                </p>
-                                                {(hasActiveFilters || sanitizedQuery) && (
-                                                    <button
-                                                        onClick={clearFilters}
-                                                        className="mt-4 text-primary hover:text-blue-800 font-medium"
-                                                    >
-                                                        {t("profileJob.clearAllFilters")}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                                </tbody>
-                            </table>
+
+                                                    {/* Budget – big & bold */}
+                                                    <div className="px-5">
+                                                        <p className="text-2xl font-bold text-primary">
+                                                            {formatBudget(job.post.budget)}
+                                                        </p>
+                                                        <p className="text-xs text-gray-500 mt-0.5">{t("profileJob.tableHeaderBudget")}</p>
+                                                    </div>
+
+                                                    {/* Details grid */}
+                                                    <div
+                                                        className="mt-5 px-5 pb-5 grid grid-cols-2 gap-x-4 gap-y-4 text-sm border-t border-gray-100 pt-4">
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 uppercase tracking-wider">{t("profileJob.tableHeaderCategory")}</p>
+                                                            <p className="font-medium text-gray-900 truncate mt-0.5">
+                                                                {t(`catalogs.${toCamelCaseLastSegment(job.category.path)}`) || "-"}
+                                                            </p>
+                                                        </div>
+
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 uppercase tracking-wider">{t("profileJob.tableHeaderProposals")}</p>
+                                                            <p className="font-semibold text-text-primary mt-0.5">
+                                                                {job.post.comments} proposal{job.post.comments !== 1 && "s"}
+                                                            </p>
+                                                        </div>
+
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 uppercase tracking-wider">{t("profileJob.tableHeaderPostDate")}</p>
+                                                            <p className="font-medium text-gray-900 mt-0.5">
+                                                                {formatDate(job.post.publishedAt)}
+                                                            </p>
+                                                        </div>
+
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 uppercase tracking-wider">{t("profileJob.tableHeaderDeadline")}</p>
+                                                            <p className="font-medium text-gray-900 mt-0.5">
+                                                                {job.post.deadline ? formatDate(job.post.deadline) : "No deadline"}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div
+                                                        className="h-1 bg-gradient-to-r from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"/>
+                                                </div>
+                                            );
+                                        })}
+                                </div>
+                            </>
+                        ) : (
+                            /* No results state remains unchanged */
+                            <div className="text-center py-12 px-4">
+                                <div className="flex flex-col items-center">
+                                    <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor"
+                                         viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                              d="M9 12h6m-3-3v6M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <p className="text-lg font-medium text-gray-900">
+                                        {hasActiveFilters || sanitizedQuery
+                                            ? t("profileJob.noJobsTitleWithFilters")
+                                            : t("profileJob.noJobsTitleNoFilters")}
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-2 max-w-md">
+                                        {hasActiveFilters || sanitizedQuery
+                                            ? t("profileJob.noJobsDescriptionWithFilters") +
+                                            (sanitizedQuery ? ` Try searching for something else or adjusting filters.` : "")
+                                            : t("profileJob.noJobsDescriptionNoFilters")}
+                                    </p>
+                                    {(hasActiveFilters || sanitizedQuery) && (
+                                        <button onClick={clearFilters}
+                                                className="mt-4 text-primary hover:text-blue-800 font-medium">
+                                            {t("profileJob.clearAllFilters")}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
                         )}
                     </div>
 

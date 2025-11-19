@@ -1807,7 +1807,7 @@ export const en = {
             tablePaymentMethod: "Payment method",
             tableSpecialBonus: "Special bonus (coins)",
             tableStatus: "Status",
-            tableTopUpAmount: "Top-up amount (baht)",
+            tableTopUpAmount: "Top-up amount",
             tableTotalCoins: "Total coins received",
             titleFastworkCoin: `${getAppName()} Coin`,
             uploadProof: "Upload Proof of Transfer",
@@ -2296,7 +2296,7 @@ export const en = {
             subtitleJobBoard:
                 "Employers post job openings for freelancers to choose from",
             tabSavedJobs: "Saved Job Posts",
-            tableHeaderBudget: "Budget (Baht)",
+            tableHeaderBudget: "Budget",
             tableHeaderProposals: "Proposals",
             tableHeaderCategory: "Category",
             tableHeaderDeadline: "Deadline",
