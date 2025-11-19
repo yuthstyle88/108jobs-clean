@@ -40,6 +40,7 @@ export type {AdminPurgePersonView} from "./types/AdminPurgePersonView";
 export type {AdminPurgePost} from "./types/AdminPurgePost";
 export type {AdminPurgePostId} from "./types/AdminPurgePostId";
 export type {AdminPurgePostView} from "./types/AdminPurgePostView";
+export type {AdminTopUpWallet} from "./types/AdminTopUpWallet";
 export type {ApproveCategoryPendingFollower} from "./types/ApproveCategoryPendingFollower";
 export type {ApproveRegistrationApplication} from "./types/ApproveRegistrationApplication";
 export type {AuthenticateWithOauth} from "./types/AuthenticateWithOauth";
