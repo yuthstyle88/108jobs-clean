@@ -24,6 +24,9 @@ import {useUserStore} from "@/store/useUserStore";
 import {getNumericCode} from "@/utils/getClientCurrentLanguage";
 import {toLanguageArray} from "@/constants/language";
 import {useDebounce} from "@/hooks/utils/useDebounce";
+import {PaginationControls} from "@/components/PaginationControls";
+import {faCoins} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -371,12 +374,11 @@ const JobBoard = () => {
                                     }}
                                 >
                                     <option value="">
-                                        All Languages
+                                        {t("profileJob.allLanguages")}
                                     </option>
                                     {languages.map((lang) => (
                                         <option key={lang.code} value={lang.numericCode}>
-                                            {/* Plain text only! Show flag emoji + label */}
-                                            {lang.label} ({lang.code.toUpperCase()})
+                                            {t(`global.${lang.label}`)} ({lang.code.toUpperCase()})
                                         </option>
                                     ))}
                                 </select>
@@ -612,8 +614,11 @@ const JobBoard = () => {
                                                     <div className="px-5">
                                                         <p className="text-2xl font-bold text-primary">
                                                             {formatBudget(job.post.budget)}
+                                                            <FontAwesomeIcon
+                                                                icon={faCoins}
+                                                                className="text-2xl text-yellow-500 transition-transform hover:scale-110"
+                                                            />
                                                         </p>
-                                                        <p className="text-xs text-gray-500 mt-0.5">{t("profileJob.tableHeaderBudget")}</p>
                                                     </div>
 
                                                     {/* Details grid */}
@@ -643,7 +648,7 @@ const JobBoard = () => {
                                                         <div>
                                                             <p className="text-xs text-gray-500 uppercase tracking-wider">{t("profileJob.tableHeaderDeadline")}</p>
                                                             <p className="font-medium text-gray-900 mt-0.5">
-                                                                {job.post.deadline ? formatDate(job.post.deadline) : "No deadline"}
+                                                                {job.post.deadline ? formatDate(job.post.deadline) : "--"}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -686,30 +691,16 @@ const JobBoard = () => {
                         )}
                     </div>
 
-                    {(hasPreviousPage || hasNextPage) && (
-                        <div className="mt-6 flex justify-center gap-4">
-                            {hasPreviousPage && (
-                                <button
-                                    onClick={handlePrevPage}
-                                    className="py-2 px-4 rounded-lg font-medium bg-primary text-white hover:bg-[#063a68] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                    disabled={isLoading}
-                                    aria-label="Go to previous page"
-                                >
-                                    {t("profileJob.previousButton")}
-                                </button>
-                            )}
-                            {hasNextPage && (
-                                <button
-                                    onClick={handleNextPage}
-                                    className="py-2 px-4 rounded-lg font-medium bg-primary text-white hover:bg-[#063a68] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                    disabled={isLoading}
-                                    aria-label="Go to next page"
-                                >
-                                    {t("profileJob.nextButton")}
-                                </button>
-                            )}
-                        </div>
-                    )}
+                    {/* Pagination */}
+                    <div className="flex justify-center mt-8">
+                        <PaginationControls
+                            hasPrevious={hasPreviousPage}
+                            hasNext={hasNextPage}
+                            onPrevious={handlePrevPage}
+                            onNext={handleNextPage}
+                            isLoading={isLoading}
+                        />
+                    </div>
 
                     <div
                         className="mt-12 h-[148px] bg-[#D0E1FB] rounded-lg overflow-hidden flex justify-center items-center">
