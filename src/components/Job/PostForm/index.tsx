@@ -15,7 +15,7 @@ import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 import {useCategories} from "@/hooks/api/categories/useCategories";
 import {useUserStore} from "@/store/useUserStore";
 import {Globe} from "lucide-react";
-import {cn} from "@/lib/utils";
+import Image from "next/image";
 import {getNumericCode} from "@/utils/getClientCurrentLanguage";
 import {toLanguageArray} from "@/constants/language";
 
@@ -187,19 +187,76 @@ export const PostForm: React.FC<PostFormProps> = ({
         <div className="bg-[#F6F9FE] min-h-screen py-8">
             <div className="max-w-[1280px] mx-auto px-4 md:px-6 lg:px-8">
                 <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-10 bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent">
-                        {title}
-                    </h1>
-
-                    <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start">
-                        <FontAwesomeIcon
-                            icon={faInfoCircle}
-                            className="text-primary mt-1 mr-3"
-                        />
-                        <p className="text-blue-800">
+                    {/* Info Notice */}
+                    <div className="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start">
+                        <FontAwesomeIcon icon={faInfoCircle} className="text-primary mt-1 mr-3 flex-shrink-0"/>
+                        <p className="text-blue-800 text-sm sm:text-base">
                             {t("createJob.jobPostingNotice")}
                         </p>
                     </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-10">
+                        <h1 className="text-4xl font-bold text-gray-900 bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent">
+                            {title}
+                        </h1>
+
+
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                            {/* Label + Required Indicator */}
+                            <div className="flex items-center gap-2 text-gray-700 font-medium whitespace-nowrap">
+                                <Globe className="w-5 h-5 text-gray-500"/>
+                                <span>
+            {t("createJob.languageRequiredLabel") || "Language required for this post"}
+                                    <span className="text-red-500 ml-1">*</span>
+        </span>
+                            </div>
+
+                            {/* Select Dropdown */}
+                            <div className="relative min-w-[220px]">
+                                <select
+                                    value={watch("languageId") ?? ""}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setValue("languageId", value === "" ? undefined : Number(value));
+                                    }}
+                                    className="appearance-none w-full bg-white border-2 border-gray-200 rounded-xl pl-12 pr-10 py-3 text-gray-700 font-medium hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer text-sm sm:text-base"
+                                >
+                                    {languages.map((lang) => (
+                                        <option key={lang.numericCode} value={lang.numericCode}>
+                                            {lang.label} ({lang.code.toUpperCase()})
+                                        </option>
+                                    ))}
+                                </select>
+
+                                {/* Flag Icon */}
+                                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                                    {watch("languageId") ? (
+                                        <div
+                                            className="w-8 h-6 rounded overflow-hidden">
+                                            <Image
+                                                src={languages.find(l => l.numericCode === watch("languageId"))?.flag || "/flags/en.svg"}
+                                                alt="Selected language flag"
+                                                width={32}
+                                                height={24}
+                                                className="w-full h-full"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <Globe className="w-6 h-6 text-gray-400"/>
+                                    )}
+                                </div>
+
+                                {/* Dropdown Arrow */}
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor"
+                                         viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                              d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
 
@@ -553,46 +610,6 @@ export const PostForm: React.FC<PostFormProps> = ({
                                         {t("createJob.intendedUseUnknown")}
                                     </span>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div className="mb-8">
-                            <label className="block text-gray-700 font-medium mb-3 items-center gap-2">
-                                <Globe className="w-5 h-5 text-gray-500"/>
-                                {t("createJob.interfaceLanguageLabel") || "Interface Language"}
-                            </label>
-
-                            <div
-                                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 bg-gray-50 p-5 rounded-xl">
-                                {languages.map((lang) => {
-                                    const isSelected = Number(watch("languageId")) === lang.numericCode;
-
-                                    console.log("")
-
-                                    return (
-                                        <label
-                                            key={lang.numericCode}
-                                            onClick={() => setValue("languageId", lang.numericCode)}
-                                            className={cn(
-                                                "flex flex-col items-center justify-center gap-3 p-5 rounded-xl border-2 cursor-pointer transition-all duration-200",
-                                                isSelected
-                                                    ? "border-blue-500 bg-blue-50 shadow-md"
-                                                    : "border-gray-200 bg-white hover:border-gray-300"
-                                            )}
-                                        >
-                                            <input
-                                                type="radio"
-                                                className="sr-only"
-                                                checked={isSelected}
-                                                readOnly
-                                            />
-
-                                            <span className="text-sm font-medium text-gray-700">
-                                                {t(`global.${lang.label}`)}
-                                            </span>
-                                        </label>
-                                    );
-                                })}
                             </div>
                         </div>
 

@@ -732,6 +732,7 @@ export const th = {
             submitButton: "ส่ง",
             postNameAlreadyExists: "ชื่องานมีอยู่แล้ว",
             interfaceLanguageLabel: "กรุณาเลือกภาษา",
+            languageRequiredLabel: "ภาษาที่จำเป็นสำหรับโพสต์นี้",
         },
         employeeRegister: {
             howDidYouHearAboutUs:

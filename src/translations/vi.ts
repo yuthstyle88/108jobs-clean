@@ -736,6 +736,7 @@ export const vi = {
             submitButton: "Gửi",
             postNameAlreadyExists: "Tên công việc đã tồn tại",
             interfaceLanguageLabel: "Vui lòng chọn ngôn ngữ",
+            languageRequiredLabel: "Ngôn ngữ cần thiết cho bài đăng này",
         },
         employeeRegister: {
             howDidYouHearAboutUs:

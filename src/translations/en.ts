@@ -743,6 +743,7 @@ export const en = {
             submitButton: "Submit",
             postNameAlreadyExists: "Job name already exists",
             interfaceLanguageLabel: "Please select a language",
+            languageRequiredLabel: "Language required for this post",
         },
         employeeRegister: {
             howDidYouHearAboutUs:
