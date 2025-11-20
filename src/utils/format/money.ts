@@ -11,3 +11,23 @@ export function formatThaiBaht(amount: string | number): string {
       maximumFractionDigits: 0,
     }).format(num);
 }
+
+export const formatBudgetCompact = (value: number | undefined): string => {
+    if (!value || value === 0) return "—";
+
+    const absValue = Math.abs(value);
+    if (absValue >= 1_000_000) {
+        const formatted = (value / 1_000_000).toFixed(2).replace(/\.00$/, "");
+        return `${formatted}M`;
+    }
+    if (absValue >= 100_000) {
+        // For 100K–999K: show as 123.4K
+        return `${(value / 1000).toFixed(1).replace(/\.0$/, "")}K`;
+    }
+    if (absValue >= 1_000) {
+        // For 1,000–99,999: show as 12.3K
+        return `${(value / 1000).toFixed(1).replace(/\.0$/, "")}K`;
+    }
+
+    return value.toLocaleString(); // Below 1,000 → normal format
+};

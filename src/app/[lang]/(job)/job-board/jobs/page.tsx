@@ -1,7 +1,7 @@
 "use client";
 import {Badge} from "@/components/ui/Badge";
 import {ProfileImage} from "@/constants/images";
-import {formatDateTime} from "@/utils";
+import {formatBudgetCompact, formatDateTime} from "@/utils";
 import Image from "next/image";
 import {useRouter} from "next/navigation";
 import {useCallback, useEffect, useMemo, useState} from "react";
@@ -181,7 +181,7 @@ const MyJobs = () => {
                                                 </td>
                                                 <td className="px-6 py-6">
                                                         <span className="text-lg font-bold text-gray-900">
-                                                            {job.post.budget.toLocaleString()}
+                                                            {formatBudgetCompact(job.post.budget)}
                                                         </span>
                                                     <FontAwesomeIcon
                                                         icon={faCoins}
@@ -277,7 +277,7 @@ const MyJobs = () => {
 
                                             <div className="mb-5">
                                                 <p className="text-3xl font-extrabold text-gray-900">
-                                                    {job.post.budget.toLocaleString()}
+                                                    {formatBudgetCompact(job.post.budget)}
                                                     <FontAwesomeIcon
                                                         icon={faCoins}
                                                         className="text-2xl text-yellow-500 transition-transform hover:scale-110"

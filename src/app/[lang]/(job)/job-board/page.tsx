@@ -27,6 +27,7 @@ import {useDebounce} from "@/hooks/utils/useDebounce";
 import {PaginationControls} from "@/components/PaginationControls";
 import {faCoins} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {formatBudgetCompact} from "@/utils";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -535,7 +536,7 @@ const JobBoard = () => {
                                                         {getJobTypeLabel(job.post.jobType, t)}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900 font-medium">
-                                                        {formatBudget(job.post.budget)}
+                                                        {formatBudgetCompact(job.post.budget)}
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-base text-text-primary">
                                                         {job.post.comments}
@@ -613,7 +614,7 @@ const JobBoard = () => {
                                                     {/* Budget – big & bold */}
                                                     <div className="px-5">
                                                         <p className="text-2xl font-bold text-primary">
-                                                            {formatBudget(job.post.budget)}
+                                                            {formatBudgetCompact(job.post.budget)}
                                                             <FontAwesomeIcon
                                                                 icon={faCoins}
                                                                 className="text-2xl text-yellow-500 transition-transform hover:scale-110"
