@@ -63,8 +63,8 @@ const FreelanceImproveMenu = () => {
                                 className="w-3 h-3 inline-flex items-center justify-center cursor-pointer"
                             />
                             <span className="text-[0.875rem] font-semibold text-[rgba(43,50,59,.6)]">
-                {t("global.hireOpportunityTitle")}
-              </span>
+                                {t("global.hireOpportunityTitle")}
+                            </span>
                         </div>
                         {megaFreelancer.map((freelancer, index) => (
                             <div
