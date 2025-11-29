@@ -8,7 +8,7 @@ import {
     Plus,
     Minus,
     LayoutDashboard,
-    Handbag, CreditCard
+    Handbag, CreditCard, ChartColumnStacked
 } from "lucide-react";
 
 import {
@@ -61,6 +61,12 @@ const navigationItems = [
         url: "/admin/manage-job-board",
         icon: Handbag,
         description: "Manage job board posts"
+    },
+    {
+        title: "Manage Category",
+        url: "/admin/manage-category",
+        icon: ChartColumnStacked,
+        description: "Manage categories for job board posts"
     },
 ];
 

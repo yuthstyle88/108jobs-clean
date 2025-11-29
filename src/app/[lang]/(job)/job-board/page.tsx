@@ -87,6 +87,7 @@ const JobBoard = () => {
         intendedUse: debouncedFilters.intendedUse,
         limit: ITEMS_PER_PAGE,
     });
+    console.log("data", jobPostsPagination);
 
     const hasPreviousPage = useMemo(() => cursorHistory.length > 0, [cursorHistory]);
     const hasNextPage = useMemo(() => !!jobPostsPagination?.nextPage, [jobPostsPagination?.nextPage]);
