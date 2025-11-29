@@ -1,11 +1,11 @@
-import { CategoriesIcon } from "@/constants/icons";
-import { CategoryNodeView } from "lemmy-js-client";
-import { catalogIcons } from "@/types/catalogIcon";
+import {CategoriesIcon} from "@/constants/icons";
+import {CategoryNodeView} from "lemmy-js-client";
+import {catalogIcons} from "@/types/catalogIcon";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { useTranslation } from "react-i18next";
-import { toCamelCaseLastSegment } from "@/utils/helpers";
+import {useTranslation} from "react-i18next";
+import {toCamelCaseLastSegment} from "@/utils/helpers";
 import {useLanguage} from "@/contexts/LanguageContext";
 
 type Props = {
@@ -23,15 +23,17 @@ const CatalogBanner = (props: Props) => {
         setActiveCatalogIndex,
     } = props;
     const {lang} = useLanguage();
-    const { t } = useTranslation();
+    const {t} = useTranslation();
 
     return (
         <section className="py-8 bg-gradient-to-b from-gray-50 to-white">
             <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="relative min-h-[160px] mt-[-3rem] rounded-3xl bg-white/80 backdrop-blur-lg shadow-2xl border border-gray-100/50 transition-all duration-300 flex flex-col lg:flex-row gap-6 p-6">
+                <div
+                    className="relative min-h-[160px] mt-[-3rem] rounded-3xl bg-white/80 backdrop-blur-lg shadow-2xl border border-gray-100/50 transition-all duration-300 flex flex-col lg:flex-row gap-6 p-6">
                     {/* Catalog Sidebar */}
                     <div className="hidden lg:block w-full lg:w-64 flex-shrink-0 transition-all duration-300">
-                        <div className="flex flex-col gap-3 p-4 bg-gray-50/50 rounded-2xl max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-50">
+                        <div
+                            className="flex flex-col gap-3 p-4 bg-gray-50/50 rounded-2xl max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-50">
                             {serviceCatalogs.map((catalog, index) => {
                                 const matchedIcon = catalogIcons.find(
                                     (c) => c.name === catalog.category.name
@@ -78,7 +80,7 @@ const CatalogBanner = (props: Props) => {
                                             />
                                         </div>
                                         <p className="text-sm font-semibold text-gray-900 leading-tight tracking-tight">
-                                            {t(`catalogs.${toCamelCaseLastSegment(catalog.category.path)}`, { defaultValue: catalog.category.name })}
+                                            {t(`catalogs.${toCamelCaseLastSegment(catalog.category.path)}`, {defaultValue: catalog.category.name})}
                                         </p>
                                     </div>
                                 );
@@ -95,31 +97,32 @@ const CatalogBanner = (props: Props) => {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {activeCatalog?.children?.slice(0, 12).map(
-                              ({ category }: { category: CategoryNodeView["category"] }) => {
-                                const backgroundImage = category.icon
-                                    ? `url(${category.icon})`
-                                    : `url("/categories-image/web-development-02032022.jpg")`;
+                                ({category}: { category: CategoryNodeView["category"] }) => {
+                                    const backgroundImage = category.banner
+                                        ? `url(${category.banner})`
+                                        : `url("/categories-image/web-development-02032022.jpg")`;
 
-                                return (
-                                    <Link
-                                        prefetch={false}
-                                        key={category.id}
-                                        href={`/${lang}/job-board?category=${category.id}`}
-                                        className="group relative block rounded-2xl overflow-hidden h-20 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-400"
-                                        aria-label={`View ${category.name} jobs`}
-                                    >
-                                        <div
-                                            style={{ backgroundImage }}
-                                            className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                                        />
-                                        <div className="relative flex items-end h-full px-3 py-2 bg-gradient-to-t from-black/70 to-transparent text-white font-semibold transition-all duration-300">
+                                    return (
+                                        <Link
+                                            prefetch={false}
+                                            key={category.id}
+                                            href={`/${lang}/job-board?category=${category.id}`}
+                                            className="group relative block rounded-2xl overflow-hidden h-20 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                            aria-label={`View ${category.name} jobs`}
+                                        >
+                                            <div
+                                                style={{backgroundImage}}
+                                                className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                                            />
+                                            <div
+                                                className="relative flex items-end h-full px-3 py-2 bg-gradient-to-t from-black/70 to-transparent text-white font-semibold transition-all duration-300">
                       <span className="group-hover:-translate-y-0.5 text-xs tracking-wide">
-                        {t(`catalogs.${toCamelCaseLastSegment(category.path)}`, { defaultValue: category.name })}
+                        {t(`catalogs.${toCamelCaseLastSegment(category.path)}`, {defaultValue: category.name})}
                       </span>
-                                        </div>
-                                    </Link>
-                                );
-                            })}
+                                            </div>
+                                        </Link>
+                                    );
+                                })}
                             {(!activeCatalog?.children || activeCatalog.children.length === 0) && (
                                 <div className="col-span-full text-center text-gray-500 py-6 font-medium">
                                     {t("catalogs.noSubcatalogs")}
