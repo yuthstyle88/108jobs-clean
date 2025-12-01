@@ -17,9 +17,9 @@ import {
 } from "@/types/images";
 
 // Compare images - moved up to fix import order
-import compare1 from "../assets/images/compare/compare1.svg";
-import compare2 from "../assets/images/compare/compare2.svg";
-import compare3 from "../assets/images/compare/compare3.svg";
+import compare1 from "../assets/images/compare/compare1.jpeg";
+import compare2 from "../assets/images/compare/compare2.jpeg";
+import compare3 from "../assets/images/compare/compare3.jpeg";
 import banner2 from "../assets/images/compare/banner-02.png";
 import comparebadge1 from "../assets/images/compare/compare-badge1.png";
 import comparebadge2 from "../assets/images/compare/compare-badge2.png";
@@ -79,7 +79,7 @@ import ads from "../assets/images/megamenu/ads.svg";
 import adsBg from "../assets/images/megamenu/seller-ads-vn.webp";
 import b2b from "../assets/images/megamenu/b2b.webp";
 import chatToHire from "../assets/images/megamenu/chat-to-hire-th.webp";
-import buyerJob from "../assets/images/megamenu/buyer-job-board-th.webp";
+import buyerJob from "../assets/images/megamenu/buyer-job-board.jpeg";
 import companyTh from "../assets/images/megamenu/company-th.webp";
 
 // Job detail images
