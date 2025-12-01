@@ -4,7 +4,7 @@ import React, {useState, useEffect} from "react";
 import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";
-import {isSuccess} from "@/services/HttpService";
+import {isFailed, isSuccess} from "@/services/HttpService";
 import {toast} from "sonner";
 import Image from "next/image";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -39,16 +39,39 @@ export default function SiteAppearancePage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (!file.type.startsWith("image/")) {
-            toast.error("Please select a valid image file");
+        // === BLOCK DANGEROUS FILE TYPES ===
+        const fileName = file.name.toLowerCase();
+        const blockedExtensions = ['.svg', '.xml', '.php', '.html', '.htm', '.js', '.exe'];
+
+        if (blockedExtensions.some(ext => fileName.endsWith(ext))) {
+            toast.error("This file type is not allowed for security reasons.");
+            e.target.value = ''; // Clear input
             return;
         }
 
+        // Optional: stricter MIME type check (SVG can fake image/svg+xml)
+        const allowedTypes = [
+            'image/png',
+            'image/jpeg',
+            'image/jpg',
+            'image/webp',
+            'image/gif'
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+            toast.error("Only PNG, JPG, WebP, and GIF files are allowed.");
+            e.target.value = '';
+            return;
+        }
+
+        // Size check
         if (file.size > 10 * 1024 * 1024) {
             toast.error("Image must be under 10MB");
+            e.target.value = '';
             return;
         }
 
+        // All good → proceed
         if (type === "icon") {
             setIconFile(file);
         } else {
@@ -81,7 +104,7 @@ export default function SiteAppearancePage() {
             setSiteRes(siteData);
             if (type === "icon") setIconFile(null);
             else setBannerFile(null);
-        } else {
+        } else if (isFailed(res)) {
             toast.error(`Failed to upload ${type === "icon" ? "logo" : "banner"}`);
         }
     };
@@ -140,7 +163,7 @@ export default function SiteAppearancePage() {
                                     <div className="space-y-4">
                                         <input
                                             type="file"
-                                            accept="image/*"
+                                            accept="image/png,image/jpeg,image/webp,image/gif"
                                             onChange={(e) => handleFileChange("icon", e)}
                                             className="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 cursor-pointer"
                                         />
@@ -200,7 +223,7 @@ export default function SiteAppearancePage() {
                                         Banner</label>
                                     <input
                                         type="file"
-                                        accept="image/*"
+                                        accept="image/png,image/jpeg,image/webp,image/gif"
                                         onChange={(e) => handleFileChange("banner", e)}
                                         className="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90 cursor-pointer"
                                     />
