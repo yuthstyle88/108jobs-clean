@@ -84,6 +84,7 @@
     "@types/react-dom": "^19",
     "@types/react-slick": "^0.23.13",
     "@types/toastify-js": "^1.12.4",
+    "baseline-browser-mapping": "^2.8.32",
     "critters": "^0.0.23",
     "eslint": "^9.32.0",
     "eslint-config-next": "^16.0.0",
