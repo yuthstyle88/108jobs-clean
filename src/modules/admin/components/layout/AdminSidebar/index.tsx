@@ -8,7 +8,7 @@ import {
     Plus,
     Minus,
     LayoutDashboard,
-    Handbag, CreditCard, ChartColumnStacked
+    Handbag, CreditCard, ChartColumnStacked, Image as ImageIcon
 } from "lucide-react";
 
 import {
@@ -24,6 +24,7 @@ import {
 import Image from "next/image";
 import {AssetIcon} from "@/constants/icons";
 import {cn} from "@/lib/utils";
+import {useSiteStore} from "@/store/useSiteStore";
 
 const navigationItems = [
     {
@@ -68,14 +69,21 @@ const navigationItems = [
         icon: ChartColumnStacked,
         description: "Manage categories for job board posts"
     },
+    {
+        title: "Manage Picture",
+        url: "/admin/manage-picture",
+        icon: ImageIcon,
+        description: "Manage picture for 108jobs"
+    },
 ];
 
 export function AdminSidebar() {
     const {state} = useSidebar();
+    const {siteView} = useSiteStore();
     const collapsed = state === "collapsed";
     const pathname = usePathname();
     const pathWithoutLocale = "/" + pathname.split("/").slice(2).join("/");
-
+    const logoUrl = siteView?.site?.icon || AssetIcon.logo.src;
     return (
         <Sidebar collapsible="icon">
             <SidebarContent className="bg-gradient-card ">
@@ -83,13 +91,13 @@ export function AdminSidebar() {
                     <div className="flex items-center gap-3">
                         {!collapsed && (
                             <div className="text-primary">
-                                <Link prefetch={true} href="/admin/dashboard" className="shrink-0">
+                                <Link prefetch href="/admin/dashboard" className="shrink-0 block">
                                     <Image
-                                        src={AssetIcon.logo}
-                                        alt="logo"
-                                        className="w-full h-full"
-                                        width={700}
-                                        height={700}
+                                        src={logoUrl}
+                                        alt="Site logo"
+                                        width={181}
+                                        height={62}
+                                        className="w-auto h-12 object-contain transition-all hover:opacity-90"
                                         priority
                                     />
                                 </Link>

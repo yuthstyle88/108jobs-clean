@@ -8,38 +8,45 @@ import LanguageDropdown from "../LanguageDropDown";
 import UserProfileSection from "./components/UserProfileSection";
 import {useScrollHandler} from "./hooks/useScrollHandler";
 import {useLanguage} from "@/contexts/LanguageContext";
+import {useSiteStore} from "@/store/useSiteStore";
 
 const Header = ({type, forceShowSearch = false}: { type: string; forceShowSearch?: boolean }) => {
     const {isLoggedIn, userInfo} = useAuthInfo();
+    const {siteView} = useSiteStore();
     const {lang} = useLanguage();
     const {t} = useTranslation();
     const {scrollY, showSearch} = useScrollHandler(forceShowSearch);
     const bg = scrollY > 0 ? "bg-primary" : type === "transparent" ? "bg-transparent" : "bg-primary";
 
+    const logoUrl = siteView?.site?.icon || AssetIcon.logo.src;
+
     return (
         <header className={`fixed top-0 z-[999] w-full transition-all duration-300 ${bg}`}>
             <nav className="mx-4 sm:mx-6 lg:mx-8 flex flex-wrap items-center justify-between h-auto py-2">
                 <section className="flex items-center gap-x-4 w-full sm:w-auto">
+                    {/* Mobile Logo – visible only on <md */}
                     <div className="block md:hidden">
                         <Link prefetch={true} href={`/${lang}`} className="shrink-0">
                             <Image
-                                src={AssetIcon.logo}
-                                alt="logo"
-                                className="w-16 h-16"
-                                width={700}
-                                height={700}
+                                src={logoUrl}
+                                alt="Site logo"
+                                width={181}
+                                height={62}
+                                className="w-16 h-16 object-contain"
                                 priority
                             />
                         </Link>
                     </div>
-                    <div className="hidden md:flex items-center gap-x-4 w-full md:w-auto">
+
+                    {/* Desktop Logo – visible only on md+ */}
+                    <div className="hidden md:block">
                         <Link prefetch={true} href={`/${lang}`} className="shrink-0">
                             <Image
-                                src={AssetIcon.logo}
-                                alt="logo"
-                                className="w-full h-full"
-                                width={700}
-                                height={700}
+                                src={logoUrl}
+                                alt="Site logo"
+                                width={181}
+                                height={62}
+                                className="w-auto h-12 md:h-14 lg:h-16 object-contain"
                                 priority
                             />
                         </Link>

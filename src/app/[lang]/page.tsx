@@ -21,9 +21,11 @@ import Link from "next/link";
 import NavBar from "@/components/Home/NavBar";
 import MobileSidebar from "@/components/MobileSidebar";
 import {useUserService} from "@/contexts/UserServiceContext";
+import {useSiteStore} from "@/store/useSiteStore";
 
 export default function Home() {
     const {t, i18n} = useTranslation();
+    const {siteView} = useSiteStore();
     useUserService();
     const [activeCatalogIndex, setActiveCatalogIndex] = useState<number>(0);
     const catalogData = useCategories();
@@ -55,7 +57,7 @@ export default function Home() {
                         <section
                             className="hidden sm:block h-auto bg-cover bg-center relative pt-[6.5rem] md:pt-[4.5rem]"
                             style={{
-                                backgroundImage: `url(${LandingImage.bgLanding.src})`,
+                                backgroundImage: `url(${siteView?.site.banner})`,
                             }}
                         >
                             <div className="absolute inset-0 bg-black/50"/>
