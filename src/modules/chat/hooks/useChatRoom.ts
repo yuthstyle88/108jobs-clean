@@ -22,7 +22,6 @@ import {useReadLastIdStore} from "@/modules/chat/store/readStore";
 import { usePartnerTyping } from '@/modules/chat/hooks/usePartnerTyping';
 import { useRoomPresence } from '@/modules/chat/hooks/useRoomPresence';
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
-import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 
 // Safe DOM CustomEvent dispatcher
 function dispatchDomEvent(name: string, detail: any) {
@@ -66,7 +65,7 @@ export function useChatRoom({
     const peerUserId = React.useMemo(() => {
         const participants = roomData?.participants || [];
         const peer = participants.find((p: any) => String(p.memberId) !== String(localUser?.id));
-        return peer ? Number(peer.participant.memberId) : 0;
+        return peer ? Number(peer.id) : 0;
     }, [roomData?.participants, localUser?.id]);
     // Bind presence watcher (HTTP + focus/visibility + heartbeat). Safe for 0/undefined.
     useRoomPresence((peerUserId || undefined) as any);

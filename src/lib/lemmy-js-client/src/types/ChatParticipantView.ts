@@ -1,7 +1,14 @@
-import {ChatParticipant} from "./ChatParticipant";
-import {Person} from "./Person";
+import {LocalUserId} from "./LocalUserId";
+import {PersonId} from "./PersonId";
+import {ChatRoomId} from "./ChatRoomId";
 
 export type ChatParticipantView = {
-    participant: ChatParticipant;
-    memberPerson: Person;
+    id: LocalUserId;
+    personId: PersonId;
+    name: string;
+    displayName?: string;
+    avatar?: string;
+    available: boolean;
+    roomId: ChatRoomId;
+    joinedAt: string;
 };

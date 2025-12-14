@@ -21,12 +21,12 @@ const ChatRoomItem = ({room, currentLang, localUser}: ChatRoomListProps) => {
     const partner = findPartner(room.room.id, localUser?.id);
     const jobId = room.post?.id;
     const unreadCount = getUnread(room.room.id);
-    const memberId = partner?.participant?.memberId ?? 0;
+    const memberId = partner?.id ?? 0;
     const online = usePeerOnline(memberId);
 
     if (!partner) return <RoomNotFound/>;
 
-    const partnerName = partner.memberPerson.name || "Unknown";
+    const partnerName = partner.name || "Unknown";
     const handleClick = () => {
         markRoomRead(room.room.id);
     };
@@ -37,7 +37,7 @@ const ChatRoomItem = ({room, currentLang, localUser}: ChatRoomListProps) => {
             key={room.room.id}
             href={`/${currentLang || "th"}/chat/message/${room.room.id}`}
             className="block mx-2 my-1 transition-colors duration-200 focus:outline-none focus:bg-gray-100"
-            aria-label={`Open chat with ${partner?.memberPerson.name} about Job ${jobId}`}
+            aria-label={`Open chat with ${partner?.name} about Job ${jobId}`}
             onClick={handleClick}
         >
             <div
@@ -50,7 +50,7 @@ const ChatRoomItem = ({room, currentLang, localUser}: ChatRoomListProps) => {
                 }`}
             >
                 <AvatarBadge
-                    avatarUrl={partner.memberPerson.avatar}
+                    avatarUrl={partner.avatar}
                     name={partnerName}
                     online={online}
                     isActive

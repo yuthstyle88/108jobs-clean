@@ -12,8 +12,8 @@ export default function MessageClient({roomId}: { roomId: string }) {
     const {user} = useUserStore();
     const getRoom = useRoomsStore(s => s.getRoom);
     const findPartner = useRoomsStore(s => s.findPartner);
-
     const room = getRoom(roomId);
+
     const partner = findPartner(roomId, user?.id);
     if (!room || !partner) {
         return <RoomNotFound/>;

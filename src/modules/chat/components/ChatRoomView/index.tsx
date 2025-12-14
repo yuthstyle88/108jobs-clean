@@ -61,7 +61,6 @@ import {REQUEST_STATE} from "@/services/HttpService";
 import {isBrowser} from "@/utils";
 import {useUserStore} from "@/store/useUserStore";
 import {useJobFlowSidebar} from "@/modules/chat/contexts/JobFlowSidebarContext";
-import {RoomView} from "@/modules/chat/types";
 
 
 /** Shape of the form submitted by ChatInput. */
@@ -99,14 +98,14 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     // Treat undefined availability as "available". Block sending if either side is unavailable.
     const isSubmittingRef = useRef(false);
     const myAvailable = person!.available;
-    const canBeUsed = myAvailable && partner.memberPerson.available;
+    const canBeUsed = myAvailable && partner.available;
     // Set of message IDs received during this session, used by history hook to deduplicate pages.
     const receivedIds = useMemo(() => new Set<string>(), []);
     // Partner here
-    const partnerId = partner.participant.memberId;
-    const partnerPersonId = partner.memberPerson.id;
-    const partnerName = partner.memberPerson.name;
-    const partnerAvatar = partner.memberPerson.avatar;
+    const partnerId = partner.id;
+    const partnerPersonId = partner.personId;
+    const partnerName = partner.name;
+    const partnerAvatar = partner.avatar;
     // Hydrate UI from the local store (messages + pending) so leftover local data shows immediately
     const {send, canGo, ORDER} = useWorkflowStepper();
     const [showReviewDeliveryModal, setShowReviewDeliveryModal] = useState<boolean>(false);
@@ -124,7 +123,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [scrollParentEl, setScrollParentEl] = useState<HTMLElement | null>(null);
     const roomPostId = post?.id;
-    const roomCommentId = currentRoom?.currentComment?.id;
+    const roomCommentId = currentRoom.room.currentCommentId;
     const postCreatorId = post?.creatorId;
     const isEmployer = postCreatorId != null && person?.id != null ? String(postCreatorId) === String(person?.id) : undefined;
     const lastClientUpdateRef = useRef<{ status: StatusKey | null; timestamp: number }>({status: null, timestamp: 0});

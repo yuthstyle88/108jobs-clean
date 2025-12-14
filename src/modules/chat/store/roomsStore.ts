@@ -258,7 +258,7 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
         return get().rooms.find((r) => {
             const participants = r.participants ?? [];
             return participants.some((p) => {
-                const mid = p?.participant?.memberId;
+                const mid = p?.id;
                 return mid != null && Number(mid) === pid;
             });
         });
@@ -269,7 +269,7 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
         if (!room) return undefined;
         const participants = room.participants ?? [];
         return participants.find((p) => {
-          const memberId = p?.participant?.memberId;
+          const memberId = p?.id;
           return memberId != null && memberId !== currentUserId;
         });
     },
