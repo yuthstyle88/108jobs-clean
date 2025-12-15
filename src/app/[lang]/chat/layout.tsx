@@ -55,8 +55,6 @@ export default function ProfileLayout({children}: LayoutProps) {
         };
     }, [token, user?.id]);
 
-    console.log("token: ", token)
-
     if (!user || !token || senderId === 0) {
         return (
             <LoadingBlur text={""}/>
