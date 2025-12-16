@@ -383,7 +383,7 @@ export const vi = {
             cPlusPlus: "C++",
         },
         authen: {
-            continueWith: "Tiếp tục với {{providers}}",
+            continueWith: "Tiếp tục với {{provider}}",
             labelOrSignInWith: "Or sign in with",
             buttonCreateAccount: "Tạo tài khoản",
             buttonLoginFacebook: "Đăng nhập bằng tài khoản Facebook",

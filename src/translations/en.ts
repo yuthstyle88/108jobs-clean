@@ -382,7 +382,7 @@ export const en = {
             cPlusPlus: "C++",
         },
         authen: {
-            continueWith: "Continue with {{providers}}",
+            continueWith: "Continue with {{provider}}",
             labelOrSignInWith: "Or sign in with",
             buttonCreateAccount: "Create Account",
             buttonLoginFacebook: "Log in with your Facebook account",

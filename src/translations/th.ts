@@ -381,7 +381,7 @@ export const th = {
             cPlusPlus: "C++",
         },
         authen: {
-            continueWith: "เข้าสู่ระบบด้วย {{providers}}",
+            continueWith: "เข้าสู่ระบบด้วย {{provider}}",
             labelOrSignInWith: "เข้าสู่ระบบด้วยบัญชีโชเชียล",
             buttonCreateAccount: "สร้างบัญชี",
             buttonLoginFacebook: "เข้าสู่ระบบด้วยบัญชี Facebook",

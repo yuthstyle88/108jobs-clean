@@ -1,5 +1,6 @@
 import {OAuthProvider, PublicOAuthProvider,} from "lemmy-js-client";
 import {useTranslation} from "react-i18next";
+import React from "react";
 
 function getProviderKey(p: PublicOAuthProvider): string {
     const name = (p.displayName || "").toLowerCase();
@@ -115,6 +116,7 @@ export const OAuthButtons: React.FC<{
     label: string;
 }> = ({providers, onLogin, label}) => {
     const { t } = useTranslation();
+    console.log(providers);
     return (
         <>
             <hr className="my-6"/>
