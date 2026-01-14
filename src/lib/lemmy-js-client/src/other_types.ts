@@ -38,6 +38,7 @@ import {GetBillingByRoomQuery} from "./types/GetBillingByRoomQuery";
 import {LastReadQuery} from "./types/LastReadQuery";
 import {PeerStatusQuery} from "./types/PeerStatusQuery";
 import {ListUserReviewsQuery} from "./types/ListUserReviewsQuery";
+import {ListRidersQuery} from "./types/ListRidersQuery";
 
 export const VERSION = "v4";
 
@@ -170,4 +171,7 @@ export interface GetBillingByRoomQueryI extends GetBillingByRoomQuery {
 
 // Bank Accounts (admin list)
 export interface GetBankAccountsI extends GetBankAccounts {
+}
+
+export interface ListRidersQueryI extends ListRidersQuery {
 }

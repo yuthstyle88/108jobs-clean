@@ -3684,6 +3684,44 @@ export const th = {
                 actionReject: "ปฏิเสธ",
                 actionApprove: "อนุมัติ",
             },
+            riders: {
+                // Page title & tabs
+                title: "จัดการไรเดอร์",
+                tabUnverified: "ยังไม่ยืนยัน",
+                tabVerified: "ยืนยันแล้ว",
+
+                // Status & badges
+                statusPending: "รอการตรวจสอบ",
+                statusVerified: "ยืนยันแล้ว",
+
+                // Empty states
+                emptyUnverified: "ขณะนี้ยังไม่มีไรเดอร์ที่รอการยืนยัน",
+                emptyVerified: "ยังไม่มีไรเดอร์ที่ได้รับการยืนยัน",
+
+                // Field labels
+                email: "อีเมล",
+                phone: "เบอร์โทรศัพท์",
+                id: "ไอดีไรเดอร์",
+                vehicle: "ยานพาหนะ",
+                rating: "คะแนนรีวิว",
+                verifiedAt: "วันที่ยืนยัน",
+
+                // Actions & toasts
+                actionApprove: "อนุมัติ",
+                actionReject: "ปฏิเสธ",
+                actionApproved: "อนุมัติไรเดอร์เรียบร้อยแล้ว",
+                actionRejected: "ปฏิเสธไรเดอร์เรียบร้อยแล้ว",
+                errorOccurred: "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+
+                // Fallbacks
+                fullName: "ชื่อ-นามสกุล",
+                username: "ชื่อผู้ใช้",
+                unknown: "ไม่ทราบ",
+
+                // Optional – if you add rejection reason later
+                rejectionReason: "เหตุผลการปฏิเสธ",
+                rejectionReasonPlaceholder: "ระบุเหตุผลการปฏิเสธ (ไม่บังคับ)",
+            },
         },
     },
 };

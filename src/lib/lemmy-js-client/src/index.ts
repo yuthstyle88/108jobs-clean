@@ -41,6 +41,7 @@ export type {AdminPurgePost} from "./types/AdminPurgePost";
 export type {AdminPurgePostId} from "./types/AdminPurgePostId";
 export type {AdminPurgePostView} from "./types/AdminPurgePostView";
 export type {AdminTopUpWallet} from "./types/AdminTopUpWallet";
+export type {AdminVerifyRiderRequest} from "./types/AdminVerifyRiderRequest"
 export type {ApproveCategoryPendingFollower} from "./types/ApproveCategoryPendingFollower";
 export type {ApproveRegistrationApplication} from "./types/ApproveRegistrationApplication";
 export type {AuthenticateWithOauth} from "./types/AuthenticateWithOauth";
@@ -209,6 +210,8 @@ export type {ListRegistrationApplications} from "./types/ListRegistrationApplica
 export type {ListRegistrationApplicationsResponse} from "./types/ListRegistrationApplicationsResponse";
 export type {ListReports} from "./types/ListReports";
 export type {ListReportsResponse} from "./types/ListReportsResponse";
+export type {ListRidersQuery} from "./types/ListRidersQuery";
+export type {ListRidersResponse} from "./types/ListRidersResponse";
 export type {ListTaglines} from "./types/ListTaglines";
 export type {ListTaglinesResponse} from "./types/ListTaglinesResponse";
 export type {ListTopUpRequestQuery} from "./types/ListTopUpRequestQuery";
@@ -338,6 +341,9 @@ export type {ResolveCommentReport} from "./types/ResolveCommentReport";
 export type {ResolveCategoryReport} from "./types/ResolveCategoryReport";
 export type {ResolveObject} from "./types/ResolveObject";
 export type {ResolvePostReport} from "./types/ResolvePostReport";
+export type {Rider} from "./types/Rider";
+export type {RiderId} from "./types/RiderId";
+export type {RiderView} from "./types/RiderView";
 export type {SaveComment} from "./types/SaveComment";
 export type {SavePost} from "./types/SavePost";
 export type {SaveUserSettings} from "./types/SaveUserSettings";
@@ -439,6 +445,8 @@ export type {ScbStatus, ScbTokenData, ScbTokenResponse} from "./types/ScbTokenRe
 export type {
     ScbQrCodeBody, ScbQrCodeRequest, ScbQrCodeStatus, ScbQrCodeData, ScbQrCodeResponse
 } from "./types/ScbQrCode";
+export type {VehicleType} from "./types/VehicleType";
+export type {RiderVerificationStatus} from "./types/RiderVerificationStatus";
 export type {WithdrawRequest} from "./types/WithdrawRequest";
 export type {WithdrawRequestId} from "./types/WithdrawRequestId";
 export type {WithdrawStatus} from "./types/WithdrawStatus";

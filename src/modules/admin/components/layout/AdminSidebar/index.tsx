@@ -8,7 +8,7 @@ import {
     Plus,
     Minus,
     LayoutDashboard,
-    Handbag, CreditCard, ChartColumnStacked, Image as ImageIcon
+    Handbag, CreditCard, ChartColumnStacked, Image as ImageIcon, Motorbike
 } from "lucide-react";
 
 import {
@@ -74,6 +74,12 @@ const navigationItems = [
         url: "/admin/manage-picture",
         icon: ImageIcon,
         description: "Manage picture for 108jobs"
+    },
+    {
+        title: "Manage Riders",
+        url: "/admin/manage-riders",
+        icon: Motorbike,
+        description: "Manage riders for 108jobs"
     },
 ];
 

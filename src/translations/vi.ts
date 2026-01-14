@@ -3792,6 +3792,41 @@ export const vi = {
                 actionReject: "Từ chối",
                 actionApprove: "Duyệt",
             },
+            riders: {
+                // Page title & tabs
+                title: "Quản lý tài xế",
+                tabUnverified: "Chưa xác minh",
+                tabVerified: "Đã xác minh",
+
+                // Status & badges
+                statusPending: "Đang chờ duyệt",
+                statusVerified: "Đã xác minh",
+
+                // Empty states
+                emptyUnverified: "Hiện tại không có tài xế nào đang chờ xác minh",
+                emptyVerified: "Chưa có tài xế nào được xác minh",
+
+                // Labels
+                email: "Email",
+                phone: "Số điện thoại",
+                id: "ID tài xế",
+                vehicle: "Phương tiện",
+                rating: "Đánh giá",
+
+                // Verification related
+                verifiedAt: "Ngày xác minh",
+
+                // Action buttons
+                actionApprove: "Phê duyệt",
+                actionReject: "Từ chối",
+                actionApproved: "Đã phê duyệt tài xế thành công",
+                actionRejected: "Đã từ chối tài xế",
+
+                // Other possible useful keys
+                fullName: "Họ và tên",
+                username: "Tên đăng nhập",
+                unknown: "Không xác định",
+            },
         },
     },
 };

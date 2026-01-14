@@ -3764,6 +3764,44 @@ export const en = {
                 actionReject: "Reject",
                 actionApprove: "Approve",
             },
+            riders: {
+                // Page title & tabs
+                title: "Rider Management",
+                tabUnverified: "Unverified",
+                tabVerified: "Verified",
+
+                // Status & badges
+                statusPending: "Pending Review",
+                statusVerified: "Verified",
+
+                // Empty states
+                emptyUnverified: "No riders awaiting verification at this time",
+                emptyVerified: "No verified riders yet",
+
+                // Field labels
+                email: "Email",
+                phone: "Phone",
+                id: "Rider ID",
+                vehicle: "Vehicle",
+                rating: "Rating",
+                verifiedAt: "Verified Date",
+
+                // Actions & toasts
+                actionApprove: "Approve",
+                actionReject: "Reject",
+                actionApproved: "Rider approved successfully",
+                actionRejected: "Rider rejected",
+                errorOccurred: "An error occurred. Please try again",
+
+                // Fallbacks
+                fullName: "Full Name",
+                username: "Username",
+                unknown: "Unknown",
+
+                // Optional – if you add rejection reason later
+                rejectionReason: "Rejection Reason",
+                rejectionReasonPlaceholder: "Enter rejection reason (optional)",
+            },
         },
     },
 };

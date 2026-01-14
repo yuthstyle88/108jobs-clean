@@ -52,7 +52,7 @@ import type {
     ListUserChatRoomsQueryI, ListUserReviewsQueryI, PeerStatusQueryI,
     ResolveObjectI,
     SearchI,
-    UploadImage,
+    UploadImage, ListRidersQueryI,
 } from "./other_types";
 import {VERSION} from "./other_types";
 import type {AddAdmin} from "./types/AddAdmin";
@@ -286,6 +286,9 @@ import {AdminWithdrawWallet} from "./types/AdminWithdrawWallet";
 import {RejectWithdrawalRequest} from "./types/RejectWithdrawalRequest";
 import {ListBankAccountQuery} from "./types/ListBankAccountQuery";
 import {VerifyBankAccount} from "./types/VerifyBankAccount";
+import {ListRidersQuery} from "./types/ListRidersQuery";
+import {ListRidersResponse} from "./types/ListRidersResponse";
+import {AdminVerifyRiderRequest} from "./types/AdminVerifyRiderRequest";
 
 enum HttpType {
     Get = "GET",
@@ -2005,7 +2008,7 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary List user bank accounts (admin only).
+     * @summary List user bank accounts
      */
     @Security("bearerAuth")
     @Get("/account/bank-account")
@@ -2699,6 +2702,42 @@ export class LemmyHttp extends Controller {
         return this.#wrapper<ListTaglines, ListTaglinesResponse>(
             HttpType.Get,
             "/admin/tagline/list",
+            form,
+            options,
+        );
+    }
+
+    /**
+     * @summary List rider profile (admin only).
+     */
+    @Security("bearerAuth")
+    @Get("/admin/riders/list")
+    @Tags("Riders")
+    async adminListRiders(
+        @Queries() form: ListRidersQueryI = {},
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<ListRidersQuery, ListRidersResponse>(
+            HttpType.Get,
+            "/admin/riders/list",
+            form,
+            options,
+        );
+    }
+
+    /**
+     * @summary Admin verify rider
+     */
+    @Security("bearerAuth")
+    @Post("/admin/riders/verify")
+    @Tags("Admin", "Riders")
+    async adminVerifyRider(
+        @Body() form: AdminVerifyRiderRequest,
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<AdminVerifyRiderRequest, SuccessResponse>(
+            HttpType.Post,
+            "/admin/riders/verify",
             form,
             options,
         );
