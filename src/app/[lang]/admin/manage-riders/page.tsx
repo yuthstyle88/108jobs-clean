@@ -5,14 +5,14 @@ import {Badge} from "@/components/ui/Badge";
 import {Card} from "@/components/ui/Card";
 import {CheckCircle, Loader2, UserCheck, UserX, Bike, Car, Star} from "lucide-react";
 import {toast} from "sonner";
-import {useHttpGet} from "@/hooks/api/http/useHttpGet";
-import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 import {useTranslation} from "react-i18next";
 import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
 import {PaginationControls} from "@/components/PaginationControls";
-import {JSX, useCallback, useState} from "react";
+import {JSX, useState} from "react";
 import {cn} from "@/lib/utils";
 import {RiderId, RiderView, VehicleType} from "lemmy-js-client";
+import {useHttpPost} from "@/hooks/api/http/useHttpPost";
+import {usePaginatedRiders} from "@/modules/admin/hooks/usePaginatedRiders";
 
 const vehicleIconMap: Record<VehicleType, JSX.Element> = {
     Bicycle: <Bike className="w-4 h-4"/>,
@@ -26,54 +26,37 @@ export default function AdminRidersManagementPage() {
     const {t} = useTranslation();
 
     const [viewMode, setViewMode] = useState<ViewMode>("unverified");
-    const [currentCursor, setCurrentCursor] = useState<string | undefined>();
-    const [cursorHistory, setCursorHistory] = useState<string[]>([]);
-    const [isGoingBack, setIsGoingBack] = useState(false);
 
-    // Fetch riders
-    const {data, isLoading, execute: refetch} = useHttpGet("adminListRiders", {
-        pageCursor: currentCursor,
-        pageBack: isGoingBack,
-        limit: 10,
+    const {
+        riders,
+        isLoading,
+        error,
+        hasNextPage,
+        hasPreviousPage,
+        loadNextPage,
+        loadPreviousPage,
+        refetch,
+    } = usePaginatedRiders({
         verified: viewMode === "verified",
+        limit: 10,
     });
-
-    const riders = data?.riders ?? [];
-    const hasNextPage = !!data?.nextPage;
-    const hasPreviousPage = cursorHistory.length > 0;
-
     const {execute: verifyRider, isMutating: verifying} = useHttpPost("adminVerifyRider");
-
-    const handleNextPage = useCallback(() => {
-        if (data?.nextPage) {
-            setCursorHistory((prev) => [...prev, currentCursor ?? ""]);
-            setCurrentCursor(data.nextPage);
-            setIsGoingBack(false);
-        }
-    }, [data?.nextPage, currentCursor]);
-
-    const handlePrevPage = useCallback(() => {
-        if (cursorHistory.length > 0) {
-            const prevCursor = cursorHistory[cursorHistory.length - 1];
-            setCursorHistory((prev) => prev.slice(0, -1));
-            setCurrentCursor(prevCursor || undefined);
-            setIsGoingBack(true);
-        }
-    }, [cursorHistory]);
 
     const handleVerify = async (riderId: RiderId, approve: boolean) => {
         try {
-            await verifyRider({
-                riderId,
-                approve,
-                // reason: approve ? undefined : "Not meeting requirements", // optional
-            });
-
-            toast.success(approve ? t("admin.riders.actionApproved") : t("admin.riders.actionRejected"));
+            await verifyRider({riderId, approve});
+            toast.success(
+                approve ? t("admin.riders.actionApproved") : t("admin.riders.actionRejected")
+            );
             await refetch();
         } catch (err) {
-            toast.error(t("common.errorOccurred"));
+            toast.error(t("common.errorOccurred") || "An error occurred");
         }
+    };
+
+    const handleTabChange = (mode: ViewMode) => {
+        setViewMode(mode);
+        // The hook will automatically refetch with new `verified` param
     };
 
     return (
@@ -87,12 +70,7 @@ export default function AdminRidersManagementPage() {
 
                     <div className="flex flex-wrap justify-center gap-3">
                         <button
-                            onClick={() => {
-                                setViewMode("unverified");
-                                setCurrentCursor(undefined);
-                                setCursorHistory([]);
-                                setIsGoingBack(false);
-                            }}
+                            onClick={() => handleTabChange("unverified")}
                             className={cn(
                                 "flex-1 min-w-[160px] px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all shadow-sm",
                                 viewMode === "unverified"
@@ -105,12 +83,7 @@ export default function AdminRidersManagementPage() {
                         </button>
 
                         <button
-                            onClick={() => {
-                                setViewMode("verified");
-                                setCurrentCursor(undefined);
-                                setCursorHistory([]);
-                                setIsGoingBack(false);
-                            }}
+                            onClick={() => handleTabChange("verified")}
                             className={cn(
                                 "flex-1 min-w-[160px] px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all shadow-sm",
                                 viewMode === "verified"
@@ -123,6 +96,13 @@ export default function AdminRidersManagementPage() {
                         </button>
                     </div>
                 </div>
+
+                {/* Error */}
+                {error && (
+                    <div className="bg-red-50 p-4 rounded-lg shadow-sm border border-red-100 text-center">
+                        <p className="text-red-600 text-sm">{error}</p>
+                    </div>
+                )}
 
                 {/* Loading */}
                 {isLoading && (
@@ -141,8 +121,8 @@ export default function AdminRidersManagementPage() {
                     </div>
                 )}
 
-                {/* Empty */}
-                {!isLoading && riders.length === 0 && (
+                {/* Empty state */}
+                {!isLoading && riders.length === 0 && !error && (
                     <Card
                         className="p-12 text-center bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                         <UserX className="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4"/>
@@ -154,7 +134,7 @@ export default function AdminRidersManagementPage() {
                     </Card>
                 )}
 
-                {/* Riders List */}
+                {/* Riders list */}
                 {!isLoading && riders.length > 0 && (
                     <>
                         <div className="space-y-4">
@@ -202,7 +182,7 @@ export default function AdminRidersManagementPage() {
                                                                 {isUnverified ? (
                                                                     <>
                                                                         <Loader2
-                                                                            className="w-3.5 h-3.5 mr-1"/>
+                                                                            className="w-3.5 h-3.5 mr-1 animate-spin"/>
                                                                         {t("admin.riders.statusPending")}
                                                                     </>
                                                                 ) : (
@@ -215,20 +195,15 @@ export default function AdminRidersManagementPage() {
                                                         </div>
 
                                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                                                            <div
-                                                                className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                                                                <div>
-                                                                    <span className="font-medium">
-                                                                      {t("admin.riders.vehicle")}:
-                                                                    </span>{" "}
-                                                                    <span className="inline-flex items-center gap-1.5">
-                                                                        {vehicleIconMap[rider.vehicleType]}
-                                                                        {rider.vehicleType}
-                                                                        {rider.vehiclePlateNumber && ` • ${rider.vehiclePlateNumber}`}
-                                                                    </span>
-                                                                </div>
+                                                            <div>
+                                                                <span
+                                                                    className="font-medium">{t("admin.riders.vehicle")}:</span>{" "}
+                                                                <span className="inline-flex items-center gap-1.5">
+                                  {vehicleIconMap[rider.vehicleType]}
+                                                                    {rider.vehicleType}
+                                                                    {rider.vehiclePlateNumber && ` • ${rider.vehiclePlateNumber}`}
+                                </span>
                                                             </div>
-
 
                                                             <div>
                                                                 <span
@@ -238,10 +213,12 @@ export default function AdminRidersManagementPage() {
                                                                     {rider.rating.toFixed(1)} ({rider.completedJobs}/{rider.totalJobs})
                                 </span>
                                                             </div>
+
                                                             <div>
                                                                 <span
                                                                     className="font-medium">{t("admin.riders.id")}:</span> {rider.id}
                                                             </div>
+
                                                             {rider.verifiedAt && (
                                                                 <div>
                                                                     <span
@@ -253,7 +230,6 @@ export default function AdminRidersManagementPage() {
                                                     </div>
                                                 </div>
 
-                                                {/* Actions – only for unverified */}
                                                 {isUnverified && (
                                                     <div
                                                         className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -269,17 +245,6 @@ export default function AdminRidersManagementPage() {
                                                             )}
                                                             {t("admin.riders.actionApprove")}
                                                         </Button>
-
-                                                        {/* Uncomment if backend supports rejection reason */}
-                                                        {/* <Button
-                              variant="outline"
-                              className="flex-1 h-11 text-base border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
-                              onClick={() => handleVerify(rider.id, false)}
-                              disabled={verifying}
-                            >
-                              <UserX className="w-5 h-5 mr-2" />
-                              {t("admin.riders.actionReject")}
-                            </Button> */}
                                                     </div>
                                                 )}
                                             </div>
@@ -293,8 +258,8 @@ export default function AdminRidersManagementPage() {
                             <PaginationControls
                                 hasPrevious={hasPreviousPage}
                                 hasNext={hasNextPage}
-                                onPrevious={handlePrevPage}
-                                onNext={handleNextPage}
+                                onPrevious={loadPreviousPage}
+                                onNext={loadNextPage}
                                 isLoading={isLoading}
                             />
                         </div>

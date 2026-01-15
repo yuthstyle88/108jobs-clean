@@ -2,6 +2,7 @@ import {Button} from "@/components/ui/Button";
 import {ChevronLeft, ChevronRight} from "lucide-react";
 import React from "react";
 import {useTranslation} from "react-i18next";
+import {cn} from "@/lib/utils";
 
 interface PaginationControlsProps {
     hasPrevious: boolean;
@@ -19,10 +20,9 @@ export const PaginationControls: React.FC<PaginationControlsProps> = ({
                                                                           isLoading = false,
                                                                       }) => {
     const {t} = useTranslation();
-    if (!hasPrevious && !hasNext) return null;
 
     return (
-        <div className="flex justify-center gap-3 mt-8">
+        <div className={cn("flex justify-center gap-3 mt-8", (!hasPrevious && !hasNext) && "hidden")}>
             {hasPrevious && (
                 <Button
                     variant="outline"
