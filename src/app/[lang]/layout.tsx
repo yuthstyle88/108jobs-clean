@@ -12,6 +12,7 @@ import GlobalError from "@/components/GlobalError";
 import GlobalLoader from "@/components/Common/Loading/Loading";
 import {getLangCookies} from "@/utils/getLangCookies";
 import {UserServiceProvider} from "@/contexts/UserServiceContext";
+import {UserEventsProvider} from "@/modules/chat/contexts/UserEventsContext";
 import {GlobalLoaderProvider} from "@/hooks/ui/GlobalLoaderContext";
 import {TooltipProvider} from "@/components/ui/Tooltip";
 import {I18NextService} from "@/services";
@@ -73,15 +74,17 @@ export default async function RootLayout({
                     <UserServiceProvider
                         isoData={isoData ?? null}
                     >
-                        <AnnouncementProvider>
-                            <TooltipProvider>
-                                <Toaster richColors closeButton position="bottom-right"/>
-                                <AccessibleAnnouncements/>
-                                <GlobalError/>
-                                <GlobalLoader/>
-                                {children}
-                            </TooltipProvider>
-                        </AnnouncementProvider>
+                        <UserEventsProvider>
+                            <AnnouncementProvider>
+                                <TooltipProvider>
+                                    <Toaster richColors closeButton position="bottom-right"/>
+                                    <AccessibleAnnouncements/>
+                                    <GlobalError/>
+                                    <GlobalLoader/>
+                                    {children}
+                                </TooltipProvider>
+                            </AnnouncementProvider>
+                        </UserEventsProvider>
                     </UserServiceProvider>
                 </GlobalErrorProvider>
             </GlobalLoaderProvider>

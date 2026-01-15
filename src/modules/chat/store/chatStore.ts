@@ -102,6 +102,13 @@ export const useChatStore = create<ChatStoreState & ChatStoreActions>((set, get)
                     );
                 } catch {
                 }
+
+                // Update room list's last message time to allow sorting by newest
+                try {
+                    const { useRoomsStore } = require('@/modules/chat/store/roomsStore');
+                    useRoomsStore.getState().updateLastMessage?.(roomId, msg.senderId, msg.createdAt);
+                } catch {
+                }
             }
         }
 

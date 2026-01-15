@@ -15,7 +15,6 @@ import {useUserStore} from "@/store/useUserStore";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 import {UserService} from "@/services";
 import ChatWrapper from "@/containers/ChatWrapper";
-import {disableBackgroundUnread, enableBackgroundUnread} from "@/modules/chat/services/backgroundUnreadWatcher";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 
 export default function ProfileLayout({children}: LayoutProps) {
@@ -42,18 +41,6 @@ export default function ProfileLayout({children}: LayoutProps) {
         if (String(storeActiveRoomId ?? "") === String(normalizedRoomId)) return;
         setActiveRoomId(String(normalizedRoomId));
     }, [normalizedRoomId, storeActiveRoomId, setActiveRoomId]);
-
-    useEffect(() => {
-        if (!token || !user?.id) return;
-
-        // Start background unread watcher
-        enableBackgroundUnread(() => token, () => user.id);
-
-        return () => {
-            // Clean up when user leaves chat area
-            disableBackgroundUnread();
-        };
-    }, [token, user?.id]);
 
     if (!user || !token || senderId === 0) {
         return (

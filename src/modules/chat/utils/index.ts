@@ -6,7 +6,6 @@ export * from './structured';
 export * from './workflowTypes';
 export * from './helpers';
 export * from './AckMatcher';
-export * from '../services/backgroundUnreadWatcher';
 export * from './selectors';
 export * from './socket-emitter';
 export * from './socketSend';

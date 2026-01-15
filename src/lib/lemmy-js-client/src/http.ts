@@ -153,6 +153,7 @@ import type {GetUnreadCountResponse} from "./types/GetUnreadCountResponse";
 import type {
     GetUnreadRegistrationApplicationCountResponse
 } from "./types/GetUnreadRegistrationApplicationCountResponse";
+import type {GetUnreadSnapshotResponse} from "./types/GetUnreadSnapshotResponse";
 import type {HideCategory} from "./types/HideCategory";
 import type {HidePost} from "./types/HidePost";
 import type {IdentityCardForm} from "./types/IdentityCardForm";
@@ -3585,6 +3586,23 @@ export class LemmyHttp extends Controller {
             HttpType.Get,
             "/chat/get-peer-status",
             form,
+            options,
+        );
+    }
+
+    /**
+     * @summary Get unread snapshot for all rooms.
+     */
+    @Security("bearerAuth")
+    @Get("/chat/unread-snapshot")
+    @Tags("Chat")
+    async getUnreadSnapshot(
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<object, GetUnreadSnapshotResponse>(
+            HttpType.Get,
+            "/chat/unread-snapshot",
+            {},
             options,
         );
     }

@@ -107,6 +107,8 @@ export type {CustomEmojiKeyword} from "./types/CustomEmojiKeyword";
 export type {CustomEmojiResponse} from "./types/CustomEmojiResponse";
 export type {CustomEmojiView} from "./types/CustomEmojiView";
 export type {DbUrl} from "./types/DbUrl";
+export type {GetUnreadSnapshotResponse} from "./types/GetUnreadSnapshotResponse";
+export type {UnreadSnapshotItem} from "./types/UnreadSnapshotItem";
 export type {DeleteAccount} from "./types/DeleteAccount";
 export type {DeleteComment} from "./types/DeleteComment";
 export type {DeleteCategory} from "./types/DeleteCategory";

@@ -1,6 +1,4 @@
 import type {ChatMessage} from 'lemmy-js-client';
-import {wsSend} from "@/modules/chat/utils/socketSend";
-import {dbg} from "@/modules/chat/utils";
 
 /**
  * PhoenixSenderAdapter

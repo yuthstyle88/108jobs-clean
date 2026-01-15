@@ -5,12 +5,6 @@ import {WebSocketStatus} from "@/modules/chat/types";
 import {onReadReceipt} from '@/modules/chat/events/chatEvents';
 import {useReadLastIdStore} from '@/modules/chat/store/readStore';
 
-
-export interface SendMessageInput {
-    roomId: string;
-    content: string;
-}
-
 export interface UseWebSocketOptions {
     // การยืนยันตัวตน/สโคป
     token?: string | null;
@@ -240,11 +234,6 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
                     adapter.sendHeartbeat();
                 }
             }, 20_000);
-        };
-
-        const stopHeartbeat = () => {
-            if (heartbeatTimer) clearInterval(heartbeatTimer);
-            heartbeatTimer = null;
         };
 
         // Wire base-level handlers
@@ -547,17 +536,21 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
     // Wire read-receipt -> readLastId store update (production readiness: real-time updates)
     useEffect(() => {
         // Subscribe globally to read receipt events and update the store
-        const unsubscribe = onReadReceipt(({ roomId: rid, readerId }) => {
+        const unsubscribe = onReadReceipt(({roomId: rid, readerId}) => {
             try {
                 const setPeerLastReadAt = useReadLastIdStore.getState().setPeerLastReadAt;
                 if (typeof setPeerLastReadAt === 'function') {
                     const nowIso = new Date().toISOString();
                     setPeerLastReadAt(String(rid), Number(readerId), nowIso);
                 }
-            } catch {}
+            } catch {
+            }
         });
         return () => {
-            try { unsubscribe?.(); } catch {}
+            try {
+                unsubscribe?.();
+            } catch {
+            }
         };
     }, []);
 

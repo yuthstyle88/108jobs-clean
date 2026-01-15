@@ -218,7 +218,12 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
         set((s) => ({
             rooms: s.rooms.map((r) =>
                 r.room.id === roomId
-                    ? {...r, lastMessageAt: lastMessageAt ?? r.lastMessage?.createdAt}
+                    ? {
+                        ...r, 
+                        lastMessageAt: lastMessageAt ?? r.lastMessage?.createdAt,
+                        // Ensure lastMessage structure is updated too for components relying on it
+                        lastMessage: r.lastMessage ? { ...r.lastMessage, createdAt: lastMessageAt ?? r.lastMessage.createdAt } : undefined
+                    }
                     : r
             ),
         }));
