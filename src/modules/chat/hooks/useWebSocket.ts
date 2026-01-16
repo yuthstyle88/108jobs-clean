@@ -340,7 +340,6 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
         }
     }, [onOpen, onClose, onError, onMessage, onNewMessage, onTyping, onReconnected, eventHandlers, debug, clearReconnectTimer, scheduleReconnect, startInactivityTimer, resetInactivityTimer]);
 
-    // Connect when token is available
     const connect = useCallback(() => {
         if (!autoConnect) {
             setStatus('idle');
@@ -351,9 +350,6 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
             return;
         }
 
-        // Clear manual disconnect flag when explicitly connecting
-        isManualDisconnectRef.current = false;
-
         const nextTopic = topicBuilder(roomId);
 
         // Fast path: if current adapter is connected for the same topic, do nothing
@@ -362,6 +358,9 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
             log('connect skipped (already connected to same topic)');
             return;
         }
+
+        // Clear manual disconnect flag when explicitly connecting
+        isManualDisconnectRef.current = false;
 
         // Teardown existing adapter (if any) before reconnecting
         if (current) {
@@ -383,7 +382,12 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
     }, [token, roomId, senderId, autoConnect, topicBuilder, bindAdapterHandlers, status, topic]);
 
     const disconnect = useCallback(() => {
-        // Mark as manual disconnect to prevent auto-reconnection
+        const a = adapterRef.current;
+        if (!a) return;
+
+        // Mark as manual disconnect ONLY if we're not currently unmounting/reconnecting
+        // or if explicitly called from UI. 
+        // For simplicity, let's keep it true here but be careful when calling it.
         isManualDisconnectRef.current = true;
 
         // Clear any pending reconnection attempts
@@ -394,7 +398,6 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
         // Clear inactivity timer
         clearInactivityTimer();
 
-        const a = adapterRef.current;
         try {
             a?.close?.();
         } catch {
@@ -462,7 +465,6 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
         return () => listenersRef.current.delete(cb);
     }, []);
 
-    // Auto-connect on mount / token change; auto-join when roomId changes
     useEffect(() => {
         if (!autoConnect || !token || !roomId) {
             setStatus('idle');
@@ -470,7 +472,24 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
         }
         connect();
         return () => {
-            disconnect();
+            const a = adapterRef.current;
+            if (a) {
+                // For cleanup on unmount, we want a "silent" disconnect
+                // that doesn't mark it as manual so that if we remount quickly
+                // (due to React StrictMode or navigation) it can reconnect.
+                clearReconnectTimer();
+                clearInactivityTimer();
+                try {
+                    a.close?.();
+                } catch {
+                }
+                try {
+                    a.disconnect?.();
+                } catch {
+                }
+                adapterRef.current = null;
+                setStatus('disconnected');
+            }
         };
     }, [autoConnect, token, roomId]);
 

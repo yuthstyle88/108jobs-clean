@@ -102,7 +102,7 @@ export type RoomsState = {
     /** Move a room to the top of the list (e.g., new message or focus) */
     bumpRoomToTop: (roomId: string) => void;
     /** Upsert room by id */
-    upsertRoom: (room: RoomView) => void;
+    upsertRoom: (room: RoomView, shouldBump?: boolean) => void;
     /** Get an immutable snapshot of all rooms */
     getRooms: () => RoomView[];
     /** Get a single room by id */
@@ -119,7 +119,8 @@ export type RoomsState = {
     updateLastMessage: (
         roomId: string,
         readerUserId: number,
-        lastMessageAt?: string
+        lastMessageAt?: string,
+        shouldBump?: boolean
     ) => void;
     /** Set unread count (delegates to unreadStore; roomsStore won't own the value) */
     setUnread: (roomId: string, count: number) => void;
@@ -187,12 +188,16 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
         });
     },
 
-    upsertRoom: (room) =>
+    upsertRoom: (room, shouldBump = true) => {
         set((s) => ({
             rooms: s.rooms.some((r) => r.room.id === room.room.id)
                 ? s.rooms.map((r) => (r.room.id === room.room.id ? {...r, ...room} : r))
                 : [...s.rooms, room],
-        })),
+        }));
+        if (shouldBump) {
+            get().bumpRoomToTop(room.room.id);
+        }
+    },
 
     getRooms: () => get().rooms.slice(),
 
@@ -213,7 +218,7 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
 
     isActive: (roomId) => !!get().rooms.find((r) => r.room.id === roomId && r.isActive),
 
-    updateLastMessage: (roomId, readerUserId, lastMessageAt) => {
+    updateLastMessage: (roomId, readerUserId, lastMessageAt, shouldBump = true) => {
         // update room metadata for display (only lastMessageAt is kept)
         set((s) => ({
             rooms: s.rooms.map((r) =>
@@ -227,6 +232,10 @@ export const useRoomsStore = create<RoomsState>((set, get) => ({
                     : r
             ),
         }));
+
+        if (shouldBump) {
+            get().bumpRoomToTop(roomId);
+        }
 
         // forward who-read info to readLastIdStore
         if (readerUserId != null && lastMessageAt) {

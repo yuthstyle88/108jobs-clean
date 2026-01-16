@@ -84,11 +84,19 @@ async function doSend(deps: SendMessageDeps, msg: ChatMessage): Promise<{ id: st
     if(!s) return {id, sent: false};
     dbg('doSend:start', {id, roomId: (deps as any)?.roomId});
     try {
-        const ok = await s.sendMessage('chat:message', msg);
-        if(!ok) return (dbg('doSend:sendMessage failed', {id}), {id, sent: false});
+        const result = await s.sendMessage('chat:message', msg);
+        if(!result) return (dbg('doSend:sendMessage failed', {id}), {id, sent: false});
+
         // Transport send initiated successfully → mark as 'sending'
         try { useChatStore.getState()?.commitStatus?.(msg.roomId, id, 'sending' as any); } catch {}
-        // Wait for ACK, auto-extend waiting if no reply
+
+        // If sendMessage returned a string, it's the serverId (or confirmation)
+        if (typeof result === 'string') {
+            dbg('doSend:sendMessage returned serverId', { id, result });
+            return { id: result, sent: true };
+        }
+
+        // Otherwise wait for ACK
         let totalWait = 0;
         let acked = false;
         let markedRetrying = false;
@@ -163,9 +171,13 @@ export async function sendChatMessage(deps: SendMessageDeps, data: MessagePayloa
         const pid = (p as any).id;                   // preserve original type
         const rid = (res as any)?.id ?? pid;         // if server returns new id only on success
         // update status without changing identity type
-        store?.commitStatus?.(rid, res?.sent ? rid : pid, res?.sent ? 'delivered' : 'failed');
-        // If send failed, allow future retries by clearing the de-dup marker
-        if (!res?.sent && msgId != null) try { sentSet?.delete?.(msgId); } catch {}
+        if (res?.sent) {
+            store?.commitStatus?.(pid, rid, 'delivered');
+            if (msgId != null) try { sentSet?.add?.(msgId); } catch {}
+        } else {
+            store?.commitStatus?.(deps.roomId, pid, 'failed');
+            if (msgId != null) try { sentSet?.delete?.(msgId); } catch {}
+        }
         return { id: rid, sent: !!res?.sent } as any;
     } catch (err) {
         dbg('sendChatMessage: transport error', err);

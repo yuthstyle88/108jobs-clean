@@ -1,11 +1,12 @@
 import {RefObject} from "react";
 import {HttpService} from "@/services";
-import {REQUEST_STATE, RequestState} from "@/services/HttpService";
+import {REQUEST_STATE} from "@/services/HttpService";
 import {emitReadReceipt} from "@/modules/chat/events";
 import type {ChatMessageView} from "lemmy-js-client";
-import {ChatMessage} from "lemmy-js-client";
 import {NormalizedEnvelope} from "@/modules/chat/utils/chatSocketUtils";
 import {RoomView} from "@/modules/chat/types";
+import {usePresenceStore} from "@/modules/chat/store/presenceStore";
+import {PresenceStatus} from "lemmy-js-client";
 
 // Type guard: narrow a NormalizedEnvelope to the typing envelope (explicit interface)
 export type TypingEnv = {
@@ -60,7 +61,7 @@ export async function maybeHandleStatusChange(env: any, roomId: string): Promise
 
         if (chatRoomRes.state === REQUEST_STATE.SUCCESS) {
             const newRoom = chatRoomRes.data.room;
-            upsertRoom(newRoom as RoomView);
+            upsertRoom(newRoom as RoomView, false); // Do not bump when refreshing room details (e.g. status)
         } else {
             console.error("[maybeHandleStatusChange] failed:", chatRoomRes);
         }
@@ -102,37 +103,52 @@ export function maybeHandleReadReceipt(env: any, fallbackRoomId: string): boolea
 
 export async function maybeHandlePresenceUpdate(env: any, meId: number): Promise<boolean> {
     try {
-        const evName = String(env?.event || '');
-        // accept any heartbeat-like event names and avoid throwing on missing sender
-        if (!evName || !evName.toLowerCase().includes('heartbeat')) return false;
-        const senderId = Number(env?.sender?.id ?? env?.readerId ?? env?.payload?.senderId ?? 0);
-        if (!senderId || senderId === Number(meId)) return false;
-        try {
-            const api = require('@/modules/chat/store/presenceStore');
-            const {setSnapshot} = api.usePresenceStore.getState();
-            setSnapshot([{userId: senderId, lastSeenAt: Date.now()}]);
-        } catch (err) {
-            try {
-                if (localStorage.getItem('chat_debug') === '1') console.error('presence update failed:', err);
-            } catch {
+        const payload = env?.payload;
+        if (env?.event !== 'chats:signal' || !payload) return false;
+
+        const {kind, joins, leaves, userId, status, at, lastSeen} = payload;
+        const {setPeerOnline, setPeerOffline} = usePresenceStore.getState();
+
+        if (kind === 'presence') {
+            if (Array.isArray(joins)) {
+                joins.forEach((j: any) => {
+                    if (j.userId && Number(j.userId) !== meId) {
+                        setPeerOnline(Number(j.userId), j.at ? new Date(j.at).getTime() : Date.now());
+                    }
+                });
             }
+            if (Array.isArray(leaves)) {
+                leaves.forEach((l: any) => {
+                    if (l.userId && Number(l.userId) !== meId) {
+                        const ts = l.lastSeen ? new Date(l.lastSeen).getTime() : Date.now();
+                        setPeerOffline(Number(l.userId), ts);
+                    }
+                });
+            }
+            return true;
         }
-        return true;
-    } catch {
+
+        if (kind === 'globalPresence' && userId) {
+            const uId = Number(userId);
+            if (uId === meId) return true;
+
+            if (status === PresenceStatus.Online) {
+                setPeerOnline(uId, at ? new Date(at).getTime() : Date.now());
+            } else if (status === PresenceStatus.Offline) {
+                // Use lastSeen for offline status, fallback to 'at', then Date.now()
+                const ts = lastSeen ? new Date(lastSeen).getTime() : (at ? new Date(at).getTime() : Date.now());
+                setPeerOffline(uId, ts);
+            }
+            return true;
+        }
+
+        return false;
+    } catch (err) {
+        if (typeof window !== 'undefined' && localStorage.getItem('chat_debug') === '1') {
+            console.error('presence update failed:', err);
+        }
         return false;
     }
-}
-
-// ---- helpers: new messages merge ----
-export function mergeNewMessages(
-    prev: ChatMessage[],
-    incoming: ChatMessage[],
-) {
-    const map = new Map<string, ChatMessage>();
-    for (const m of prev) map.set(String(m.id), m);
-    for (const m of incoming) map.set(String(m.id), m);
-    const arr = Array.from(map.values());
-    return arr.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 // ---- helpers: auto-ack (read receipt) ----
@@ -296,16 +312,6 @@ export function toMsNormalized(v: any): number {
     }
     const t = Date.parse(String(v));
     return Number.isFinite(t) ? Math.trunc(t) : 0;
-}
-
-export function isOlder(
-    lastReadAt: string | number | Date,
-    createdAt: string | number | Date,
-): boolean {
-    const t1 = toMsNormalized(lastReadAt);
-    const t2 = toMsNormalized(createdAt);
-    if (!Number.isFinite(t1) || !Number.isFinite(t2)) return false;
-    return t1 < t2;
 }
 
 /**

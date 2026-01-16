@@ -150,18 +150,7 @@ export function normalizePhoenixEnvelope(
     }
 
     if (isIncomingEventLike(payload) && payload.event === 'phx_reply') {
-        const p: ServerMessageModel | undefined = payload.payload;
-        const ev = p?.response?.event;
-        const evLower = ev.toLowerCase();
-
-        // --- heartbeat presence online events ---
-        if (evLower === 'heartbeat') {
-            return {
-                event: ev,
-                roomId: 'lobby',
-                sender: p?.response.senderId ? ({id: p?.response.senderId} as unknown as ChatMessageView['sender']) : undefined,
-            };
-        }
+        return {event: 'phx_reply', roomId: fallbackRoomId || ''};
     }
 
     // 3) Unknown shape → return empty envelope with generic event

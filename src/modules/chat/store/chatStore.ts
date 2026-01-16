@@ -106,7 +106,12 @@ export const useChatStore = create<ChatStoreState & ChatStoreActions>((set, get)
                 // Update room list's last message time to allow sorting by newest
                 try {
                     const { useRoomsStore } = require('@/modules/chat/store/roomsStore');
-                    useRoomsStore.getState().updateLastMessage?.(roomId, msg.senderId, msg.createdAt);
+                    const roomsStore = useRoomsStore.getState();
+                    const isRoomActive = String(roomsStore.activeRoomId) === String(roomId);
+                    // Explicitly pass true for shouldBump if not active, or if it's our own message being added
+                    // Actually, if we're adding a message, it's ALWAYS activity, so we should bump if not active.
+                    // If it is active, we don't bump to avoid UI jump.
+                    roomsStore.updateLastMessage?.(roomId, msg.senderId, msg.createdAt, !isRoomActive);
                 } catch {
                 }
             }
@@ -179,7 +184,18 @@ export const useChatStore = create<ChatStoreState & ChatStoreActions>((set, get)
         })),
 
 
-    promoteToDelivered: (roomId, id) => get().commitStatus(roomId, id, "delivered"),
+    promoteToDelivered: (roomId, id) => {
+        set((s) => ({
+            messagesByRoom: {
+                ...s.messagesByRoom,
+                [roomId]: s.messagesByRoom[roomId]?.map((m) =>
+                    (String(m.id) === String(id) || (m as any).clientId === String(id))
+                        ? {...m, status: "delivered" as ChatStatus}
+                        : m
+                ),
+            },
+        }));
+    },
 
     markFailed: (roomId, id) =>
         set((s) => ({
@@ -212,7 +228,7 @@ export const useChatStore = create<ChatStoreState & ChatStoreActions>((set, get)
             messagesByRoom: {
                 ...s.messagesByRoom,
                 [roomId]: s.messagesByRoom[roomId]?.map((m) =>
-                    String(m.id) === String(id) ? {...m, status} : m
+                    (String(m.id) === String(id) || (m as any).clientId === String(id)) ? {...m, status} : m
                 ),
             },
         })),

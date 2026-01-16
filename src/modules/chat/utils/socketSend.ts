@@ -112,9 +112,11 @@ export function waitForAck(deps: SendMessageDeps, clientId: string, timeoutMs = 
           dbg('waitForAck addMessageListener event', { ev, payload });
           if (ev !== 'phx_reply') return;
           const status = payload?.status;
-          const id = payload?.response?.id;
-          if (String(id) === String(clientId) && status === 'ok') {
-            dbg('waitForAck received', { clientId, status });
+          const response = payload?.response;
+          const id = response?.id ?? response?.message?.id ?? response?.msgRefId;
+          
+          if (status === 'ok' && (String(id) === String(clientId) || !id)) {
+            dbg('waitForAck received', { clientId, status, id });
             if (!settled) { settled = true; cleanup(); resolve(true); }
           }
         });

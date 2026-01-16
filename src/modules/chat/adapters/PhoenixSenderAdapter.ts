@@ -49,11 +49,18 @@ export class PhoenixSenderAdapter implements ChatSenderAdapter {
         return await new Promise<string | false>((resolve) => {
           try {
             ch.push(event, safePayload)
-              ?.receive?.('ok', (_resp: any) => resolve(String(clientId ?? '')))
+              ?.receive?.('ok', (resp: any) => {
+                // If backend returns {id: "..."} or {message: {id: "..."}}
+                const serverId = resp?.id ?? resp?.message?.id ?? resp?.msgRefId ?? clientId;
+                resolve(String(serverId ?? clientId ?? ''));
+              })
               ?.receive?.('error', (_err: any) => resolve(false))
               ?.receive?.('timeout', () => resolve(false));
-            // ถ้าไม่มี receive (adapter อื่น): ส่งแล้วถือว่าสำเร็จแบบ fire-and-forget
-            setTimeout(() => resolve(String(clientId ?? '')), 0);
+            
+            // If no receive method (unlikely for PhoenixChannel, but for safety)
+            if (typeof ch.push(event, safePayload).receive !== 'function') {
+                setTimeout(() => resolve(String(clientId ?? '')), 0);
+            }
           } catch (_e) {
             resolve(false);
           }

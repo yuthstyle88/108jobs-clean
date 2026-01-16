@@ -154,6 +154,7 @@ import type {
     GetUnreadRegistrationApplicationCountResponse
 } from "./types/GetUnreadRegistrationApplicationCountResponse";
 import type {GetUnreadSnapshotResponse} from "./types/GetUnreadSnapshotResponse";
+import type {PresenceSnapshotItem} from "./types/PresenceSnapshotItem";
 import type {HideCategory} from "./types/HideCategory";
 import type {HidePost} from "./types/HidePost";
 import type {IdentityCardForm} from "./types/IdentityCardForm";
@@ -3602,6 +3603,23 @@ export class LemmyHttp extends Controller {
         return this.#wrapper<object, GetUnreadSnapshotResponse>(
             HttpType.Get,
             "/chat/unread-snapshot",
+            {},
+            options,
+        );
+    }
+
+    /**
+     * @summary Get presence snapshot for all contacts.
+     */
+    @Security("bearerAuth")
+    @Get("/chat/presence-snapshot")
+    @Tags("Chat")
+    async getPresenceSnapshot(
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<object, PresenceSnapshotItem[]>(
+            HttpType.Get,
+            "/chat/presence-snapshot",
             {},
             options,
         );

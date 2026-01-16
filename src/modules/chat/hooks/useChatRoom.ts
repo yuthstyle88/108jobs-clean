@@ -86,7 +86,7 @@ export function useChatRoom({
         // Update presence store with userId-based tracking
         if (peerUserId > 0) {
             try {
-                usePresenceStore.getState().touch(peerUserId, now);
+                usePresenceStore.getState().setPeerOnline(peerUserId, now);
             } catch {}
         }
 
@@ -124,8 +124,6 @@ export function useChatRoom({
     const localSenderRef = useRef<any>(null);
     const ws = useWebSocketContext();
     const adapterAny: any = (ws as any)?.adapter ?? ws;
-    // guards to avoid connect/join loops
-    const connectAttemptedRef = useRef<number>(0);
     const joinedRoomRef = useRef<string | null>(null);
     // Normalize readiness flag for legacy socket vs new adapter
     const isReady = !!((ws as any)?.isReady ?? (ws as any)?.adapter?.isReady);
@@ -167,26 +165,12 @@ export function useChatRoom({
     }, [ws]);
 
     useEffect(() => {
-        console.debug('[chat-room-debug] isReady check', {
-            isReady,
-            wsReady: (ws as any)?.isReady,
-            adapterReady: (ws as any)?.adapter?.isReady,
-            roomId,
-            joinedRoom: joinedRoomRef.current,
-            connectAttemptedAt: connectAttemptedRef.current,
-        });
         if(!adapterAny) return;
 
         // If not ready: connect only once per adapter instance
         if(!isReady) {
-            if(!connectAttemptedRef.current) {
-                try {
-                    adapterAny.connect?.();
-                } catch {
-                }
-                connectAttemptedRef.current = Date.now();
-            }
-            // do not attempt join until ready to avoid spinning
+            // Note: We used to call adapterAny.connect() here, but that is now handled 
+            // by the useWebSocket hook in the WebSocketProvider to avoid race conditions.
             return;
         }
 
@@ -214,7 +198,7 @@ export function useChatRoom({
             } catch {
             }
         }
-    }, [isReady, roomId]);
+    }, [isReady, roomId, adapterAny]);
 
     const { isPartnerTyping } = usePartnerTyping({
         channel: adapterAny,
@@ -316,8 +300,10 @@ export function useChatRoom({
                 } catch {
                 }
             }
+            // Cleanup joined room state on unmount
+            joinedRoomRef.current = null;
         };
-    }, []);
+    }, [roomId]);
 
     // Actions
     const sendMessage = useCallback(async (data: MessagePayload) => {

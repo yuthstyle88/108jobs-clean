@@ -1,6 +1,6 @@
 'use client';
 
-import React, {createContext, useContext, useEffect, useMemo} from 'react';
+import React, {createContext, useEffect, useMemo} from 'react';
 import {useWebSocket} from '@/modules/chat/hooks/useWebSocket';
 import {useUserStore} from '@/store/useUserStore';
 import {UserService} from '@/services';
@@ -8,6 +8,9 @@ import {useRoomsStore} from '@/modules/chat/store/roomsStore';
 import {REQUEST_STATE} from '@/services/HttpService';
 import {hydrateUnread} from '@/modules/chat/store/unreadStore';
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
+import {maybeHandlePresenceUpdate} from "@/modules/chat/utils";
+import {usePresenceStore} from "@/modules/chat/store/presenceStore";
+import {PresenceSnapshotItem, PresenceStatus} from "lemmy-js-client";
 
 interface UserEventsContextValue {
     status: 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error';
@@ -17,8 +20,8 @@ interface UserEventsContextValue {
 
 const UserEventsContext = createContext<UserEventsContextValue | undefined>(undefined);
 
-export const UserEventsProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-    const { user } = useUserStore();
+export const UserEventsProvider: React.FC<React.PropsWithChildren> = ({children}) => {
+    const {user} = useUserStore();
     const token = UserService.Instance.auth();
     const userId = user?.id;
 
@@ -47,7 +50,8 @@ export const UserEventsProvider: React.FC<React.PropsWithChildren> = ({ children
         isReady: ws.isReady,
     }), [ws.status, ws.isReady]);
 
-    const { data: snapshotRes, state: snapshotState } = useHttpGet("getUnreadSnapshot");
+    const {data: snapshotRes, state: snapshotState} = useHttpGet("getUnreadSnapshot");
+    const {data: presenceRes, state: presenceState} = useHttpGet("getPresenceSnapshot");
 
     // Fetch unread snapshot once on mount if user is logged in
     useEffect(() => {
@@ -62,29 +66,64 @@ export const UserEventsProvider: React.FC<React.PropsWithChildren> = ({ children
         }
     }, [snapshotRes, snapshotState.state]);
 
-    // Example: global listener for notifications
+    // Hydrate presence store from snapshot
+    useEffect(() => {
+        if (presenceState.state === REQUEST_STATE.SUCCESS && Array.isArray(presenceRes)) {
+            const list = presenceRes.map((p: PresenceSnapshotItem) => ({
+                userId: Number(p.userId),
+                lastSeenAt: p.status === PresenceStatus.Online
+                    ? (p.at ? new Date(p.at).getTime() : Date.now())
+                    : (p.lastSeen ? new Date(p.lastSeen).getTime() : 0)
+            }));
+            usePresenceStore.getState().setSnapshot(list);
+        }
+    }, [presenceRes, presenceState.state]);
+
     useEffect(() => {
         if (ws.isReady) {
             return ws.addMessageListener((data: any) => {
-                // You can dispatch global events or show toasts here
-                if (process.env.NODE_ENV === 'development') {
-                    console.log('[UserEvents] Received message:', data);
-                }
+                console.log('[UserEvents] Received message:', data);
 
-                // Handle chats:signal to update unread counts
-                if (data?.event === 'chats:signal' && data?.payload?.kind === 'chat') {
-                    const { roomId, unreadCount } = data.payload;
-                    if (roomId) {
-                        if (typeof unreadCount === 'number') {
-                            useRoomsStore.getState().setUnread(String(roomId), unreadCount);
+                // Handle chats:signal
+                if (data?.event === 'chats:signal') {
+                    const payload = data?.payload;
+                    const meId = Number(userId);
+
+                    if (payload?.kind === 'chat') {
+                        const {roomId, unreadCount, lastMessageAt, senderId} = payload;
+                        if (roomId) {
+                            if (typeof unreadCount === 'number') {
+                                useRoomsStore.getState().setUnread(String(roomId), unreadCount);
+                            }
+                            
+                            // If we have lastMessageAt, update metadata. 
+                            // Only bump if the room is NOT active. 
+                            // (Because if it is active, it's already visible and we don't want it jumping around while reading)
+                            const store = useRoomsStore.getState();
+                            const isActive = String(store.activeRoomId) === String(roomId);
+                            
+                            if (lastMessageAt) {
+                                store.updateLastMessage(
+                                    String(roomId), 
+                                    Number(senderId ?? 0), 
+                                    lastMessageAt,
+                                    !isActive // shouldBump: true if NOT active
+                                );
+                            } else {
+                                // Fallback if no lastMessageAt, just bump if not active
+                                if (!isActive) {
+                                    store.bumpRoomToTop(String(roomId));
+                                }
+                            }
                         }
-                        // Bump room to top on every such signal (usually indicates a new message)
-                        useRoomsStore.getState().bumpRoomToTop(String(roomId));
                     }
+
+                    // Handle presence signals via helper
+                    maybeHandlePresenceUpdate(data, meId);
                 }
             });
         }
-    }, [ws.isReady, ws.addMessageListener]);
+    }, [ws.isReady, ws.addMessageListener, userId]);
 
     return (
         <UserEventsContext.Provider value={value}>
@@ -92,11 +131,3 @@ export const UserEventsProvider: React.FC<React.PropsWithChildren> = ({ children
         </UserEventsContext.Provider>
     );
 };
-
-export function useUserEvents() {
-    const context = useContext(UserEventsContext);
-    if (context === undefined) {
-        throw new Error('useUserEvents must be used within a UserEventsProvider');
-    }
-    return context;
-}

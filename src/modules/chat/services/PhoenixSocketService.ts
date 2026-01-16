@@ -26,7 +26,8 @@ export interface RealtimeChannelAdapter {
 
 const DEV = typeof process !== "undefined" && process.env.NODE_ENV !== "production";
 const isInternalEvent = (ev?: string): boolean => !!ev && (
-    ev.startsWith("chan_reply") || ev === "heartbeat" || ev === "presence_state" || ev === "presence_diff"
+    ev.startsWith("chan_reply") || ev === "heartbeat" || ev === "presence_state" || ev === "presence_diff" ||
+    ev === "phx_reply" || ev === "phx_error" || ev === "phx_leave"
 );
 
 export function getChannelAdapter(token: string, topic: string, roomId: string, senderId: number): RealtimeChannelAdapter {
@@ -127,18 +128,30 @@ export function getChannelAdapter(token: string, topic: string, roomId: string, 
     try {
         const orig = (ch as any).onMessage?.bind(ch);
         (ch as any).onMessage = (event: string, payload: any, ref: any) => {
-            if (event && !isInternalEvent(event)) {
-                let outEvent = event;
-                let outPayload: any = payload == null ? {} : payload;
-                if (payload && typeof payload === "object" && typeof (payload as any).event === "string") {
-                    outEvent = String((payload as any).event);
-                    const inner = (payload as any).payload;
-                    outPayload = inner == null ? {} : inner;
+            if (event) {
+                const env = {
+                    event: event, 
+                    topic: topic.replace(/^room:/, ""), 
+                    payload: payload == null ? {} : payload,
+                    ref: ref
+                };
+                
+                // If it's phx_reply, we might want to extract inner event/payload
+                if (event === 'phx_reply' && payload?.response?.event) {
+                    (env as any).innerEvent = payload.response.event;
                 }
-                const env = {event: outEvent, topic: topic.replace(/^room:/, ""), payload: outPayload};
-                try {
-                    adapter.onmessage?.({data: JSON.stringify(env)});
-                } catch {
+
+                if (!isInternalEvent(event)) {
+                    try {
+                        adapter.onmessage?.({data: JSON.stringify(env)});
+                    } catch {
+                    }
+                } else if (event === 'phx_reply' || event === 'phx_error') {
+                    // Still forward replies/errors but marked as such so waitForAck can see them
+                    try {
+                        adapter.onmessage?.({data: JSON.stringify(env)});
+                    } catch {
+                    }
                 }
             }
             return orig ? orig(event, payload, ref) : payload;

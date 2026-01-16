@@ -29,30 +29,16 @@ const ChatWrapper: React.FC = () => {
         };
     }, [debouncedSetSearchQuery]);
 
-    // Sync prop activeRoomId -> store (one-way)
-    // useEffect(() => {
-    //     if (!activeRoomId) return;
-    //     if (String(storeActiveRoomId ?? "") === String(activeRoomId)) return;
-    //     setActiveRoomId(String(activeRoomId));
-    // }, [activeRoomId, storeActiveRoomId, setActiveRoomId]);
-
     // Memoized filtered rooms to optimize search performance
     const filteredRooms = useMemo(() => {
         if (!rooms || rooms.length === 0) return [];
 
         const validRooms = rooms.filter((r: any) => r?.room?.id);
 
-        // Sort by last message date (newest first)
-        const sortedRooms = [...validRooms].sort((a: any, b: any) => {
-            const dateA = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0;
-            const dateB = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0;
-            return dateB - dateA;
-        });
-
         const q = searchQuery.trim().toLowerCase();
-        if (!q) return sortedRooms;
+        if (!q) return validRooms;
 
-        return sortedRooms.filter((r: any) => {
+        return validRooms.filter((r: any) => {
             const postName = (r.post?.name ?? "").toLowerCase();
 
             const participantNames = (r.participants ?? [])
