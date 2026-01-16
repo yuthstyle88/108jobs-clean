@@ -1,21 +1,27 @@
 "use client";
 
 import {useLanguage} from "@/contexts/LanguageContext";
-import React, {useMemo, useState, useEffect} from "react";
+import React, {useMemo, useState, useEffect, useRef} from "react";
 import {debounce} from "lodash";
 import {useTranslation} from "react-i18next";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 import ChatRoomItem from "@/modules/chat/components/ChatRoomItem";
 import {useUserStore} from "@/store/useUserStore";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
+import {REQUEST_STATE} from "@/services/HttpService";
+import {RoomView} from "@/modules/chat/types";
 
 const ChatWrapper: React.FC = () => {
     const {t} = useTranslation();
     const rooms = useRoomsStore((s) => s.rooms);
-    // const storeActiveRoomId = useRoomsStore((s) => s.activeRoomId);
-    // const setActiveRoomId = useRoomsStore((s) => s.setActiveRoomId);
+    const nextPage = useRoomsStore((s) => s.nextPage);
+    const appendRooms = useRoomsStore((s) => s.appendRooms);
+    const setPagination = useRoomsStore((s) => s.setPagination);
     const {lang: currentLang} = useLanguage();
     const {user: localUser} = useUserStore();
     const [searchQuery, setSearchQuery] = useState("");
+    const [isFetchingMore, setIsFetchingMore] = useState(false);
+    const loadMoreRef = useRef<HTMLDivElement>(null);
 
     // Debounce search input to prevent excessive re-renders
     const debouncedSetSearchQuery = useMemo(
@@ -57,6 +63,59 @@ const ChatWrapper: React.FC = () => {
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         debouncedSetSearchQuery(e.target.value);
     };
+
+    const {data: moreRoomsRes, state: moreRoomsState, execute: fetchMore} = useHttpGet("listChatRooms", [{
+        pageCursor: nextPage || undefined,
+        limit: 20
+    }], {
+        revalidateOnMount: false,
+        revalidateOnFocus: false,
+    });
+
+    const handleLoadMore = async () => {
+        if (isFetchingMore || !nextPage) return;
+        setIsFetchingMore(true);
+        fetchMore();
+    };
+
+    const lastProcessedCursorRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        if (moreRoomsState.state === REQUEST_STATE.SUCCESS && moreRoomsRes) {
+            const currentCursor = nextPage || "initial";
+            if (lastProcessedCursorRef.current === currentCursor) return;
+            lastProcessedCursorRef.current = currentCursor;
+
+            const mappedRooms = (moreRoomsRes.rooms || []).map(r => ({...r, isActive: false}));
+            appendRooms(mappedRooms as RoomView[]);
+            setPagination(moreRoomsRes.nextPage || null);
+            setIsFetchingMore(false);
+        } else if (moreRoomsState.state === REQUEST_STATE.FAILED) {
+            setIsFetchingMore(false);
+        }
+    }, [moreRoomsRes, moreRoomsState.state, appendRooms, setPagination, nextPage]);
+
+    // Automatic load more on scroll
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && nextPage && !isFetchingMore) {
+                    handleLoadMore();
+                }
+            },
+            {threshold: 0.1}
+        );
+
+        if (loadMoreRef.current) {
+            observer.observe(loadMoreRef.current);
+        }
+
+        return () => {
+            if (loadMoreRef.current) {
+                observer.unobserve(loadMoreRef.current);
+            }
+        };
+    }, [nextPage, isFetchingMore]);
 
     return (
         <>

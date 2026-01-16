@@ -46,6 +46,7 @@ export function UserServiceProvider({children, isoData}: UserServiceProviderProp
     const setPerson = useUserStore((s) => s.setPerson);
     const setUserInfo = useUserStore((s) => s.setUserInfo);
     const setRoom = useRoomsStore((s) => s.setRooms);
+    const setPagination = useRoomsStore((s) => s.setPagination);
     const setSiteRes = useSiteStore((s) => s.setSiteRes);
     const setCategories = useCategoriesStore((s) => s.setCategories);
     const setBankAccounts = useBankAccountsStore((s) => s.setBankAccounts);
@@ -68,6 +69,7 @@ export function UserServiceProvider({children, isoData}: UserServiceProviderProp
             setPerson(isoMyUser?.myUserInfo?.localUserView?.person ?? null);
             setUserInfo(isoMyUser.myUserInfo ?? null);
             setRoom(initialRooms);
+            setPagination(isoMyUser.chatRooms?.nextPage ?? null);
             setBankAccounts(initialBankAccounts);
             // site + categories
             if (isoMyUser.siteRes) {

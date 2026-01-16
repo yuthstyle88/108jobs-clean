@@ -70,7 +70,7 @@ const ChatRoomItem = ({room, currentLang, localUser}: ChatRoomListProps) => {
                                 className="text-xs text-gray-500 truncate max-w-[200px]"
                                 title={`Job ${jobId}`}
                             >
-                                {(room.post?.name || "").length > 30 ? (room.post?.name || "").slice(0, 30) + ".." : room.post?.name || ""}
+                                {room.post?.name && room.post.name.length > 30 ? room.post.name.slice(0, 30) + ".." : room.post?.name || ""}
                             </p>
                         )}
                     </div>

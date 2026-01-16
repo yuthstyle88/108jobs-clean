@@ -91,7 +91,8 @@ export const UserEventsProvider: React.FC<React.PropsWithChildren> = ({children}
 
                     if (payload?.kind === 'chat') {
                         const {roomId, unreadCount, lastMessageAt, senderId} = payload;
-                        if (roomId) {
+                        // TODO: Need handling for bump to top on multiple devices
+                        if (roomId && senderId !== undefined) {
                             if (typeof unreadCount === 'number') {
                                 useRoomsStore.getState().setUnread(String(roomId), unreadCount);
                             }

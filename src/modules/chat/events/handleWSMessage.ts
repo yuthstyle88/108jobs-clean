@@ -9,7 +9,7 @@ import {
     unwrapPhoenixFrame,
 } from "@/modules/chat/utils/chatSocketUtils";
 import {emitChatTyping,} from "@/modules/chat/events/index";
-import type {ChatMessage, ChatRoomResponse} from "lemmy-js-client";
+import type {ChatMessage} from "lemmy-js-client";
 import {
     buildMessageSignature,
     cleanupFetch,
@@ -20,7 +20,7 @@ import {
     tryFlushAutoAck
 } from "@/modules/chat/utils";
 import {ChatTypingDetail} from "@/modules/chat/types";
-import {RequestState} from "@/services/HttpService";
+import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 
 export interface HandlerRefs {
     /** set of processed message signatures for dedupe */
@@ -80,11 +80,14 @@ export function createHandleWSMessage(deps: HandlerDeps) {
         let payload: any;
         try {
             payload = unwrapPhoenixFrame(event);
+            console.log('Received WebSocket message:', payload);
             const evt = payload?.data?.event;
             if (evt === 'chat:message' && !isValidIncomingChatPayload(payload)) {
                 // Keep log lightweight; the permissive mapper below will try its best.
                 try {
                     console.debug("[ws] payload failed strict validation (chat:message); attempting permissive mapping");
+                    const store = useRoomsStore.getState();
+                    store.bumpRoomToTop(String(payload.data.roomId));
                 } catch {
                 }
             }

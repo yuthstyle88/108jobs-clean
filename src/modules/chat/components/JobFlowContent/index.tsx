@@ -59,10 +59,10 @@ export const JobFlowContent: React.FC<JobFlowContentProps> = ({
                                 : "No Job Title"}
                         </h3>
                         <p className="text-[0.65rem] sm:text-xs md:text-sm text-gray-600 line-clamp-2">
-                            {currentRoom?.post?.body
-                                ? currentRoom.post.body.length > 40
-                                    ? `${currentRoom.post.body.slice(0, 40)}...`
-                                    : currentRoom.post.body
+                            {(currentRoom?.post as any)?.body
+                                ? (currentRoom.post as any).body.length > 40
+                                    ? `${(currentRoom.post as any).body.slice(0, 40)}...`
+                                    : (currentRoom.post as any).body
                                 : "No description available"}
                         </p>
                     </div>

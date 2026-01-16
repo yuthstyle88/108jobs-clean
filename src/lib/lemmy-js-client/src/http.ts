@@ -245,7 +245,6 @@ import type {UpsertCard} from "./types/UpsertCard";
 import type {UserBlockInstanceParams} from "./types/UserBlockInstanceParams";
 import type {VerifyEmail} from "./types/VerifyEmail";
 import type {VisitProfileResponse} from "./types/VisitProfileResponse";
-import type {ListUserChatRoomsQuery} from "./types/ListUserChatRoomsQuery";
 import type {ListUserChatRoomsResponse} from "./types/ListUserChatRoomsResponse";
 import type {ChatRoomId} from "./types/ChatRoomId";
 import type {ChatRoomResponse} from "./types/ChatRoomResponse";
@@ -291,6 +290,7 @@ import {VerifyBankAccount} from "./types/VerifyBankAccount";
 import {ListRidersQuery} from "./types/ListRidersQuery";
 import {ListRidersResponse} from "./types/ListRidersResponse";
 import {AdminVerifyRiderRequest} from "./types/AdminVerifyRiderRequest";
+import {ListUserChatRoomsQuery} from "./types/ListUserChatRoomsQuery";
 
 enum HttpType {
     Get = "GET",

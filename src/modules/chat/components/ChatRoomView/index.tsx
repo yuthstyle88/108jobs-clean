@@ -31,6 +31,7 @@ import type {
     ChatRoomView,
     LocalUser,
     Post,
+    PostPreview,
     SubmitUserReviewForm
 } from "lemmy-js-client";
 import ChatHeader from "../ChatHeader";
@@ -76,7 +77,7 @@ type MessageForm = { message: string };
  * @property peerPublicKeyHex   Public key used for peer activity/typing via channel hook.
  */
 interface ChatRoomViewProps {
-    post?: Post;
+    post?: Post | PostPreview;
     partner: ChatParticipantView;
     roomId: ChatRoomId;
     localUser: LocalUser;
@@ -91,7 +92,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                                                    }) => {
     const {t} = useTranslation();
     const {person, userInfo} = useUserStore();
-    const {wasUnread, clearWasUnread, markRoomRead, getRoom} = useRoomsStore();
+    const {wasUnread, clearWasUnread, getRoom} = useRoomsStore();
     const roomData = getRoom(roomId);
     const wallet = userInfo?.wallet;
     // --- Availability & basic send gating ---
@@ -165,6 +166,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
         handleRemoveSelectedFile
     } = useFileUpload({setError, t: (k: string) => t(k)});
     const upsertHistory = useChatStore(s => s.upsertHistory);
+    const markRoomReadInStore = useRoomsStore(s => s.markRoomRead);
 
     // fetch the last read timestamp from the backend and store it into useReadLastIdStore
     useLoadLastRead(roomId, partnerId);
@@ -189,7 +191,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     });
     const {
         actions: {sendMessage, sendTyping, sendRoomUpdate, sendReadReceipt},
-        state: {refreshRoomData, isPartnerTyping},
+        state: {isPartnerTyping},
     } = useChatRoom({roomId, localUser, roomData: currentRoom});
 
     // Deduplicate read-receipts: remember last sent message id
@@ -251,7 +253,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                 if (typeof document !== 'undefined' && document.visibilityState === 'visible' && document.hasFocus()) {
                     try {
                         sendLatestRead();
-                        markRoomRead(roomId);
+                        markRoomReadInStore(roomId);
                     } catch {
                     }
                 }
@@ -336,7 +338,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
             .then(() => {
                 // after successfully fetching messages
                 clearWasUnread(roomId);
-                markRoomRead(roomId);
+                markRoomReadInStore(roomId);
             })
             .catch((error) => {
                 console.log('❌ Failed to fetch initial history:', error);
@@ -569,8 +571,11 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
         const oldHeight = rootEl.scrollHeight;
         fetchHistory()
             .then(() => {
-                const newHeight = rootEl.scrollHeight;
-                rootEl.scrollTop += newHeight - oldHeight; // preserve visual position
+                // Use requestAnimationFrame to ensure DOM is updated
+                requestAnimationFrame(() => {
+                    const newHeight = rootEl.scrollHeight;
+                    rootEl.scrollTop += newHeight - oldHeight; // preserve visual position
+                });
             })
             .catch(() => {
             });

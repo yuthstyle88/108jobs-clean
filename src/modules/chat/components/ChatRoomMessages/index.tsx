@@ -41,6 +41,7 @@ const ChatRoomMessages: React.FC<ChatRoomMessagesProps> = ({
     const data = React.useMemo(() => [...messages], [messages]);
     const virtuosoRef = React.useRef<VirtuosoHandle | null>(null);
     const [isAtBottom, setIsAtBottom] = React.useState(true);
+    const isAtBottomRef = React.useRef(true);
 
     const prevLengthRef = React.useRef(data.length);
     const headIdRef = React.useRef<string | null>(
@@ -64,17 +65,22 @@ const ChatRoomMessages: React.FC<ChatRoomMessagesProps> = ({
         initialLoadDoneRef.current = initialLoadDone;
     }, [initialLoadDone]);
 
+    const onTopReachedRef = React.useRef(onTopReached);
+    React.useEffect(() => {
+        onTopReachedRef.current = onTopReached;
+    }, [onTopReached]);
+
     const handleTopReached = React.useCallback(() => {
         if (!hasMoreRef.current || isFetchingRef.current) return;
-        onTopReached?.();
-    }, [onTopReached]);
+        onTopReachedRef.current?.();
+    }, []);
 
     const handleRangeChanged = React.useCallback((range: { startIndex: number; endIndex: number }) => {
         rangeRef.current = range;
         if (!initialLoadDoneRef.current && range.startIndex === 0) {
             return;
         }
-        if (range.startIndex <= 10 && hasMoreRef.current && !isFetchingRef.current) {
+        if (range.startIndex <= 2 && hasMoreRef.current && !isFetchingRef.current) {
             handleTopReached();
         }
     }, [handleTopReached]);
@@ -106,17 +112,86 @@ const ChatRoomMessages: React.FC<ChatRoomMessagesProps> = ({
                     behavior: 'auto',
                     align: 'start',
                 });
-            }, 0);
-        } else if (isAppend || isAtBottom) {
+            }, 10);
+        } else if (isAppend || isAtBottomRef.current) {
             setTimeout(() => {
                 virtuosoRef.current?.scrollToIndex({
                     index: newLength - 1,
                     behavior: 'auto',
                     align: 'end',
                 });
-            }, 0);
+            }, 10);
         }
-    }, [data, isAtBottom]);
+    }, [data]);
+
+    const handleAtBottomChange = React.useCallback((bottom: boolean) => {
+        isAtBottomRef.current = bottom;
+        setIsAtBottom((prev) => {
+            if (prev === bottom) return prev;
+            return bottom;
+        });
+    }, []);
+
+    const onAtBottomChangeRef = React.useRef(onAtBottomChange);
+    React.useEffect(() => {
+        onAtBottomChangeRef.current = onAtBottomChange;
+    }, [onAtBottomChange]);
+
+    React.useEffect(() => {
+        onAtBottomChangeRef.current?.(isAtBottom);
+    }, [isAtBottom]);
+
+    const FooterComponent = React.useMemo(() => () => <div className="h-4 sm:h-6"/>, []);
+    const HeaderComponent = React.useMemo(() => {
+        if (!hasMore) return undefined;
+        return () => (
+            <div className="w-full flex justify-center my-2 sm:my-3">
+                <div
+                    className={`inline-block px-4 sm:px-5 py-2 text-gray-800 bg-gradient-to-r from-gray-100 to-gray-200 text-xs sm:text-sm font-medium text-center rounded-full min-w-[100px] sm:min-w-[120px] shadow-sm hover:shadow-lg transition-all duration-300 border border-transparent ${isFetching ? 'border-blue-300' : ''}`}>
+                    {isFetching ? (
+                        <div className="flex space-x-1.5 justify-center items-center">
+                            <span className="dot-flashing w-2.5 h-2.5 rounded-full"></span>
+                            <span className="dot-flashing w-2.5 h-2.5 rounded-full"></span>
+                            <span className="dot-flashing w-2.5 h-2.5 rounded-full"></span>
+                        </div>
+                    ) : (
+                        t("profileChat.previousMessages")
+                    )}
+                </div>
+            </div>
+        );
+    }, [hasMore, isFetching, t]);
+
+    const itemContent = React.useCallback((index: number, msg: ChatMessage) => {
+        const currentDate = formatDateToLong(msg.createdAt, currentLocale);
+        const prev = index > 0 ? data[index - 1] : null;
+        const prevDate = prev ? formatDateToLong(prev.createdAt, currentLocale) : null;
+        const showDate = currentDate !== prevDate;
+
+        return (
+            <div className="px-2 sm:px-4 last:mb-0"> {/* Responsive padding */}
+                {showDate && (
+                    <div className="w-full flex justify-center my-2 sm:my-3">
+                        <div
+                            className="inline-block px-2 sm:px-3 py-1 min-w-[80px] sm:min-w-[100px] text-gray-600 bg-gray-100 text-xs sm:text-sm font-medium text-center rounded-full"
+                        >
+                            {currentDate}
+                        </div>
+                    </div>
+                )}
+                <ChatMessageItem message={msg} partnerAvatar={partnerAvatar} partnerId={partnerId}/>
+            </div>
+        );
+    }, [data, currentLocale, partnerAvatar, partnerId]);
+
+    const computeItemKey = React.useCallback((_index: number, msg: ChatMessage) => {
+        const m: any = msg as any;
+        const id = m?.id ?? m?.clientId;
+        if (id != null) return String(id);
+        const created = m?.createdAt ?? '';
+        const sender = m?.senderId ?? '';
+        return `${created}|${sender}`;
+    }, []);
 
     return (
         <>
@@ -152,69 +227,20 @@ const ChatRoomMessages: React.FC<ChatRoomMessagesProps> = ({
             <Virtuoso
                 ref={virtuosoRef}
                 data={data}
-                firstItemIndex={0}
-                initialTopMostItemIndex={data.length > 0 ? data.length - 1 : 0}
                 followOutput={true}
                 customScrollParent={customScrollParent ?? undefined}
-                computeItemKey={(_index, msg) => {
-                    const m: any = msg as any;
-                    const id = m?.id ?? m?.clientId;
-                    if (id != null) return String(id);
-                    const created = m?.createdAt ?? '';
-                    const sender = m?.senderId ?? '';
-                    return `${created}|${sender}`;
-                }}
+                computeItemKey={computeItemKey}
                 alignToBottom
                 rangeChanged={handleRangeChanged}
                 atTopStateChange={(atTop) => {
                     // Intentionally empty to avoid double fetching
                 }}
-                atBottomStateChange={(bottom) => {
-                    setIsAtBottom(bottom);
-                    onAtBottomChange?.(bottom);
-                }}
+                atBottomStateChange={handleAtBottomChange}
                 components={{
-                    Footer: () => <div className="h-4 sm:h-6"/>, // Responsive footer height
-                    Header: hasMore
-                        ? () => (
-                            <div className="w-full flex justify-center my-2 sm:my-3">
-                                <div
-                                    className="inline-block px-4 sm:px-5 py-2 text-gray-800 bg-gradient-to-r from-gray-100 to-gray-200 text-xs sm:text-sm font-medium text-center rounded-full min-w-[100px] sm:min-w-[120px] shadow-sm hover:shadow-lg transition-all duration-300 border border-transparent isFetching ? 'border-blue-300' : ''">
-                                    {isFetching ? (
-                                        <div className="flex space-x-1.5 justify-center items-center">
-                                            <span className="dot-flashing w-2.5 h-2.5 rounded-full"></span>
-                                            <span className="dot-flashing w-2.5 h-2.5 rounded-full"></span>
-                                            <span className="dot-flashing w-2.5 h-2.5 rounded-full"></span>
-                                        </div>
-                                    ) : (
-                                        t("profileChat.previousMessages")
-                                    )}
-                                </div>
-                            </div>
-                        )
-                        : undefined,
+                    Footer: FooterComponent,
+                    Header: HeaderComponent,
                 }}
-                itemContent={(index, msg) => {
-                    const currentDate = formatDateToLong(msg.createdAt, currentLocale);
-                    const prev = index > 0 ? data[index - 1] : null;
-                    const prevDate = prev ? formatDateToLong(prev.createdAt, currentLocale) : null;
-                    const showDate = currentDate !== prevDate;
-
-                    return (
-                        <div className="px-2 sm:px-4 last:mb-0"> {/* Responsive padding */}
-                            {showDate && (
-                                <div className="w-full flex justify-center my-2 sm:my-3">
-                                    <div
-                                        className="inline-block px-2 sm:px-3 py-1 min-w-[80px] sm:min-w-[100px] text-gray-600 bg-gray-100 text-xs sm:text-sm font-medium text-center rounded-full"
-                                    >
-                                        {currentDate}
-                                    </div>
-                                </div>
-                            )}
-                            <ChatMessageItem message={msg} partnerAvatar={partnerAvatar} partnerId={partnerId}/>
-                        </div>
-                    );
-                }}
+                itemContent={itemContent}
                 className="w-full h-full overflow-x-hidden" // Replaced inline style with className
             />
         </>
