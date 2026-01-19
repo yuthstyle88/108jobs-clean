@@ -5,6 +5,7 @@ import {useTranslation} from 'react-i18next';
 import {z} from 'zod';
 import {addDaysYMD, isBeforeToday} from '@/utils/helpers';
 import {CustomInput} from "@/components/ui/InputField";
+import {CommentId, LocalUserId, PostId} from "@/lib/lemmy-js-client/src";
 
 export interface ProposedQuotePayload {
     partnerId: number;
@@ -26,9 +27,9 @@ interface QuotationModalProps {
     onClose: () => void;
     // Accept any promise return (boolean | void) to be flexible with handlers
     onSubmit: (data: ProposedQuotePayload) => Promise<boolean | void>;
-    postId?: number;
-    commentId?: number;
-    partnerId: number;
+    postId?: PostId;
+    commentId?: CommentId;
+    partnerId: LocalUserId;
     projectName?: string;
     amount?: number;
 }

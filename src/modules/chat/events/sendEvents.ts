@@ -8,9 +8,9 @@ import {waitForAck, wsSend} from "@/modules/chat/utils/socketSend";
 import {useChatStore} from "@/modules/chat/store/chatStore";
 
 // ---- Ack / Retry tuning (keep minimal & explicit)
-const ACK_TIMEOUT_MS   = Number(process.env.CHAT_ACK_TIMEOUT ?? 8000);
+const ACK_TIMEOUT_MS = Number(process.env.CHAT_ACK_TIMEOUT ?? 8000);
 // Allow extending ACK wait more than once. Default 3x (24s total when timeout=8s)
-const ACK_EXTENDS     = Number(process.env.CHAT_ACK_EXTENDS ?? 3);
+const ACK_EXTENDS = Number(process.env.CHAT_ACK_EXTENDS ?? 3);
 
 // ---- Packet helpers ----
 export function createEvent<T>(event: PhoenixEvent, payload?: T): PhoenixPacket<T> & {
@@ -32,13 +32,13 @@ export interface SendEventDeps {
 // ---- Lightweight emits ----
 export function sendTyping(deps: SendEventDeps, typing: boolean) {
     const a = (deps as any).adapter;
-    if(!a) return;
+    if (!a) return;
     wsSend(a, createEvent('chat:typing', {typing, senderId: deps.senderId, roomId: deps.roomId}));
 }
 
 export function sendReadReceipt(deps: SendEventDeps, lastMessageId: string) {
     const a = (deps as any).adapter;
-    if(!a) return;
+    if (!a) return;
     const pkt = createEvent('chat:readUpTo', {
         secure: false,
         roomId: deps.roomId,
@@ -51,7 +51,7 @@ export function sendReadReceipt(deps: SendEventDeps, lastMessageId: string) {
 
 export function sendRoomUpdateEvent(deps: SendEventDeps, update: Record<string, any>) {
     const a = (deps as any).adapter;
-    if(!a) return;
+    if (!a) return;
     wsSend(a, createEvent('chat:update', {roomId: deps.roomId, ...update}));
 }
 
@@ -61,7 +61,7 @@ export function sendRoomUpdateEvent(deps: SendEventDeps, update: Record<string, 
  */
 export function sendDeliveryAck(deps: SendEventDeps, messageId: string) {
     const a = (deps as any).adapter;
-    if(!a) return;
+    if (!a) return;
     const pkt = createEvent('chat:ack', {
         roomId: deps.roomId,
         receiverId: deps.senderId,
@@ -73,27 +73,32 @@ export function sendDeliveryAck(deps: SendEventDeps, messageId: string) {
 
 // ---- Core send/ack ----
 async function doSend(deps: SendMessageDeps, msg: ChatMessage): Promise<{ id: string; sent: boolean }> {
-    const id = (msg as any).id; // keep original id type (number/string) to match store keys
+    const id = (msg as any).id; // keep the original id type (number/string) to match store keys
     const s = (deps as any).sender;
     const a = (deps as any).adapter;
     const isChannelClosed = () => {
         try {
             return a && (a.closed === true || a.isClosed?.() === true || a.isOpen?.() === false);
-        } catch { return false; }
+        } catch {
+            return false;
+        }
     };
-    if(!s) return {id, sent: false};
+    if (!s) return {id, sent: false};
     dbg('doSend:start', {id, roomId: (deps as any)?.roomId});
     try {
         const result = await s.sendMessage('chat:message', msg);
-        if(!result) return (dbg('doSend:sendMessage failed', {id}), {id, sent: false});
+        if (!result) return (dbg('doSend:sendMessage failed', {id}), {id, sent: false});
 
         // Transport send initiated successfully → mark as 'sending'
-        try { useChatStore.getState()?.commitStatus?.(msg.roomId, id, 'sending' as any); } catch {}
+        try {
+            useChatStore.getState()?.commitStatus?.(msg.roomId, id, 'sending' as any);
+        } catch {
+        }
 
         // If sendMessage returned a string, it's the serverId (or confirmation)
         if (typeof result === 'string') {
-            dbg('doSend:sendMessage returned serverId', { id, result });
-            return { id: result, sent: true };
+            dbg('doSend:sendMessage returned serverId', {id, result});
+            return {id: result, sent: true};
         }
 
         // Otherwise wait for ACK
@@ -101,13 +106,19 @@ async function doSend(deps: SendMessageDeps, msg: ChatMessage): Promise<{ id: st
         let acked = false;
         let markedRetrying = false;
         while (totalWait < ACK_TIMEOUT_MS * ACK_EXTENDS && !acked) {
-            if (isChannelClosed()) { dbg('doSend:channel-closed-before-ack', { id, totalWait }); break; }
+            if (isChannelClosed()) {
+                dbg('doSend:channel-closed-before-ack', {id, totalWait});
+                break;
+            }
             acked = await waitForAck(deps, msg.id, ACK_TIMEOUT_MS).catch((e) => (dbg('doSend:waitForAck error', e), false));
             if (!acked) {
                 totalWait += ACK_TIMEOUT_MS;
-                dbg('doSend:auto-extend-wait', { id, totalWait });
+                dbg('doSend:auto-extend-wait', {id, totalWait});
                 if (!markedRetrying) {
-                    try { useChatStore.getState()?.commitStatus?.(msg.roomId, id, 'retrying' as any); } catch {}
+                    try {
+                        useChatStore.getState()?.commitStatus?.(msg.roomId, id, 'retrying' as any);
+                    } catch {
+                    }
                     markedRetrying = true;
                 }
             }
@@ -118,8 +129,8 @@ async function doSend(deps: SendMessageDeps, msg: ChatMessage): Promise<{ id: st
         });
     } catch (err: any) {
         const reason = err?.message || err?.reason || String(err);
-        dbg('doSend:error', { id, reason });
-        return { id, sent: false };
+        dbg('doSend:error', {id, reason});
+        return {id, sent: false};
     }
 }
 
@@ -130,9 +141,9 @@ export async function sendChatMessage(deps: SendMessageDeps, data: MessagePayloa
 } | undefined> {
     const store = useChatStore.getState();
     const message = data?.message ?? '';
-    if(!message) return;
+    if (!message) return;
     const hasSender = !!(deps as any)?.sender, hasRoom = !!(deps as any)?.roomId, hasSenderId = !!data?.senderId;
-    if(!hasSender || !hasRoom || !hasSenderId) return;
+    if (!hasSender || !hasRoom || !hasSenderId) return;
 
     const msgId = (data as any)?.id; // keep id type; avoid string-casting
     const sentSet = (deps as any)?.sentSet as Set<any> | undefined;
@@ -141,13 +152,13 @@ export async function sendChatMessage(deps: SendMessageDeps, data: MessagePayloa
 
     const allowEncrypt = data?.secure !== false;
     const p = createMessage(message, (deps as any).roomId, data.senderId, data.secure, data.id);
-    if(!p) return;
+    if (!p) return;
     p.status = 'sending' as any;
     try {
         store?.addSending?.(p);
     } catch {
     }
-    if(msgId) try {
+    if (msgId) try {
         sentSet?.add?.(msgId);
     } catch {
     }
@@ -163,7 +174,7 @@ export async function sendChatMessage(deps: SendMessageDeps, data: MessagePayloa
         (p as any).secure = false;
     }
 
-    if(!(deps as any)?.sender) return; // guard (shouldn’t happen; already checked)
+    if (!(deps as any)?.sender) return; // guard (shouldn’t happen; already checked)
 
 
     try {
@@ -173,16 +184,25 @@ export async function sendChatMessage(deps: SendMessageDeps, data: MessagePayloa
         // update status without changing identity type
         if (res?.sent) {
             store?.commitStatus?.(pid, rid, 'delivered');
-            if (msgId != null) try { sentSet?.add?.(msgId); } catch {}
+            if (msgId != null) try {
+                sentSet?.add?.(msgId);
+            } catch {
+            }
         } else {
             store?.commitStatus?.(deps.roomId, pid, 'failed');
-            if (msgId != null) try { sentSet?.delete?.(msgId); } catch {}
+            if (msgId != null) try {
+                sentSet?.delete?.(msgId);
+            } catch {
+            }
         }
-        return { id: rid, sent: !!res?.sent } as any;
+        return {id: rid, sent: !!res?.sent} as any;
     } catch (err) {
         dbg('sendChatMessage: transport error', err);
         store?.commitStatus?.(deps.roomId, (p as any).id, 'failed');
-        if (msgId != null) try { sentSet?.delete?.(msgId); } catch {}
-        return { id: (p as any).id, sent: false } as any;
+        if (msgId != null) try {
+            sentSet?.delete?.(msgId);
+        } catch {
+        }
+        return {id: (p as any).id, sent: false} as any;
     }
 }

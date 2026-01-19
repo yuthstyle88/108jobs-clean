@@ -5,8 +5,9 @@ import {isBrowser} from "@/utils/browser";
 import {ChatStatus} from "lemmy-js-client";
 
 type AnyRecord = Record<string, unknown>;
+
 function stripUndef<T extends AnyRecord>(obj: T): T {
-    const copy: AnyRecord = { ...(obj as AnyRecord) };
+    const copy: AnyRecord = {...(obj as AnyRecord)};
     for (const k of Object.keys(copy)) {
         if (copy[k] === undefined) delete copy[k];
     }
@@ -38,15 +39,6 @@ export function normalizeChatNewMessageDetail(detail: ChatNewMessageDetail): Cha
     });
 }
 
-export function isChatNewMessageDetail(v: unknown): v is ChatNewMessageDetail {
-    return !!v && typeof v === 'object'
-        && typeof (v as ChatNewMessageDetail).roomId === 'string'
-        && typeof (v as ChatNewMessageDetail).id === 'string'
-        && typeof (v as ChatNewMessageDetail).content === 'string';
-}
-
-export type ChatNewMessageHandler = (detail: ChatNewMessageDetail) => void;
-
 export function emitChatNewMessage(detail: ChatNewMessageDetail): void {
     if (!isBrowser()) return;
     try {
@@ -57,35 +49,12 @@ export function emitChatNewMessage(detail: ChatNewMessageDetail): void {
     }
 }
 
-
-export function onChatNewMessage(handler: ChatNewMessageHandler): () => void {
-    if (!isBrowser()) return () => {
-    };
-    const wrapped = (e: CustomEvent<ChatNewMessageDetail>) => {
-        try {
-            const d = e.detail;
-            if (!isChatNewMessageDetail(d)) return;
-            handler(normalizeChatNewMessageDetail(d));
-        } catch {
-        }
-    };
-    window.addEventListener(CHAT_EVENT.MESSAGE, wrapped as EventListener);
-    return () => window.removeEventListener(CHAT_EVENT.MESSAGE, wrapped as EventListener);
-}
-
 export function emitWsReconnected(): void {
     if (!isBrowser()) return;
     try {
         window.dispatchEvent(new Event(CHAT_EVENT.WS_RECONNECTED as any));
     } catch {
     }
-}
-
-export function onWsReconnected(handler: () => void): () => void {
-    if (!isBrowser()) return () => {
-    };
-    window.addEventListener(CHAT_EVENT.WS_RECONNECTED as any, handler as any);
-    return () => window.removeEventListener(CHAT_EVENT.WS_RECONNECTED as any, handler as any);
 }
 
 /** Emit a unified typing event */
@@ -100,7 +69,7 @@ export function emitChatTyping(detail: { roomId: string; senderId: number; typin
         if (!roomId || !Number.isFinite(senderId)) return;
 
         const baseInit: CustomEventInit = {
-            detail: { roomId, senderId, typing },
+            detail: {roomId, senderId, typing},
             bubbles: true,
             composed: true,
             cancelable: false,
@@ -110,7 +79,8 @@ export function emitChatTyping(detail: { roomId: string; senderId: number; typin
         try {
             const evtWin = new CustomEvent(CHAT_EVENT.TYPING as string, baseInit);
             window.dispatchEvent(evtWin);
-        } catch {}
+        } catch {
+        }
 
         // Dispatch to document (if available)
         try {
@@ -118,7 +88,8 @@ export function emitChatTyping(detail: { roomId: string; senderId: number; typin
                 const evtDoc = new CustomEvent(CHAT_EVENT.TYPING as string, baseInit);
                 document.dispatchEvent(evtDoc);
             }
-        } catch {}
+        } catch {
+        }
     } catch (e) {
         // swallow errors to keep callers simple
     }
@@ -139,18 +110,20 @@ export function emitReadReceipt(roomId: string, lastMessageId: string, readerId:
 }
 
 export type ChatReadReceiptDetail = { roomId: string; lastMessageId: string; readerId: number };
+
 export type ChatReadReceiptHandler = (detail: ChatReadReceiptDetail) => void;
 
 export function onReadReceipt(handler: ChatReadReceiptHandler): () => void {
-    if (!isBrowser()) return () => {};
+    if (!isBrowser()) return () => {
+    };
     const wrapped = (e: CustomEvent<ChatReadReceiptDetail>) => {
         try {
             const d = e.detail;
-            if (!d || typeof d.roomId !== 'string') return;
-            if (typeof d.lastMessageId !== 'string') return;
+            if (!d) return;
             if (!Number.isFinite(d.readerId)) return;
-            handler({ roomId: d.roomId, lastMessageId: d.lastMessageId, readerId: Number(d.readerId) });
-        } catch {}
+            handler({roomId: d.roomId, lastMessageId: d.lastMessageId, readerId: Number(d.readerId)});
+        } catch {
+        }
     };
     window.addEventListener(CHAT_EVENT.READ as any, wrapped as any);
     return () => window.removeEventListener(CHAT_EVENT.READ as any, wrapped as any);

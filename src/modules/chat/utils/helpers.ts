@@ -152,14 +152,14 @@ export async function maybeHandlePresenceUpdate(env: any, meId: number): Promise
 }
 
 // ---- helpers: auto-ack (read receipt) ----
-export function tryFlushAutoAck(handleWSMessageFn: any, roomIdStr: string, readAckRef: RefObject<((lastId: string) => void) | null>, ackCooldownRef: RefObject<number | undefined>) {
+export function tryFlushAutoAck(state: { batchAckLastId: string | null, lastAckedId: string | null }, roomIdStr: string, readAckRef: RefObject<((lastId: string) => void) | null>, ackCooldownRef: RefObject<number | undefined>) {
     try {
-        const batchId = (handleWSMessageFn as any)._batchAckLastId as string | undefined;
-        (handleWSMessageFn as any)._batchAckLastId = null;
+        const batchId = state.batchAckLastId;
+        state.batchAckLastId = null;
         if (!batchId) return;
 
         const now = Date.now();
-        const lastAcked = (handleWSMessageFn as any)._lastAckedId as string | undefined;
+        const lastAcked = state.lastAckedId;
 
         const requireFocus = (() => {
             try {
@@ -182,7 +182,7 @@ export function tryFlushAutoAck(handleWSMessageFn: any, roomIdStr: string, readA
         if (now < (ackCooldownRef.current ?? 0)) return;
 
         readAckRef.current?.(batchId);
-        (handleWSMessageFn as any)._lastAckedId = batchId;
+        state.lastAckedId = batchId;
         ackCooldownRef.current = now + 900;
     } catch {
     }

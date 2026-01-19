@@ -56,13 +56,11 @@ import {useChatRoom} from '@/modules/chat/hooks/useChatRoom';
 import {useChatHistory} from '@/modules/chat/hooks/useChatHistory';
 import {useChatStore} from "@/modules/chat/store/chatStore";
 import {useLoadLastRead} from "@/modules/chat/hooks/useLoadLastRead";
-import {useRoomPresence} from "@/modules/chat/hooks/useRoomPresence";
-import {SubmitReviewModal} from "@/modules/chat/components/Modal/SubmitReviewModal";
+import {useChatReadReceipts} from "@/modules/chat/hooks/useChatReadReceipts";
 import {REQUEST_STATE} from "@/services/HttpService";
-import {isBrowser} from "@/utils";
 import {useUserStore} from "@/store/useUserStore";
 import {useJobFlowSidebar} from "@/modules/chat/contexts/JobFlowSidebarContext";
-
+import {SubmitReviewModal} from "@/modules/chat/components/Modal/SubmitReviewModal";
 
 /** Shape of the form submitted by ChatInput. */
 type MessageForm = { message: string };
@@ -130,11 +128,10 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     const lastClientUpdateRef = useRef<{ status: StatusKey | null; timestamp: number }>({status: null, timestamp: 0});
     const currentStatus = useStateMachineStore((s) => s.state);
     const statusBeforeCancel = useStateMachineStore((s) => s.statusBeforeCancel);
-    // Determine latest quotation amount and whether employer has sufficient balance to approve
+    // Determine latest quotation amount and whether employer has enough balance to approve
     const latestQuoteAmount = currentRoom?.post?.budget ?? 0;
 
     // --- Quotation & balance helpers ---
-    // Compute available wallet balance and whether it is insufficient to approve the latest quotation.
     const availableBalance: number = useMemo(() => {
         const total = Number((wallet as any)?.balanceAvailable ?? (wallet as any)?.balanceTotal ?? 0);
         return Number.isFinite(total) ? total : 0;
@@ -170,8 +167,6 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
 
     // fetch the last read timestamp from the backend and store it into useReadLastIdStore
     useLoadLastRead(roomId, partnerId);
-    // Fetch one-shot presence snapshot for the active room/peer
-    useRoomPresence(partnerId);
 
     // --- History management ---
     // Pulls paginated history for this room and writes pages into the global store via upsertHistory.
@@ -194,93 +189,12 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
         state: {isPartnerTyping},
     } = useChatRoom({roomId, localUser, roomData: currentRoom});
 
-    // Deduplicate read-receipts: remember last sent message id
-    const lastReadSentRef = useRef<string | null>(null);
-    const sendLatestRead = useCallback(() => {
-        // Prevent sending when tab is hidden or unfocused
-        if (document.visibilityState !== "visible" || !document.hasFocus()) {
-            return;
-        }
-        const last = messages[messages.length - 1];
-        if (!last) return;
-        // Only send if last message is not mine
-        if (Number(last.senderId) === Number(localUser.id)) return;
-        const lastIdStr = String(last.id);
-        if (lastReadSentRef.current === lastIdStr) return; // already sent for this message
-        try {
-            sendReadReceipt(roomId, lastIdStr);
-        } catch {
-        }
-        lastReadSentRef.current = lastIdStr;
-    }, [messages, localUser.id, roomId, sendReadReceipt]);
-
-    // Reset dedupe tracker whenever a new message appears
-    useEffect(() => {
-        const last = messages[messages.length - 1];
-        if (last) {
-            const lastIdStr = String(last.id);
-            if (lastReadSentRef.current !== lastIdStr) {
-                lastReadSentRef.current = null; // reset so we can send again
-            }
-        }
-    }, [messages]);
-
-    // Also reset when switching rooms
-    useEffect(() => {
-        lastReadSentRef.current = null;
-    }, [roomId]);
-
-    // Single source of truth for sending read-receipts (deduped by last message id)
-    // Trigger once when the latest message id changes (and when room changes)
-    const lastMsgId = React.useMemo(() => (
-        messages.length ? String(messages[messages.length - 1]?.id ?? '') : null
-    ), [messages]);
-
-    useEffect(() => {
-        if (!lastMsgId) return;
-        sendLatestRead();
-    }, [lastMsgId, roomId, sendLatestRead]);
-
-    // Re-send latest read receipt when the page becomes visible/active again
-    useEffect(() => {
-        let timer: ReturnType<typeof setTimeout> | null = null;
-
-        const trySend = () => {
-            // Debounce a bit to avoid flapping when multiple events fire together
-            if (timer) clearTimeout(timer);
-            timer = setTimeout(() => {
-                // Only attempt when page is actually visible and focused
-                if (typeof document !== 'undefined' && document.visibilityState === 'visible' && document.hasFocus()) {
-                    try {
-                        sendLatestRead();
-                        markRoomReadInStore(roomId);
-                    } catch {
-                    }
-                }
-            }, 120);
-        };
-
-        const onFocus = () => trySend();
-        const onVisibility = () => trySend();
-        const onPageShow = () => trySend();
-        const onOnline = () => trySend();
-
-        window.addEventListener('focus', onFocus);
-        document.addEventListener('visibilitychange', onVisibility);
-        window.addEventListener('pageshow', onPageShow);
-        window.addEventListener('online', onOnline);
-
-        // Fire once on mount if already visible + focused
-        trySend();
-
-        return () => {
-            if (timer) clearTimeout(timer);
-            window.removeEventListener('focus', onFocus);
-            document.removeEventListener('visibilitychange', onVisibility);
-            window.removeEventListener('pageshow', onPageShow);
-            window.removeEventListener('online', onOnline);
-        };
-    }, [sendLatestRead]);
+    const {sendLatestRead} = useChatReadReceipts({
+        roomId,
+        messages,
+        localUserId: Number(localUser.id),
+        sendReadReceipt,
+    });
 
     // Auto-collapse the workflow panel on narrow viewports to preserve space for the conversation.
     useEffect(() => {
@@ -294,30 +208,13 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    // Keep local `currentRoom` in sync with server-refreshed room metadata from the channel.
+    // Keep the local ` currentRoom ` in sync with server-refreshed room metadata from the channel.
     useLayoutEffect(() => {
         if (!roomData) return;
         setCurrentRoom(roomData);
     }, [roomData]);
 
     // Mark active + read, and notify peer on join/leave (single source of truth)
-    useEffect(() => {
-        return () => {
-            try {
-                // announce leave on unmount / room change
-                if (isBrowser()) {
-                    window.dispatchEvent(new CustomEvent('chat:status-change', {
-                        detail: {
-                            roomId,
-                            status: 'room:leave'
-                        }
-                    }));
-                }
-            } catch {
-            }
-        };
-    }, [roomId]);
-
     useEffect(() => {
         if (initialFetchRef.current) return;
 
@@ -340,8 +237,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                 clearWasUnread(roomId);
                 markRoomReadInStore(roomId);
             })
-            .catch((error) => {
-                console.log('❌ Failed to fetch initial history:', error);
+            .catch(() => {
                 initialFetchRef.current = false; // allow retry
             });
     }, [roomId, isFetching, fetchHistory]);
@@ -368,7 +264,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
         statusBeforeCancel,
     });
 
-    // Reflect backend workflow state in the UI state machine. Keeps `hasStarted` and `statusBeforeCancel` coherent.
+    // Reflect the backend workflow state in the UI state machine. Keeps `hasStarted` and `statusBeforeCancel` coherent.
     useEffect(() => {
         const rd: any = currentRoom as any;
         if (!rd) return;
@@ -463,10 +359,10 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                 };
                 emitChatNewMessage(detail);
                 await sendMessage({
-                  message: JSON.stringify({type: 'review-submitted', rating: form.rating, comment: form.comment}),
-                  senderId: Number(localUser.id),
-                  secure: Boolean((localUser as any)?.isMessageSecure),
-                  id: messageId,
+                    message: JSON.stringify({type: 'review-submitted', rating: form.rating, comment: form.comment}),
+                    senderId: Number(localUser.id),
+                    secure: Boolean((localUser as any)?.isMessageSecure),
+                    id: messageId,
                 });
                 return true;
             } else {
@@ -481,17 +377,10 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
 
     /**
      * Handle message submit from ChatInput.
-     * Steps:
-     *   1) Gate by availability & submitting guard.
-     *   2) Build a single source-of-truth content payload (text or file JSON).
-     *   3) Delegate to adapter via `sendMessage` (adapter handles emits/broadcast).
-     *   4) Clear local file selection.
      */
     const onSubmit = useCallback(
         async (data: MessageForm) => {
-            if (isSubmittingRef.current) {
-                return;
-            }
+            if (isSubmittingRef.current) return;
             const message = data.message?.trim() || "";
             if (!message && !selectedFile) return;
 
@@ -508,37 +397,30 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
             isSubmittingRef.current = true;
             const messageId = uuidv4();
 
-            try {
-                const tsIso = new Date().toISOString();
-                const preview = selectedFile
-                    ? (message || `[File] ${selectedFile.fileName}`)
-                    : message;
-                try {
-                    const detail = {
-                        roomId,
-                        id: messageId,
-                        senderId: Number(localUser.id),
-                        content: preview,
-                        createdAt: tsIso,
-                        status: 'sending' as const,
-                    };
-                    emitChatNewMessage(detail);
-                } catch {
-                }
-            } catch {
-            }
+            const preview = selectedFile
+                ? (message || `[File] ${selectedFile.fileName}`)
+                : message;
+
+            emitChatNewMessage({
+                roomId,
+                id: messageId,
+                senderId: Number(localUser.id),
+                content: preview,
+                createdAt: new Date().toISOString(),
+                status: 'sending',
+            });
 
             await sendMessage({
-              message: contentToSend,
-              senderId: Number(localUser.id),
-              secure: Boolean((localUser as any)?.isMessageSecure),
-              id: messageId
+                message: contentToSend,
+                senderId: Number(localUser.id),
+                secure: Boolean((localUser as any)?.isMessageSecure),
+                id: messageId
             });
 
             setSelectedFile(null);
             isSubmittingRef.current = false;
         },
-        [sendMessage, currentRoom, roomId, selectedFile, localUser.id, emitChatNewMessage]
+        [sendMessage, roomId, selectedFile, localUser, emitChatNewMessage, setSelectedFile]
     );
     const flowActions: FlowActions = createFlowActions({
         t,
@@ -673,9 +555,8 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                                         className="mb-2 flex items-center justify-between rounded-md border border-blue-200 bg-blue-50 px-3 py-2">
                                         <div className="flex items-center gap-2 min-w-0">
                                             <span aria-hidden className="text-blue-600">📎</span>
-                                            <div className="min-w-0">
-                                                <p className="text-sm font-medium text-blue-900 truncate"
-                                                   title={selectedFile.fileName}>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-sm font-medium text-blue-900 truncate">
                                                     {selectedFile.fileName}
                                                 </p>
                                             </div>
@@ -684,12 +565,10 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                                             type="button"
                                             onClick={handleRemoveSelectedFile}
                                             disabled={isDeletingFile}
-                                            className={`text-xs ${isDeletingFile ? 'text-gray-400 cursor-not-allowed' : 'text-red-500 hover:text-red-800'}`}
+                                            className={`ml-2 p-1 rounded-full hover:bg-blue-100 transition-colors ${isDeletingFile ? 'text-gray-400 cursor-not-allowed' : 'text-red-500 hover:text-red-800'}`}
                                             aria-label="Remove attached file"
-                                            aria-busy={isDeletingFile}
                                         >
-                                            <Trash2 className={`h-4 w-4 ${isDeletingFile ? 'animate-spin' : ''}`}
-                                                    aria-hidden="true"/>
+                                            <Trash2 className={`h-4 w-4 ${isDeletingFile ? 'animate-spin' : ''}`}/>
                                         </button>
                                     </div>
                                 )}
@@ -746,9 +625,9 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                 isOpen={showQuotationModal}
                 onClose={() => setShowQuotationModal(false)}
                 onSubmit={quotationSubmit}
-                postId={roomPostId as number}
-                commentId={roomCommentId as number}
-                partnerId={partnerId as number}
+                postId={roomPostId}
+                commentId={roomCommentId}
+                partnerId={partnerId}
                 projectName={post?.name || t("profileChat.noJobTitle")}
                 amount={post?.budget}
             />

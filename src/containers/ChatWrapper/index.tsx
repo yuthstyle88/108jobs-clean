@@ -75,7 +75,7 @@ const ChatWrapper: React.FC = () => {
     const handleLoadMore = async () => {
         if (isFetchingMore || !nextPage) return;
         setIsFetchingMore(true);
-        fetchMore();
+        await fetchMore();
     };
 
     const lastProcessedCursorRef = useRef<string | null>(null);

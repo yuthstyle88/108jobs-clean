@@ -10,7 +10,7 @@ import {
     sendRoomUpdateEvent,
     sendDeliveryAck,
 } from "@/modules/chat/events/sendEvents";
-import { useTypingIndicator } from '@/modules/chat/hooks/useTypingIndicator';
+import {useTypingIndicator} from '@/modules/chat/hooks/useTypingIndicator';
 import {ChatRoomView, LocalUser, LocalUserId} from "lemmy-js-client";
 import {useChatStore} from "@/modules/chat/store/chatStore"
 import {makeReadAckEmitter} from "@/modules/chat/utils/socket-emitter";
@@ -19,14 +19,13 @@ import {MessagePayload} from "@/modules/chat/types";
 import {PhoenixSenderAdapter} from '@/modules/chat/adapters/PhoenixSenderAdapter';
 import {usePresenceStore} from '@/modules/chat/store/presenceStore';
 import {useReadLastIdStore} from "@/modules/chat/store/readStore";
-import { usePartnerTyping } from '@/modules/chat/hooks/usePartnerTyping';
-import { useRoomPresence } from '@/modules/chat/hooks/useRoomPresence';
+import {usePartnerTyping} from '@/modules/chat/hooks/usePartnerTyping';
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 
 // Safe DOM CustomEvent dispatcher
 function dispatchDomEvent(name: string, detail: any) {
     try {
-        if(isBrowser()) {
+        if (isBrowser()) {
             window.dispatchEvent(new CustomEvent(name, {detail}));
         }
     } catch {
@@ -45,11 +44,11 @@ export interface UseChatRoomParams {
 }
 
 export function useChatRoom({
-    roomId,
-    onRemoteTyping,
-    localUser,
-    roomData,
-}: UseChatRoomParams) {
+                                roomId,
+                                onRemoteTyping,
+                                localUser,
+                                roomData,
+                            }: UseChatRoomParams) {
     const [pageCursor, setPageCursor] = useState<string | null>(null);
     const fetchingRef = useRef(false);
     const hasMoreRef = useRef(true);
@@ -67,14 +66,12 @@ export function useChatRoom({
         const peer = participants.find((p: any) => String(p.memberId) !== String(localUser?.id));
         return peer ? Number(peer.id) : 0;
     }, [roomData?.participants, localUser?.id]);
-    // Bind presence watcher (HTTP + focus/visibility + heartbeat). Safe for 0/undefined.
-    useRoomPresence((peerUserId || undefined) as any);
 
     const markPeerActive = useCallback(() => {
         const now = Date.now();
 
         // Throttle to avoid churn from extremely frequent packets
-        if(now - lastPeerActiveBumpAtRef.current < PEER_ACTIVE_BUMP_MIN_MS) {
+        if (now - lastPeerActiveBumpAtRef.current < PEER_ACTIVE_BUMP_MIN_MS) {
             return;
         }
         lastPeerActiveBumpAtRef.current = now;
@@ -87,15 +84,16 @@ export function useChatRoom({
         if (peerUserId > 0) {
             try {
                 usePresenceStore.getState().setPeerOnline(peerUserId, now);
-            } catch {}
+            } catch {
+            }
         }
 
         // If there's already a decay timer running, do not create a new one.
         // Let the single timer extend its expiry by reading peerActiveExpiresAtRef when it wakes.
-        if(!peerActiveDecayRef.current) {
+        if (!peerActiveDecayRef.current) {
             const tick = () => {
                 const remaining = peerActiveExpiresAtRef.current - Date.now();
-                if(remaining <= 0) {
+                if (remaining <= 0) {
                     // Expired: flip the flag and clear the timer handle
                     peerActiveRef.current = false;
                     peerActiveDecayRef.current = null;
@@ -141,16 +139,16 @@ export function useChatRoom({
     const addMessageListener = React.useCallback((handler: (data: unknown) => void) => {
         const a: any = (ws as any)?.adapter ?? null;
         // Preferred: adapter.addMessageListener(handler)
-        if(a && typeof a.addMessageListener === 'function') {
+        if (a && typeof a.addMessageListener === 'function') {
             return a.addMessageListener(handler);
         }
         // Legacy: ws.addMessageListener(handler)
-        if(ws && typeof (ws as any).addMessageListener === 'function') {
+        if (ws && typeof (ws as any).addMessageListener === 'function') {
             return (ws as any).addMessageListener(handler);
         }
         // Fallback: EventEmitter-style
         const target: any = a || ws;
-        if(target && typeof target.on === 'function') {
+        if (target && typeof target.on === 'function') {
             target.on('message', handler);
             return () => {
                 try {
@@ -165,26 +163,26 @@ export function useChatRoom({
     }, [ws]);
 
     useEffect(() => {
-        if(!adapterAny) return;
+        if (!adapterAny) return;
 
         // If not ready: connect only once per adapter instance
-        if(!isReady) {
+        if (!isReady) {
             // Note: We used to call adapterAny.connect() here, but that is now handled 
             // by the useWebSocket hook in the WebSocketProvider to avoid race conditions.
             return;
         }
 
         // Ready now → ensure joined exactly once per roomId
-        if(roomId && joinedRoomRef.current !== roomId) {
+        if (roomId && joinedRoomRef.current !== roomId) {
             try {
                 // leave previous if applicable (best-effort)
-                if(joinedRoomRef.current && typeof adapterAny.leave === 'function') {
+                if (joinedRoomRef.current && typeof adapterAny.leave === 'function') {
                     try {
                         adapterAny.leave(joinedRoomRef.current);
                     } catch {
                     }
                 }
-                if(typeof adapterAny.join === 'function') {
+                if (typeof adapterAny.join === 'function') {
                     adapterAny.join(roomId);
                 }
                 joinedRoomRef.current = roomId;
@@ -192,7 +190,7 @@ export function useChatRoom({
             }
 
             // Clear transient UI flags only on new join
-            if(pageCursor !== null) setPageCursor(null);
+            if (pageCursor !== null) setPageCursor(null);
             try {
                 emitWsReconnected?.();
             } catch {
@@ -200,7 +198,7 @@ export function useChatRoom({
         }
     }, [isReady, roomId, adapterAny]);
 
-    const { isPartnerTyping } = usePartnerTyping({
+    const {isPartnerTyping} = usePartnerTyping({
         channel: adapterAny,
         roomId: roomId as any,
         localUserId: Number(localUser.id) || 0,
@@ -213,7 +211,8 @@ export function useChatRoom({
         roomId,
         localUserId: Number(localUser.id) || 0,
         markPeerActive,
-        onRemoteTyping: () => {},
+        onRemoteTyping: () => {
+        },
         processedMsgRef,
         peerActiveRef,
         setPageCursor,
@@ -232,7 +231,7 @@ export function useChatRoom({
     }), [roomId, localUser.id, setRefreshRoomData, markPeerActive, upsertMessage]);
 
     useEffect(() => {
-        if(!ws) return;
+        if (!ws) return;
         const off = addMessageListener((data: unknown) => {
             try {
                 handleWSMessage({data} as any);
@@ -250,7 +249,7 @@ export function useChatRoom({
 
     // Read-ack acker wiring
     useEffect(() => {
-        if(isE2EMock || !roomId) {
+        if (isE2EMock || !roomId) {
             readAckRef.current = null;
             return;
         }
@@ -273,7 +272,7 @@ export function useChatRoom({
 
     // Delivery-ack wiring (confirm received to server)
     useEffect(() => {
-        if(isE2EMock || !roomId) {
+        if (isE2EMock || !roomId) {
             deliveryAckRef.current = null;
             return;
         }
@@ -281,10 +280,13 @@ export function useChatRoom({
         const me = Number(localUser.id) || 0;
         deliveryAckRef.current = (id: number | string) => {
             try {
-                const deps: SendEventDeps = { adapter, roomId, senderId: me } as any;
+                const deps: SendEventDeps = {adapter, roomId, senderId: me} as any;
                 sendDeliveryAck(deps, String(id));
             } catch (e) {
-                try { console.warn('[deliver-ack] failed', e); } catch {}
+                try {
+                    console.warn('[deliver-ack] failed', e);
+                } catch {
+                }
             }
         };
         return () => {
@@ -294,7 +296,7 @@ export function useChatRoom({
 
     useEffect(() => {
         return () => {
-            if(peerActiveDecayRef.current) {
+            if (peerActiveDecayRef.current) {
                 try {
                     clearTimeout(peerActiveDecayRef.current);
                 } catch {
@@ -312,9 +314,9 @@ export function useChatRoom({
         let sender = ctx?.sender as any;
         const adapter = (ctx?.adapter ?? ctx) as any;
 
-        if(!sender && adapter) {
+        if (!sender && adapter) {
             // Lazily create a local sender bound to the adapter (one-time)
-            if(!localSenderRef.current) {
+            if (!localSenderRef.current) {
                 try {
                     localSenderRef.current = new PhoenixSenderAdapter(adapter);
                 } catch {
@@ -323,7 +325,7 @@ export function useChatRoom({
             sender = localSenderRef.current;
         }
 
-        if(!sender && !adapter) return; // require at least one transport
+        if (!sender && !adapter) return; // require at least one transport
 
         // Ensure payload has a senderId (fallback to localUser.id)
         const payload: MessagePayload = {
@@ -354,12 +356,12 @@ export function useChatRoom({
             // Resolve the latest message object from the store
             const lookup = (mid: string) => {
                 const fromMsgs = (st as any).messages?.find?.((m: any) => String(m.id) === String(mid));
-                if(fromMsgs) return fromMsgs;
+                if (fromMsgs) return fromMsgs;
                 return (st as any).pendingMessages?.find?.((m: any) => String(m.id) === String(mid));
             };
 
             const msg = lookup(id);
-            if(sender && typeof sender.send === 'function' && msg) {
+            if (sender && typeof sender.send === 'function' && msg) {
                 await sender.send(msg);
                 return;
             }
@@ -382,18 +384,18 @@ export function useChatRoom({
     }, [ws]);
 
     const sendRoomUpdate = useCallback(
-      (event: SendEventDeps, update: Record<string, any>) => {
-          try {
-              const adapter = ((ws as any)?.adapter ?? ws) as any;
-              sendRoomUpdateEvent(
-                {adapter, roomId: event.roomId, senderId: event.senderId},
-                update
-              );
-          } catch (err) {
-              console.error("[chat] sendRoomUpdateEvent failed:", err);
-          }
-      },
-      [ws, localUser.id]
+        (event: SendEventDeps, update: Record<string, any>) => {
+            try {
+                const adapter = ((ws as any)?.adapter ?? ws) as any;
+                sendRoomUpdateEvent(
+                    {adapter, roomId: event.roomId, senderId: event.senderId},
+                    update
+                );
+            } catch (err) {
+                console.error("[chat] sendRoomUpdateEvent failed:", err);
+            }
+        },
+        [ws, localUser.id]
     );
 
 
@@ -418,13 +420,13 @@ export function useChatRoom({
 
         // Do NOT update peer read locally here.
         // Read-last is a property of the OTHER party; we wait for server/peer event to reflect it.
-        if(!adapter) return;
+        if (!adapter) return;
         try {
-            if(localStorage.getItem('debug_read_ack') === '1') {
-                console.log('[read-ack] sendReadReceipt() 1', { roomId: roomIdArg, senderId: me, lastMessageAt });
+            if (localStorage.getItem('debug_read_ack') === '1') {
+                console.log('[read-ack] sendReadReceipt() 1', {roomId: roomIdArg, senderId: me, lastMessageAt});
             }
             (sendReadReceiptEvent as any)({adapter, roomId: roomIdArg, senderId: me}, lastMessageAt);
-            console.log('[read-ack] sendReadReceipt() 2', { roomId: roomIdArg, senderId: me, lastMessageAt });
+            console.log('[read-ack] sendReadReceipt() 2', {roomId: roomIdArg, senderId: me, lastMessageAt});
             try {
                 (readAckRef.current as any)?.(lastMessageAt);
             } catch {
@@ -438,11 +440,11 @@ export function useChatRoom({
         try {
             const a: any = adapterAny ?? (ws as any);
             const active = !!(
-              a && (
-                a.isReady === true ||
-                a.connected === true ||
-                (typeof a.isOpen === 'function' && a.isOpen() === true)
-              )
+                a && (
+                    a.isReady === true ||
+                    a.connected === true ||
+                    (typeof a.isOpen === 'function' && a.isOpen() === true)
+                )
             );
             if (!active) return; // ไม่พร้อมก็ไม่ส่ง
 
@@ -452,18 +454,19 @@ export function useChatRoom({
             } else {
                 typingEmitter?.stopTyping?.();
             }
-        } catch {}
+        } catch {
+        }
     }, [adapterAny, ws, typingEmitter]);
 
     const onWsErrorDuringFetch = useCallback(() => {
-        if(fetchTimeoutRef.current) {
+        if (fetchTimeoutRef.current) {
             try {
                 clearTimeout(fetchTimeoutRef.current);
             } catch {
             }
             fetchTimeoutRef.current = null;
         }
-        if(fetchResolveRef.current) {
+        if (fetchResolveRef.current) {
             try {
                 fetchResolveRef.current();
             } catch {
