@@ -9,7 +9,7 @@ import {WorkflowId} from "./WorkflowId";
 export type CreateInvoiceForm = {
     employerId: LocalUserId;
     postId: PostId;
-    commentId: CommentId;
+    commentId?: CommentId | null; // Option<CommentId> on backend
     seqNumber: number; // i16 in backend
     amount: number; // using number for simplicity; backend may accept numeric
     proposal: string;
@@ -22,5 +22,5 @@ export type CreateInvoiceForm = {
     startingDay: string; // ISO date string (YYYY-MM-DD)
     deliveryDay: string; // ISO date string (YYYY-MM-DD)
     roomId: ChatRoomId;
-    workFlowId: WorkflowId
+    workflowId: WorkflowId;
 };

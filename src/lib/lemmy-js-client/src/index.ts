@@ -460,3 +460,4 @@ export type {WithdrawStatus} from "./types/WithdrawStatus";
 export type {WithdrawRequestView} from "./types/WithdrawRequestView";
 export type {WorkSample} from "./types/WorkSample";
 export type {PortfolioPic} from "./types/PortfolioPic";
+export type {CurrencyId} from "./types/CurrencyId";

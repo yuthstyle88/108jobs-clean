@@ -56,6 +56,9 @@ const Coins108Jobs = () => {
             walletId: wallet?.id ?? 0,
             bankAccountId: selectedBank,
             amount: parseFloat(withdrawAmount),
+            // TODO: source currencyId from wallet/default-currency endpoint once
+            // multi-currency wallet schema is wired. Hard-coded to THB (id 1) until then.
+            currencyId: 1,
             reason: withdrawReason ?? t("profileCoins.withdrawRequest"),
         };
 

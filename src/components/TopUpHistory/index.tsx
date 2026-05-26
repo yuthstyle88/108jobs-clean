@@ -338,7 +338,13 @@ const TopUpHistory = () => {
                                             {item.topUpRequest.amount.toLocaleString()}
                                         </span>{" "}
                                         <span className="text-xs text-gray-500 uppercase">
-                                            {item.topUpRequest.currencyName}
+                                            {/* TODO: source currency code from a currencies lookup once
+                                                 multi-currency wallet schema is wired. Backend sends
+                                                 currencyId (number) only; the old `currencyName`
+                                                 field never existed on the wire so this span was
+                                                 always blank — preserve that visual until the
+                                                 lookup is added. */}
+                                            {""}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">

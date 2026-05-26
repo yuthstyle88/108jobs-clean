@@ -16,4 +16,9 @@ export type Wallet = {
     isPlatform: boolean,
     createdAt: string,
     updatedAt?: string,
+    /**
+     * Monotonic write counter. Bumped on every balance mutation. See
+     * backend migration 2026-05-25_add_wallet_versioning_and_hold_ledger.
+     */
+    version: number,
 };

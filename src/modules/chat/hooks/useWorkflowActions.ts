@@ -156,6 +156,9 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
     const quotationSubmit = useCallback(async (data: any) => {
         setError(null);
         try {
+            const validWorkflowId = validateWorkflowId('createInvoice');
+            if (!validWorkflowId) return false;
+
             const form: CreateInvoiceForm = {
                 employerId: data.partnerId,
                 postId: data.postId,
@@ -172,10 +175,10 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
                 startingDay: data.startingDay,
                 deliveryDay: data.deliveryDay,
                 roomId: roomId,
-                workflowId: workflowId
-            } as any;
+                workflowId: validWorkflowId,
+            };
 
-            const res = await createInvoice(form as any);
+            const res = await createInvoice(form);
             if (res?.state !== REQUEST_STATE.SUCCESS) {
                 setError(t('profileChat.quotationError') || 'Failed to create invoice. Please try again.');
                 return false;

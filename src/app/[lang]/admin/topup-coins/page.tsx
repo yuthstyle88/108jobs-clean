@@ -78,7 +78,6 @@ const TopUpCoins = () => {
         const payload: AdminTopUpWallet = {
             targetUserId: selectedTransfer.localUser.id,
             qrId: selectedTransfer.topUpRequest.qrId,
-            amount: selectedTransfer.topUpRequest.amount,
             reason: "Admin top-up from payment",
         };
 

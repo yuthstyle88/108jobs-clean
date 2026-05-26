@@ -4,6 +4,7 @@ import {WalletId} from "./WalletId";
 import {BankAccountId} from "./BankAccountId";
 import {WithdrawStatus} from "./WithdrawStatus";
 import {Coin} from "./Coin";
+import {CurrencyId} from "./CurrencyId";
 
 /**
  * Withdrawal Request data.
@@ -14,6 +15,9 @@ export type WithdrawRequest = {
     walletId: WalletId;
     userBankAccountId: BankAccountId;
     amount: Coin;
+    currencyId: CurrencyId;
+    amountCurrency: number;
+    conversionRateUsed: number;
     status: WithdrawStatus;
     reason?: string;
     createdAt: string;
