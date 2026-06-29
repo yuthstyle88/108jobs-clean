@@ -1,5 +1,5 @@
 import React from "react";
-import {ChatStatus} from "lemmy-js-client";
+import {ChatStatus} from "108jobs-client";
 
 interface Props {
     isOwner: boolean | undefined;

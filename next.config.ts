@@ -34,7 +34,7 @@ const nextConfig: NextConfig = {
     },
 
     // Help Next.js tree-shake and dedupe by transpiling local packages if needed
-    transpilePackages: ['lemmy-js-client'],
+    transpilePackages: ['108jobs-client'],
 
     images: {
         // Using Next/Image without on-the-fly optimization to keep server lean

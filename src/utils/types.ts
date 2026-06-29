@@ -10,7 +10,7 @@ import {
     MyUserInfo,
     PersonCommentMention,
     PersonView,
-} from "lemmy-js-client";
+} from "108jobs-client";
 import {RequestState} from "@/services/HttpService";
 import {Match} from "@/utils/router"
 

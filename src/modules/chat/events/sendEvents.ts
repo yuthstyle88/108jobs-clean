@@ -1,4 +1,4 @@
-import type {ChatMessage, LocalUserId} from "lemmy-js-client";
+import type {ChatMessage, LocalUserId} from "108jobs-client";
 import {UserService} from "@/services";
 import {encrypt} from "@/utils";
 import {dbg} from "@/modules/chat/utils";

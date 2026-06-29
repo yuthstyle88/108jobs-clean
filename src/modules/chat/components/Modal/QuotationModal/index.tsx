@@ -5,7 +5,7 @@ import {useTranslation} from 'react-i18next';
 import {z} from 'zod';
 import {addDaysYMD, isBeforeToday} from '@/utils/helpers';
 import {CustomInput} from "@/components/ui/InputField";
-import {CommentId, LocalUserId, PostId} from "@/lib/lemmy-js-client/src";
+import {CommentId, LocalUserId, PostId} from "108jobs-client";
 
 export interface ProposedQuotePayload {
     partnerId: number;

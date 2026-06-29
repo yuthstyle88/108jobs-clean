@@ -3,7 +3,7 @@
 import {ProfileImage} from "@/constants/images";
 import {Pagination} from "@/components/Pagination";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
-import type {CommentView} from "lemmy-js-client";
+import type {CommentView} from "108jobs-client";
 import Image from "next/image";
 import React, {useState} from "react";
 import {useParams, useRouter} from "next/navigation";

@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHttpGet } from "@/hooks/api/http/useHttpGet";
 import { REQUEST_STATE } from "@/services/HttpService";
-import { PaginationCursor, PersonId } from "lemmy-js-client";
+import { PaginationCursor, PersonId } from "108jobs-client";
 
 interface UsePaginatedReviewsProps {
     profileId: PersonId;

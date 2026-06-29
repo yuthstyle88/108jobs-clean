@@ -5,7 +5,7 @@ import {useForm, useFieldArray} from 'react-hook-form';
 import {z} from 'zod';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useTranslation} from 'react-i18next';
-import {Person, PortfolioPic, SaveUserSettings} from 'lemmy-js-client';
+import {Person, PortfolioPic, SaveUserSettings} from '108jobs-client';
 import {useFileUpload} from '@/modules/chat/hooks/useFileUpload';
 import {useHttpPost} from '@/hooks/api/http/useHttpPost';
 import {REQUEST_STATE} from '@/services/HttpService';

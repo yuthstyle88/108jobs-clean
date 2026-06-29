@@ -12,7 +12,7 @@ import {
     faEdit,
     faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import {CategoryNodeView} from "lemmy-js-client";
+import {CategoryNodeView} from "108jobs-client";
 import {useTranslation} from "react-i18next";
 import {toCamelCaseLastSegment} from "@/utils/helpers";
 

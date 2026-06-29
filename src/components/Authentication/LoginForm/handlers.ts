@@ -1,4 +1,4 @@
-import {LoginResponse, OAuthProvider,} from "lemmy-js-client";
+import {LoginResponse, OAuthProvider,} from "108jobs-client";
 import {HttpService, UserService} from "@/services";
 import {setIsoData} from "@/utils/app";
 import {LoginFormClass} from "@/components/Authentication/LoginForm";

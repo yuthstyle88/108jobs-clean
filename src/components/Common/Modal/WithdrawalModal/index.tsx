@@ -4,7 +4,7 @@ import { faCoins, faUniversity, faPlus, faShieldAlt, faShield } from "@fortaweso
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "react-i18next";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { BankAccountId, BankAccountView } from "lemmy-js-client";
+import { BankAccountId, BankAccountView } from "108jobs-client";
 import { useRouter } from "next/navigation";
 
 type Props = {

@@ -11,7 +11,7 @@ import type {
     ListWithdrawRequestQuery,
     WithdrawRequestView,
     WithdrawStatus,
-} from "lemmy-js-client";
+} from "108jobs-client";
 
 const WithdrawHistory = () => {
     const {t} = useTranslation();

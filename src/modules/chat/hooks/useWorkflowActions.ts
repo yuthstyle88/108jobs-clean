@@ -9,7 +9,7 @@ import type {
     CreateInvoiceForm,
     LocalUser,
     PostId
-} from 'lemmy-js-client';
+} from '108jobs-client';
 import type {WsMessageSender} from '@/modules/chat/types';
 import type {StatusKey} from '@/modules/chat/components/FreelanceChatFlow';
 import {sendStructuredMessage} from '@/modules/chat/utils/structured';
@@ -162,7 +162,7 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             const form: CreateInvoiceForm = {
                 employerId: data.partnerId,
                 postId: data.postId,
-                proposalId: data.proposalId,
+                commentId: data.proposalId,
                 seqNumber: 1,
                 amount: data.amount,
                 proposal: data.proposal,

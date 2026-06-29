@@ -12,7 +12,7 @@ import {
     PostSortType,
     SearchCombinedView,
     PostView,
-} from "lemmy-js-client";
+} from "108jobs-client";
 import {useTranslation} from "react-i18next";
 import {
     formatBudget,

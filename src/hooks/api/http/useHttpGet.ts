@@ -1,16 +1,16 @@
 import {useGlobalError} from "@/contexts/GlobalErrorContext"; // Import GlobalError Context
 import useSWR, { SWRConfiguration } from "swr";
-import {callHttp, EMPTY_REQUEST, Payload, REQUEST_STATE, RequestState, WrappedLemmyHttp,} from "@/services/HttpService";
+import {callHttp, EMPTY_REQUEST, Payload, REQUEST_STATE, RequestState, WrappedApi108Jobs,} from "@/services/HttpService";
 import {UserService} from "@/services";
 import {useGlobalLoader} from "@/hooks/ui/GlobalLoaderContext";
 
-export function useHttpGet<K extends keyof WrappedLemmyHttp>(
+export function useHttpGet<K extends keyof WrappedApi108Jobs>(
   // ชื่อ request method
   method: K,
   // พารามิเตอร์ที่อาจเป็น args (อาร์เรย์) หรือตัวเลือกเพิ่มเติม (option object)
   argsOrOptions?:
-    | Parameters<WrappedLemmyHttp[K]>
-    | (Parameters<WrappedLemmyHttp[K]>[0] & SWRConfiguration<RequestState<Payload<K>>, Error>),
+    | Parameters<WrappedApi108Jobs[K]>
+    | (Parameters<WrappedApi108Jobs[K]>[0] & SWRConfiguration<RequestState<Payload<K>>, Error>),
   // SWR options
   maybeOptions?: SWRConfiguration<RequestState<Payload<K>>, Error>,
 ) {
@@ -20,7 +20,7 @@ export function useHttpGet<K extends keyof WrappedLemmyHttp>(
   /* ---------- resolve param / options ---------- */
   // เดิม args เป็นอาร์เรย์ แต่ตอนนี้รองรับ Object เพื่อเพิ่มความยืดหยุ่น
   const args = Array.isArray(argsOrOptions)
-    ? (argsOrOptions as Parameters<WrappedLemmyHttp[K]>)
+    ? (argsOrOptions as Parameters<WrappedApi108Jobs[K]>)
     : argsOrOptions && typeof argsOrOptions === "object"
     ? [argsOrOptions] // รวม options ไว้ในอาร์เรย์
     : undefined;
@@ -37,7 +37,7 @@ export function useHttpGet<K extends keyof WrappedLemmyHttp>(
     setLoading(true); // แสดง Loader
     setError(null); // ล้างข้อผิดพลาดเก่าก่อนเริ่มการดึงข้อมูลใหม่
     try {
-      const typedArgs = (args ?? []) as Parameters<WrappedLemmyHttp[K]>;
+      const typedArgs = (args ?? []) as Parameters<WrappedApi108Jobs[K]>;
       return (await callHttp(
         method,
         ...typedArgs,

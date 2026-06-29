@@ -1,5 +1,5 @@
 import {create} from "zustand";
-import type {BankAccountId, BankAccountView} from "lemmy-js-client";
+import type {BankAccountId, BankAccountView} from "108jobs-client";
 
 export type BankAccountsStore = {
     bankAccounts: BankAccountView[] | null;

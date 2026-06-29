@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GetSiteResponse, PublicOAuthProvider, SiteView, PersonView, Language, LanguageId, Tagline, OAuthProvider, LocalSiteUrlBlocklist, PluginMetadata } from "lemmy-js-client";
+import type { GetSiteResponse, PublicOAuthProvider, SiteView, PersonView, Language, LanguageId, Tagline, OAuthProvider, LocalSiteUrlBlocklist, PluginMetadata } from "108jobs-client";
 
 export type SiteStore = {
   siteRes: GetSiteResponse | null;

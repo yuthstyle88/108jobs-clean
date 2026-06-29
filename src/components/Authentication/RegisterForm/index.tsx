@@ -8,7 +8,7 @@ import * as z from "zod";
 import {HttpService, REQUEST_STATE,} from "@/services/HttpService";
 import {useTranslation} from "react-i18next";
 import {OAuthButtons} from "@/components/Authentication/LoginForm/oauth-provider";
-import {OAuthProvider} from "lemmy-js-client";
+import {OAuthProvider} from "108jobs-client";
 import {handleUseOAuthProvider} from "@/components/Authentication/LoginForm/handlers";
 import {useSearchParams} from "next/navigation";
 import {getAppName} from "@/utils/appConfig";

@@ -1,4 +1,4 @@
-import {LocalUser, Person} from "lemmy-js-client";
+import {LocalUser, Person} from "108jobs-client";
 
 /**
  * Utility functions for working with ProfileData

@@ -4,7 +4,7 @@ import {enUS} from "date-fns/locale/en-US";
 import {th} from "date-fns/locale/th";
 import {vi} from "date-fns/locale/vi";
 import {ImportReport} from "@/utils/dynamic-imports";
-import {MyUserInfo} from "lemmy-js-client";
+import {MyUserInfo} from "108jobs-client";
 
 export const getLocale = (locale: string | undefined): string => {
     if (!locale) return "en-US";
@@ -161,13 +161,6 @@ export const toLocalTime = (input: string | number | Date, locale: string) => {
     d = new Date(iso);
     return isNaN(d.getTime()) ? '' : format(d);
 };
-
-/**
- * Converts timestamp string to Unix timestamp in seconds, as used by Lemmy API
- */
-export function getUnixTimeLemmy(text?: string): number | undefined {
-    return text ? new Date(text).getTime() / 1000 : undefined;
-}
 
 /**
  * Converts timestamp string to Unix timestamp in milliseconds, as used by JavaScript

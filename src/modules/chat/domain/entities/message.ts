@@ -1,5 +1,5 @@
 // ฟังก์ชันย่อย สำหรับสร้าง chat:message event โดยเฉพาะ
-import type {ChatMessage, ChatRoomId, ChatStatus, LocalUserId} from "lemmy-js-client";
+import type {ChatMessage, ChatRoomId, ChatStatus, LocalUserId} from "108jobs-client";
 
 export function createMessage(
   content: string,

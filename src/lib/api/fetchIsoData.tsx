@@ -20,11 +20,11 @@ import {parsePath} from "history";
 import {IncomingHttpHeaders} from "http";
 import {
     GetSiteResponse,
-    LemmyHttp, ListBankAccountsResponse,
+    Api108Jobs, ListBankAccountsResponse,
     ListCategoriesResponse,
     ListUserChatRoomsResponse,
     MyUserInfo
-} from "lemmy-js-client";
+} from "108jobs-client";
 import {getHttpBase} from "@/utils";
 import {getJwtCookieFromServer, setForwardedHeaders} from "@/utils/helper-server";
 
@@ -96,7 +96,7 @@ export default async function fetchIsoData(url: string, incomingHeaders: Incomin
         const headers = await setForwardedHeaders(incomingHeaders);
         const jwt = await getJwtCookieFromServer(incomingHeaders) ?? "";
         // Create a per-request client and set headers without mutating the shared client
-        const tempClient = wrapClient(new LemmyHttp(getHttpBase()));
+        const tempClient = wrapClient(new Api108Jobs(getHttpBase()));
         await (tempClient as any).setHeaders(headers);
 
         // Check authentication for protected routes

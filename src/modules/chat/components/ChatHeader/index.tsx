@@ -2,7 +2,7 @@
 
 import React from "react";
 import AvatarBadge from "@/components/AvatarBadge";
-import { LocalUserId } from "lemmy-js-client";
+import { LocalUserId } from "108jobs-client";
 import { ArrowLeft } from "lucide-react";
 import { usePeerOnline } from "@/modules/chat/store/presenceStore";
 import { useRouter, useParams } from "next/navigation";

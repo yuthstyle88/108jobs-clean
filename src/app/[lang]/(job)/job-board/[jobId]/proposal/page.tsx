@@ -10,7 +10,7 @@ import * as z from "zod";
 import {useTranslation} from "react-i18next";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 import {useCallback} from "react";
-import {CreateComment, PostId} from "lemmy-js-client";
+import {CreateComment, PostId} from "108jobs-client";
 import {REQUEST_STATE} from "@/services/HttpService";
 import useNotification from "@/hooks/ui/useNotification";
 

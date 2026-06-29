@@ -2,7 +2,7 @@
 
 import React, {useState, useEffect} from "react";
 import {buildCategoriesTree} from "@/utils/helpers";
-import {CategoryNodeView} from "lemmy-js-client";
+import {CategoryNodeView} from "108jobs-client";
 import {toast} from "sonner";
 import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";

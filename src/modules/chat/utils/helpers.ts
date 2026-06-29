@@ -2,11 +2,11 @@ import {RefObject} from "react";
 import {HttpService} from "@/services";
 import {REQUEST_STATE} from "@/services/HttpService";
 import {emitReadReceipt} from "@/modules/chat/events";
-import type {ChatMessageView} from "lemmy-js-client";
+import type {ChatMessageView} from "108jobs-client";
 import {NormalizedEnvelope} from "@/modules/chat/utils/chatSocketUtils";
 import {RoomView} from "@/modules/chat/types";
 import {usePresenceStore} from "@/modules/chat/store/presenceStore";
-import {PresenceStatus} from "lemmy-js-client";
+import {PresenceStatus} from "108jobs-client";
 
 // Type guard: narrow a NormalizedEnvelope to the typing envelope (explicit interface)
 export type TypingEnv = {

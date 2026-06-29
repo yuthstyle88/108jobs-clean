@@ -10,7 +10,7 @@ import {UserDetailModal} from "@/modules/admin/components/Modal/UserDetailModal"
 import {toast} from "sonner";
 import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
 import {PaginationControls} from "@/components/PaginationControls";
-import {BanPerson, LocalUserView, Person} from "lemmy-js-client";
+import {BanPerson, LocalUserView, Person} from "108jobs-client";
 import {BanConfirmationModal} from "@/modules/admin/components/Modal/BanConfirmationModal";
 import {useTranslation} from "react-i18next";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";

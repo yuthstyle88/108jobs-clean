@@ -1,4 +1,4 @@
-import {OAuthProvider, PublicOAuthProvider,} from "lemmy-js-client";
+import {OAuthProvider, PublicOAuthProvider,} from "108jobs-client";
 import {useTranslation} from "react-i18next";
 import React from "react";
 
