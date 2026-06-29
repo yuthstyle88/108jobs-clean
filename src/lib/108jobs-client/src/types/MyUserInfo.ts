@@ -19,4 +19,5 @@ export type MyUserInfo = {
     discussionLanguages: Array<LanguageId>,
     wallet: Wallet,
     profile: ProfileDataView,
+    isRider: boolean,
 };
