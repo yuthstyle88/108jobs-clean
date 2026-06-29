@@ -3,10 +3,10 @@ import type {CommentView} from "./CommentView";
 import type {PaginationCursor} from "./PaginationCursor";
 
 /**
- * The comment list response.
+ * The proposal list response (backend field is 'proposals').
  */
 export type GetCommentsResponse = {
-  comments: Array<CommentView>;
+  proposals: Array<CommentView>;
   nextPage?: PaginationCursor;
   prevPage?: PaginationCursor;
 };

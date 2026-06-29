@@ -2,10 +2,10 @@
 import type {CommentId} from "./CommentId";
 
 /**
- * Like a comment.
+ * Like a proposal.
  */
 export type CreateCommentLike = {
-  commentId: CommentId;
+  proposalId: CommentId;
   /**
    * Must be -1, 0, or 1 .
    */

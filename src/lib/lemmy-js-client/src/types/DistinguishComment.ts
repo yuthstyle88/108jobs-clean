@@ -2,9 +2,9 @@
 import type {CommentId} from "./CommentId";
 
 /**
- * Distinguish a comment (IE speak as moderator).
+ * Distinguish a proposal (IE speak as moderator).
  */
 export type DistinguishComment = {
-  commentId: CommentId;
+  proposalId: CommentId;
   distinguished: boolean;
 };

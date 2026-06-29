@@ -2,10 +2,10 @@
 import type {CommentId} from "./CommentId";
 
 /**
- * Remove a comment (only doable by mods).
+ * Remove a proposal (only doable by mods).
  */
 export type RemoveComment = {
-  commentId: CommentId;
+  proposalId: CommentId;
   removed: boolean;
   reason?: string;
 };

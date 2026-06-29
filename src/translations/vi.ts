@@ -106,7 +106,7 @@ export const vi = {
             quotationDesc: "Điền thông tin để gửi báo giá cho nhà tuyển dụng",
             employerId: "ID nhà tuyển dụng",
             postId: "ID bài đăng",
-            commentId: "ID bình luận",
+            proposalId: "ID bình luận",
             projectName: "Tên dự án",
             amount: "Số tiền",
             proposal: "Đề xuất",
@@ -3650,7 +3650,7 @@ export const vi = {
             vietnamCountryLabel: "Việt Nam",
         },
         errors: {
-            alreadyCommented: "Bạn đã gửi đề xuất cho công việc này rồi."
+            alreadyProposed: "Bạn đã gửi đề xuất cho công việc này rồi."
         },
         jobApplication: {
             pageTitle: "Tăng Cơ Hội Tuyển Dụng Của Bạn! Với Kinh Nghiệm Liên Quan và Hồ Sơ",

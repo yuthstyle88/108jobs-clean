@@ -2,8 +2,8 @@
 import type {CommentId} from "./CommentId";
 
 /**
- * Save / bookmark a comment.
+ * Save / bookmark a proposal.
  */
 export type SaveComment = {
-  commentId: CommentId;
+  proposalId: CommentId;
 };

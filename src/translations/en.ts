@@ -106,7 +106,7 @@ export const en = {
             quotationDesc: "Fill in the details to send a quotation to the employer",
             employerId: "Employer ID",
             postId: "Post ID",
-            commentId: "Comment ID",
+            proposalId: "Comment ID",
             projectName: "Project Name",
             amount: "Amount",
             proposal: "Proposal",
@@ -3622,7 +3622,7 @@ export const en = {
             vietnamCountryLabel: "Vietnam",
         },
         errors: {
-            alreadyCommented: "You have already submitted a proposal for this job."
+            alreadyProposed: "You have already submitted a proposal for this job."
         },
         jobApplication: {
             pageTitle: "Increase Your Hiring Chances! With Relevant Experience and Portfolio",

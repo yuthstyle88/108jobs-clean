@@ -2,8 +2,9 @@
 import type {CommentId} from "./CommentId";
 
 /**
- * Delete your own comment.
+ * Delete your own proposal.
  */
 export type DeleteComment = {
-  commentId: CommentId;
+  proposalId: CommentId;
+  deleted: boolean;
 };

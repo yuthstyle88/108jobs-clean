@@ -122,7 +122,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [scrollParentEl, setScrollParentEl] = useState<HTMLElement | null>(null);
     const roomPostId = post?.id;
-    const roomCommentId = currentRoom.room.currentCommentId;
+    const roomProposalId = currentRoom.room.currentProposalId;
     const postCreatorId = post?.creatorId;
     const isEmployer = postCreatorId != null && person?.id != null ? String(postCreatorId) === String(person?.id) : undefined;
     const lastClientUpdateRef = useRef<{ status: StatusKey | null; timestamp: number }>({status: null, timestamp: 0});
@@ -626,7 +626,7 @@ const ChatRoomView: React.FC<ChatRoomViewProps> = ({
                 onClose={() => setShowQuotationModal(false)}
                 onSubmit={quotationSubmit}
                 postId={roomPostId}
-                commentId={roomCommentId}
+                proposalId={roomProposalId}
                 partnerId={partnerId}
                 projectName={post?.name || t("profileChat.noJobTitle")}
                 amount={post?.budget}

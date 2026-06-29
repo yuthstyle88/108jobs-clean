@@ -7,14 +7,14 @@ import NotFound from "@/components/Common/NotFound";
 import {useParams} from "next/navigation";
 
 export default function EditPostPage() {
-    const { jobId, commentId } = useParams() as { jobId: string; commentId?: string };
+    const { jobId, proposalId } = useParams() as { jobId: string; proposalId?: string };
 
     const {
         data: postResponse,
         isMutating: isLoading,
     } = useHttpGet("getPost", {
         id: Number(jobId),
-        commentId: commentId ? Number(commentId) : undefined,
+        proposalId: proposalId ? Number(proposalId) : undefined,
     });
 
     if (isLoading) return <LoadingBlur text="" />;
