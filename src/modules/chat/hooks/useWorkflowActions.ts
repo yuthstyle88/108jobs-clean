@@ -9,7 +9,7 @@ import type {
     CreateInvoiceForm,
     LocalUser,
     PostId
-} from 'lemmy-js-client';
+} from '108jobs-client';
 import type {WsMessageSender} from '@/modules/chat/types';
 import type {StatusKey} from '@/modules/chat/components/FreelanceChatFlow';
 import {sendStructuredMessage} from '@/modules/chat/utils/structured';

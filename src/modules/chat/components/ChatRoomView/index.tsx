@@ -33,7 +33,7 @@ import type {
     Post,
     PostPreview,
     SubmitUserReviewForm
-} from "lemmy-js-client";
+} from "108jobs-client";
 import ChatHeader from "../ChatHeader";
 import ChatInput from "../ChatInput";
 import ChatRoomMessages from "../ChatRoomMessages";

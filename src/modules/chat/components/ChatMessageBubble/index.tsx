@@ -1,7 +1,7 @@
 "use client";
 
 import Image, {StaticImageData} from "next/image";
-import type {ChatMessage, LocalUserId} from "lemmy-js-client";
+import type {ChatMessage, LocalUserId} from "108jobs-client";
 import {MessageImage} from "@/constants/images";
 import {useTranslation} from "react-i18next";
 import {useChatStore} from "@/modules/chat/store/chatStore";

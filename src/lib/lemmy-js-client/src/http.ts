@@ -20,52 +20,27 @@ import type {
     DeleteImageParamsI,
     GetBankAccountsI,
     GetBillingByRoomQueryI,
-    GetCommentI,
     GetCommentsI,
     GetCategoryI,
-    GetCategoryPendingFollowsCountI,
-    GetModlogI,
     GetPersonDetailsI,
     GetPostI,
     GetPostsI,
-    GetRandomCategoryI,
-    GetRegistrationApplicationI,
-    GetReportCountI,
     GetSiteMetadataI,
     LastReadQueryI,
-    ListCommentLikesI,
     ListCategoriesI,
-    ListCategoryPendingFollowsI,
-    ListCustomEmojisI,
     ListMediaI,
     ListNotificationsI,
-    ListPersonContentI,
     ListPersonCreatedI,
-    ListPersonHiddenI,
-    ListPersonLikedI,
-    ListPersonReadI,
-    ListPersonSavedI,
-    ListPostLikesI,
-    ListRegistrationApplicationsI,
-    ListReportsI,
-    ListTaglinesI,
     ListUserChatRoomsQueryI, ListUserReviewsQueryI, PeerStatusQueryI,
-    ResolveObjectI,
     SearchI,
     UploadImage, ListRidersQueryI,
 } from "./other_types";
 import {VERSION} from "./other_types";
-import type {AddAdmin} from "./types/AddAdmin";
-import type {AddAdminResponse} from "./types/AddAdminResponse";
 import type {AddModToCategory} from "./types/AddModToCategory";
 import type {AddModToCategoryResponse} from "./types/AddModToCategoryResponse";
 import type {AddressResponse} from "./types/AddressResponse";
-import type {AdminAllowInstanceParams} from "./types/AdminAllowInstanceParams";
-import type {AdminBlockInstanceParams} from "./types/AdminBlockInstanceParams";
 import type {AdminListUsers} from "./types/AdminListUsers";
 import type {AdminListUsersResponse} from "./types/AdminListUsersResponse";
-import type {ApproveCategoryPendingFollower} from "./types/ApproveCategoryPendingFollower";
-import type {ApproveRegistrationApplication} from "./types/ApproveRegistrationApplication";
 import type {AuthenticateWithOauth} from "./types/AuthenticateWithOauth";
 import type {BanFromCategory} from "./types/BanFromCategory";
 import type {BanFromCategoryResponse} from "./types/BanFromCategoryResponse";
@@ -77,172 +52,92 @@ import type {BlockCategoryResponse} from "./types/BlockCategoryResponse";
 import type {BlockPerson} from "./types/BlockPerson";
 import type {BlockPersonResponse} from "./types/BlockPersonResponse";
 import type {ChangePassword} from "./types/ChangePassword";
-import type {CommentReportResponse} from "./types/CommentReportResponse";
 import type {CommentResponse} from "./types/CommentResponse";
 import type {CategoryIdQuery} from "./types/CategoryIdQuery";
-import type {CategoryReportResponse} from "./types/CategoryReportResponse";
 import type {CategoryResponse} from "./types/CategoryResponse";
 import type {ContactForm} from "./types/ContactForm";
 import type {ContactResponse} from "./types/ContactResponse";
 import type {CountriesResponse} from "./types/CountriesResponse";
 import type {BankAccountForm} from "./types/BankAccountForm";
 import type {CreateComment} from "./types/CreateComment";
-import type {CreateCommentLike} from "./types/CreateCommentLike";
-import type {CreateCommentReport} from "./types/CreateCommentReport";
 import type {CreateCategory} from "./types/CreateCategory";
-import type {CreateCategoryReport} from "./types/CreateCategoryReport";
 import type {CreateCategoryTag} from "./types/CreateCategoryTag";
-import type {CreateCustomEmoji} from "./types/CreateCustomEmoji";
 import type {CreateOAuthProvider} from "./types/CreateOAuthProvider";
 import type {CreateOrUpdateAddress} from "./types/CreateOrUpdateAddress";
 import type {CreatePost} from "./types/CreatePost";
-import type {CreatePostLike} from "./types/CreatePostLike";
-import type {CreatePostReport} from "./types/CreatePostReport";
-import type {CreateSite} from "./types/CreateSite";
-import type {CreateTagline} from "./types/CreateTagline";
-import type {CustomEmojiResponse} from "./types/CustomEmojiResponse";
 import type {DeleteAccount} from "./types/DeleteAccount";
 import type {DeleteBankAccount} from "./types/DeleteBankAccount";
 import type {DeleteComment} from "./types/DeleteComment";
 import type {DeleteCategory} from "./types/DeleteCategory";
 import type {DeleteCategoryTag} from "./types/DeleteCategoryTag";
-import type {DeleteCustomEmoji} from "./types/DeleteCustomEmoji";
 import type {DeleteImageParams} from "./types/DeleteImageParams";
 import type {DeleteOAuthProvider} from "./types/DeleteOAuthProvider";
 import type {DeletePost} from "./types/DeletePost";
-import type {DeleteTagline} from "./types/DeleteTagline";
-import type {DistinguishComment} from "./types/DistinguishComment";
 import type {EditComment} from "./types/EditComment";
 import type {EditCategory} from "./types/EditCategory";
-import type {EditCustomEmoji} from "./types/EditCustomEmoji";
 import type {EditOAuthProvider} from "./types/EditOAuthProvider";
 import type {EditPost} from "./types/EditPost";
-import type {EditSite} from "./types/EditSite";
 import type {ExchangeKey} from "./types/ExchangeKey";
 import type {ExchangeKeyResponse} from "./types/ExchangeKeyResponse";
-import type {FeaturePost} from "./types/FeaturePost";
-import type {FollowCategory} from "./types/FollowCategory";
 import type {GenerateTotpSecretResponse} from "./types/GenerateTotpSecretResponse";
 import type {BankAccountsResponse} from "./types/GetBankAccountResponse";
 import type {GetCaptchaResponse} from "./types/GetCaptchaResponse";
-import type {GetComment} from "./types/GetComment";
 import type {GetComments} from "./types/GetComments";
 import type {GetCommentsResponse} from "./types/GetCommentsResponse";
-import type {GetCommentsSlimResponse} from "./types/GetCommentsSlimResponse";
 import type {GetCategory} from "./types/GetCategory";
-import type {GetCategoryPendingFollowsCount} from "./types/GetCategoryPendingFollowsCount";
-import type {GetCategoryPendingFollowsCountResponse} from "./types/GetCategoryPendingFollowsCountResponse";
 import type {GetCategoryResponse} from "./types/GetCategoryResponse";
-import type {GetFederatedInstancesResponse} from "./types/GetFederatedInstancesResponse";
-import type {GetModlog} from "./types/GetModlog";
-import type {GetModlogResponse} from "./types/GetModlogResponse";
 import type {GetPersonDetails} from "./types/GetPersonDetails";
 import type {GetPersonDetailsResponse} from "./types/GetPersonDetailsResponse";
 import type {GetPost} from "./types/GetPost";
 import type {GetPostResponse} from "./types/GetPostResponse";
 import type {GetPosts} from "./types/GetPosts";
 import type {GetPostsResponse} from "./types/GetPostsResponse";
-import type {GetRandomCategory} from "./types/GetRandomCategory";
-import type {GetRegistrationApplication} from "./types/GetRegistrationApplication";
-import type {GetReportCount} from "./types/GetReportCount";
-import type {GetReportCountResponse} from "./types/GetReportCountResponse";
 import type {GetSiteMetadata} from "./types/GetSiteMetadata";
 import type {GetSiteMetadataResponse} from "./types/GetSiteMetadataResponse";
 import type {GetSiteResponse} from "./types/GetSiteResponse";
 import type {GetUnreadCountResponse} from "./types/GetUnreadCountResponse";
-import type {
-    GetUnreadRegistrationApplicationCountResponse
-} from "./types/GetUnreadRegistrationApplicationCountResponse";
 import type {GetUnreadSnapshotResponse} from "./types/GetUnreadSnapshotResponse";
 import type {PresenceSnapshotItem} from "./types/PresenceSnapshotItem";
 import type {HideCategory} from "./types/HideCategory";
 import type {HidePost} from "./types/HidePost";
 import type {IdentityCardForm} from "./types/IdentityCardForm";
 import type {IdentityCardResponse} from "./types/IdentityCardResponse";
-import type {ListCommentLikes} from "./types/ListCommentLikes";
-import type {ListCommentLikesResponse} from "./types/ListCommentLikesResponse";
 import type {ListCategories} from "./types/ListCategories";
 import type {ListCategoriesResponse} from "./types/ListCategoriesResponse";
-import type {ListCategoryPendingFollows} from "./types/ListCategoryPendingFollows";
-import type {ListCategoryPendingFollowsResponse} from "./types/ListCategoryPendingFollowsResponse";
-import type {ListCustomEmojis} from "./types/ListCustomEmojis";
-import type {ListCustomEmojisResponse} from "./types/ListCustomEmojisResponse";
 import type {ListLoginsResponse} from "./types/ListLoginsResponse";
 import type {ListMedia} from "./types/ListMedia";
 import type {ListMediaResponse} from "./types/ListMediaResponse";
 import type {ListNotifications} from "./types/ListNotifications";
 import type {ListNotificationsResponse} from "./types/ListNotificationsResponse";
-import type {ListPersonContent} from "./types/ListPersonContent";
-import type {ListPersonContentResponse} from "./types/ListPersonContentResponse";
-import type {ListPersonHidden} from "./types/ListPersonHidden";
-import type {ListPersonHiddenResponse} from "./types/ListPersonHiddenResponse";
-import type {ListPersonLiked} from "./types/ListPersonLiked";
-import type {ListPersonLikedResponse} from "./types/ListPersonLikedResponse";
-import type {ListPersonRead} from "./types/ListPersonRead";
-import type {ListPersonReadResponse} from "./types/ListPersonReadResponse";
 import type {ListPersonCreated} from "./types/ListPersonCreated";
 import type {ListPersonCreatedResponse} from "./types/ListPersonCreatedResponse";
-import type {ListPersonSaved} from "./types/ListPersonSaved";
-import type {ListPersonSavedResponse} from "./types/ListPersonSavedResponse";
-import type {ListPostLikes} from "./types/ListPostLikes";
-import type {ListPostLikesResponse} from "./types/ListPostLikesResponse";
-import type {ListRegistrationApplications} from "./types/ListRegistrationApplications";
-import type {ListRegistrationApplicationsResponse} from "./types/ListRegistrationApplicationsResponse";
-import type {ListReports} from "./types/ListReports";
-import type {ListReportsResponse} from "./types/ListReportsResponse";
-import type {ListTaglines} from "./types/ListTaglines";
-import type {ListTaglinesResponse} from "./types/ListTaglinesResponse";
 import type {ListBankAccountsResponse} from "./types/ListBankAccountsResponse";
 import type {GetBankAccounts} from "./types/GetBankAccounts";
-import type {LockPost} from "./types/LockPost";
 import type {Login} from "./types/Login";
 import type {LoginResponse} from "./types/LoginResponse";
-import type {MarkManyPostsAsRead} from "./types/MarkManyPostsAsRead";
 import type {MarkNotificationAsRead} from "./types/MarkNotificationAsRead";
-import type {MarkPostAsRead} from "./types/MarkPostAsRead";
 import type {MyUserInfo} from "./types/MyUserInfo";
 import type {OAuthProvider} from "./types/OAuthProvider";
 import type {PasswordChangeAfterReset} from "./types/PasswordChangeAfterReset";
 import type {PasswordReset} from "./types/PasswordReset";
-import type {PostReportResponse} from "./types/PostReportResponse";
 import type {PostResponse} from "./types/PostResponse";
 import type {ProfileData} from "./types/ProfileData";
-import type {PurgeComment} from "./types/PurgeComment";
-import type {PurgeCategory} from "./types/PurgeCategory";
-import type {PurgePerson} from "./types/PurgePerson";
-import type {PurgePost} from "./types/PurgePost";
-import type {Register} from "./types/Register";
-import type {RegistrationApplicationResponse} from "./types/RegistrationApplicationResponse";
-import type {RemoveComment} from "./types/RemoveComment";
-import type {RemoveCategory} from "./types/RemoveCategory";
-import type {RemovePost} from "./types/RemovePost";
 import type {ResendVerificationEmail} from "./types/ResendVerificationEmail";
-import type {ResolveCommentReport} from "./types/ResolveCommentReport";
-import type {ResolveCategoryReport} from "./types/ResolveCategoryReport";
-import type {ResolveObject} from "./types/ResolveObject";
-import type {ResolvePostReport} from "./types/ResolvePostReport";
-import type {SaveComment} from "./types/SaveComment";
-import type {SavePost} from "./types/SavePost";
 import type {SaveUserProfile} from "./types/SaveUserProfile";
 import type {SaveUserSettings} from "./types/SaveUserSettings";
 import type {Search} from "./types/Search";
 import type {SearchResponse} from "./types/SearchResponse";
 import type {SetDefaultBankAccount} from "./types/SetDefaultBankAccount";
-import type {SiteResponse} from "./types/SiteResponse";
 import type {SuccessResponse} from "./types/SuccessResponse";
 import type {Tag} from "./types/Tag";
-import type {TaglineResponse} from "./types/TaglineResponse";
-import type {TransferCategory} from "./types/TransferCategory";
 import type {UpdateAvailable} from "./types/UpdateAvailable";
 import type {UpdateCategoryTag} from "./types/UpdateCategoryTag";
-import type {UpdateTagline} from "./types/UpdateTagline";
 import type {UpdateTerm} from "./types/UpdateTerm";
 import type {UpdateTotp} from "./types/UpdateTotp";
 import type {UpdateTotpResponse} from "./types/UpdateTotpResponse";
 import type {UploadImageResponse} from "./types/UploadImageResponse";
 import type {FileUploadResponse} from "./types/FileUploadResponse";
 import type {UpsertCard} from "./types/UpsertCard";
-import type {UserBlockInstanceParams} from "./types/UserBlockInstanceParams";
 import type {VerifyEmail} from "./types/VerifyEmail";
 import type {VisitProfileResponse} from "./types/VisitProfileResponse";
 import type {ListUserChatRoomsResponse} from "./types/ListUserChatRoomsResponse";
@@ -344,54 +239,6 @@ export class LemmyHttp extends Controller {
         return this.#wrapper<object, GetSiteResponse>(
             HttpType.Get,
             "/site",
-            {},
-            options,
-        );
-    }
-
-    /**
-     * @summary Create your site.
-     */
-    @Security("bearerAuth")
-    @Post("/site")
-    @Tags("Site")
-    async createSite(
-        @Body() form: CreateSite,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<CreateSite, SiteResponse>(
-            HttpType.Post,
-            "/site",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Edit your site.
-     */
-    @Security("bearerAuth")
-    @Put("/site")
-    @Tags("Site")
-    async editSite(@Body() form: EditSite, @Inject() options?: RequestOptions) {
-        return this.#wrapper<EditSite, SiteResponse>(
-            HttpType.Put,
-            "/site",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Leave the Site admins.
-     */
-    @Security("bearerAuth")
-    @Post("/admin/leave")
-    @Tags("Admin")
-    async leaveAdmin(@Inject() options?: RequestOptions) {
-        return this.#wrapper<object, GetSiteResponse>(
-            HttpType.Post,
-            "/admin/leave",
             {},
             options,
         );
@@ -760,25 +607,6 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary Get the modlog.
-     */
-    @Security("bearerAuth")
-    @Security({})
-    @Get("/modlog")
-    @Tags("Miscellaneous")
-    async getModlog(
-        @Queries() form: GetModlogI = {},
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<GetModlog, GetModlogResponse>(
-            HttpType.Get,
-            "/modlog",
-            form,
-            options,
-        );
-    }
-
-    /**
      * @summary Search lemmy. If `search-term` is a url it also attempts to fetch it, just like `resolve-object`.
      */
     @Security("bearerAuth")
@@ -789,25 +617,6 @@ export class LemmyHttp extends Controller {
         return this.#wrapper<Search, SearchResponse>(
             HttpType.Get,
             "/search",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Fetch a non-local / federated object.
-     */
-    @Security("bearerAuth")
-    @Security({})
-    @Get("/resolve-object")
-    @Tags("Miscellaneous")
-    async resolveObject(
-        @Queries() form: ResolveObjectI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ResolveObject, SearchResponse>(
-            HttpType.Get,
-            "/resolve-object",
             form,
             options,
         );
@@ -907,74 +716,6 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary Follow / subscribe to a category.
-     */
-    @Security("bearerAuth")
-    @Post("/category/follow")
-    @Tags("Category")
-    async followCategory(
-        @Body() form: FollowCategory,
-        @Inject() @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<FollowCategory, CategoryResponse>(
-            HttpType.Post,
-            "/category/follow",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Get a category's pending follows count.
-     */
-    @Security("bearerAuth")
-    @Get("/category/pending-follows/count")
-    @Tags("Category")
-    async getCategoryPendingFollowsCount(
-        @Queries() form: GetCategoryPendingFollowsCountI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<
-            GetCategoryPendingFollowsCount,
-            GetCategoryPendingFollowsCountResponse
-        >(HttpType.Get, "/category/pending-follows/count", form, options);
-    }
-
-    /**
-     * @summary Get a category's pending followers.
-     */
-    @Security("bearerAuth")
-    @Get("/category/pending-follows/list")
-    @Tags("Category")
-    async listCategoryPendingFollows(
-        @Queries() form: ListCategoryPendingFollowsI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<
-            ListCategoryPendingFollows,
-            ListCategoryPendingFollowsResponse
-        >(HttpType.Get, "/category/pending-follows/list", form, options);
-    }
-
-    /**
-     * @summary Approve a category pending follow request.
-     */
-    @Security("bearerAuth")
-    @Post("/category/pending-follows/approve")
-    @Tags("Category")
-    async approveCategoryPendingFollow(
-        @Body() form: ApproveCategoryPendingFollower,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ApproveCategoryPendingFollower, SuccessResponse>(
-            HttpType.Post,
-            "/category/pending-follows/approve",
-            form,
-            options,
-        );
-    }
-
-    /**
      * @summary Block a category.
      */
     @Security("bearerAuth")
@@ -1029,42 +770,6 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary A moderator remove for a category.
-     */
-    @Security("bearerAuth")
-    @Post("/category/remove")
-    @Tags("Category", "Moderator")
-    async removeCategory(
-        @Body() form: RemoveCategory,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<RemoveCategory, CategoryResponse>(
-            HttpType.Post,
-            "/category/remove",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Transfer your category to an existing moderator.
-     */
-    @Security("bearerAuth")
-    @Post("/category/transfer")
-    @Tags("Category", "Moderator")
-    async transferCategory(
-        @Body() form: TransferCategory,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<TransferCategory, GetCategoryResponse>(
-            HttpType.Post,
-            "/category/transfer",
-            form,
-            options,
-        );
-    }
-
-    /**
      * @summary Ban a profile from a category.
      */
     @Security("bearerAuth")
@@ -1095,61 +800,6 @@ export class LemmyHttp extends Controller {
         return this.#wrapper<AddModToCategory, AddModToCategoryResponse>(
             HttpType.Post,
             "/category/mod",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Get a random category.
-     */
-    @Security("bearerAuth")
-    @Security({})
-    @Get("/category/random")
-    @Tags("Category")
-    async getRandomCategory(
-        @Queries() form: GetRandomCategoryI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<GetRandomCategory, CategoryResponse>(
-            HttpType.Get,
-            "/category/random",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Create a report for a category.
-     */
-    @Security("bearerAuth")
-    @Post("/category/report")
-    @Tags("Category")
-    async createCategoryReport(
-        @Body() form: CreateCategoryReport,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<CreateCategoryReport, CategoryReportResponse>(
-            HttpType.Post,
-            "/category/report",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Resolve a report for a private message.
-     */
-    @Security("bearerAuth")
-    @Put("/category/report/resolve")
-    @Tags("Category", "Admin")
-    async resolveCategoryReport(
-        @Body() form: ResolveCategoryReport,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ResolveCategoryReport, CategoryReportResponse>(
-            HttpType.Put,
-            "/category/report/resolve",
             form,
             options,
         );
@@ -1226,60 +876,6 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary A moderator remove for a post.
-     */
-    @Security("bearerAuth")
-    @Post("/post/remove")
-    @Tags("Post", "Moderator")
-    async removePost(
-        @Body() form: RemovePost,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<RemovePost, PostResponse>(
-            HttpType.Post,
-            "/post/remove",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Mark a post as read.
-     */
-    @Security("bearerAuth")
-    @Post("/post/mark-as-read")
-    @Tags("Post")
-    async markPostAsRead(
-        @Body() form: MarkPostAsRead,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<MarkPostAsRead, PostResponse>(
-            HttpType.Post,
-            "/post/mark-as-read",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Mark multiple posts as read.
-     */
-    @Security("bearerAuth")
-    @Post("/post/mark-as-read/many")
-    @Tags("Post")
-    async markManyPostAsRead(
-        @Body() form: MarkManyPostsAsRead,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<MarkManyPostsAsRead, SuccessResponse>(
-            HttpType.Post,
-            "/post/mark-as-read/many",
-            form,
-            options,
-        );
-    }
-
-    /**
      * @summary Hide a post from list views.
      */
     @Security("bearerAuth")
@@ -1289,39 +885,6 @@ export class LemmyHttp extends Controller {
         return this.#wrapper<HidePost, SuccessResponse>(
             HttpType.Post,
             "/post/hide",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary A moderator can lock a post ( IE disable new comments ).
-     */
-    @Security("bearerAuth")
-    @Post("/post/lock")
-    @Tags("Post")
-    async lockPost(@Body() form: LockPost, @Inject() options?: RequestOptions) {
-        return this.#wrapper<LockPost, PostResponse>(
-            HttpType.Post,
-            "/post/lock",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary A moderator can feature a category post ( IE stick it to the top of a category ).
-     */
-    @Security("bearerAuth")
-    @Post("/post/feature")
-    @Tags("Post", "Moderator")
-    async featurePost(
-        @Body() form: FeaturePost,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<FeaturePost, PostResponse>(
-            HttpType.Post,
-            "/post/feature",
             form,
             options,
         );
@@ -1341,93 +904,6 @@ export class LemmyHttp extends Controller {
         return this.#wrapper<GetPosts, GetPostsResponse>(
             HttpType.Get,
             "/post/list",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Like / vote on a post.
-     */
-    @Security("bearerAuth")
-    @Post("/post/like")
-    @Tags("Post")
-    async likePost(
-        @Body() form: CreatePostLike,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<CreatePostLike, PostResponse>(
-            HttpType.Post,
-            "/post/like",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary List a post's likes. Admin-only.
-     */
-    @Security("bearerAuth")
-    @Get("/post/like/list")
-    @Tags("Post", "Admin")
-    async listPostLikes(
-        @Queries() form: ListPostLikesI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ListPostLikes, ListPostLikesResponse>(
-            HttpType.Get,
-            "/post/like/list",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Save a post.
-     */
-    @Security("bearerAuth")
-    @Put("/post/save")
-    @Tags("Post")
-    async savePost(@Body() form: SavePost, @Inject() options?: RequestOptions) {
-        return this.#wrapper<SavePost, PostResponse>(
-            HttpType.Put,
-            "/post/save",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Report a post.
-     */
-    @Security("bearerAuth")
-    @Post("/post/report")
-    @Tags("Post")
-    async createPostReport(
-        @Body() form: CreatePostReport,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<CreatePostReport, PostReportResponse>(
-            HttpType.Post,
-            "/post/report",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Resolve a post report. Only a mod can do this.
-     */
-    @Security("bearerAuth")
-    @Put("/post/report/resolve")
-    @Tags("Post", "Moderator")
-    async resolvePostReport(
-        @Body() form: ResolvePostReport,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ResolvePostReport, PostReportResponse>(
-            HttpType.Put,
-            "/post/report/resolve",
             form,
             options,
         );
@@ -1506,96 +982,6 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary A moderator remove for a comment.
-     */
-    @Security("bearerAuth")
-    @Post("/proposal/remove")
-    @Tags("Comment", "Moderator")
-    async removeComment(
-        @Body() form: RemoveComment,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<RemoveComment, CommentResponse>(
-            HttpType.Post,
-            "/proposal/remove",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Like / vote on a comment.
-     */
-    @Security("bearerAuth")
-    @Post("/proposal/like")
-    @Tags("Comment")
-    async likeComment(
-        @Body() form: CreateCommentLike,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<CreateCommentLike, CommentResponse>(
-            HttpType.Post,
-            "/proposal/like",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary List a comment's likes. Admin-only.
-     */
-    @Security("bearerAuth")
-    @Get("/proposal/like/list")
-    @Tags("Comment", "Admin")
-    async listCommentLikes(
-        @Queries() form: ListCommentLikesI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ListCommentLikes, ListCommentLikesResponse>(
-            HttpType.Get,
-            "/proposal/like/list",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Save a comment.
-     */
-    @Security("bearerAuth")
-    @Put("/proposal/save")
-    @Tags("Comment")
-    async saveComment(
-        @Body() form: SaveComment,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<SaveComment, CommentResponse>(
-            HttpType.Put,
-            "/proposal/save",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Distinguishes a comment (speak as moderator)
-     */
-    @Security("bearerAuth")
-    @Post("/proposal/distinguish")
-    @Tags("Comment", "Moderator")
-    async distinguishComment(
-        @Body() form: DistinguishComment,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<DistinguishComment, CommentResponse>(
-            HttpType.Post,
-            "/proposal/distinguish",
-            form,
-            options,
-        );
-    }
-
-    /**
      * @summary Get / fetch comments.
      */
     @Security("bearerAuth")
@@ -1609,94 +995,6 @@ export class LemmyHttp extends Controller {
         return this.#wrapper<GetComments, GetCommentsResponse>(
             HttpType.Get,
             "/proposal/list",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Get / fetch comments, but without the post or category.
-     */
-    @Security("bearerAuth")
-    @Security({})
-    @Get("/proposal/list/slim")
-    @Tags("Comment")
-    async getCommentsSlim(
-        @Queries() form: GetCommentsI = {},
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<GetComments, GetCommentsSlimResponse>(
-            HttpType.Get,
-            "/proposal/list/slim",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Get / fetch comment.
-     */
-    @Security("bearerAuth")
-    @Security({})
-    @Get("/proposal")
-    @Tags("Comment")
-    async getComment(
-        @Queries() form: GetCommentI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<GetComment, CommentResponse>(
-            HttpType.Get,
-            "/proposal",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Report a comment.
-     */
-    @Security("bearerAuth")
-    @Post("/proposal/report")
-    @Tags("Comment")
-    async createCommentReport(
-        @Body() form: CreateCommentReport,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<CreateCommentReport, CommentReportResponse>(
-            HttpType.Post,
-            "/proposal/report",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Resolve a comment report. Only a mod can do this.
-     */
-    @Security("bearerAuth")
-    @Put("/proposal/report/resolve")
-    @Tags("Comment", "Moderator")
-    async resolveCommentReport(
-        @Body() form: ResolveCommentReport,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ResolveCommentReport, CommentReportResponse>(
-            HttpType.Put,
-            "/proposal/report/resolve",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Register a new profile.
-     */
-    @Post("/account/auth/register")
-    @Tags("Account")
-    async register(@Body() form: Register, @Inject() options?: RequestOptions) {
-        return this.#wrapper<Register, LoginResponse>(
-            HttpType.Post,
-            "/account/auth/register",
             form,
             options,
         );
@@ -1780,25 +1078,6 @@ export class LemmyHttp extends Controller {
         return this.#wrapper<GetPersonDetails, GetPersonDetailsResponse>(
             HttpType.Get,
             "/person",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary List the content for a person.
-     */
-    @Security("bearerAuth")
-    @Security({})
-    @Get("/person/content")
-    @Tags("Person")
-    async listPersonContent(
-        @Queries() form: ListPersonContentI = {},
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ListPersonContent, ListPersonContentResponse>(
-            HttpType.Get,
-            "/person/content",
             form,
             options,
         );
@@ -2205,24 +1484,6 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary Get counts for your reports.
-     */
-    @Security("bearerAuth")
-    @Get("/account/report-count")
-    @Tags("Account")
-    async getReportCount(
-        @Queries() form: GetReportCountI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<GetReportCount, GetReportCountResponse>(
-            HttpType.Get,
-            "/account/report-count",
-            form,
-            options,
-        );
-    }
-
-    /**
      * @summary Get your unread counts.
      */
     @Security("bearerAuth")
@@ -2325,24 +1586,6 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary List your saved content.
-     */
-    @Security("bearerAuth")
-    @Get("/account/saved")
-    @Tags("Account")
-    async listPersonSaved(
-        @Queries() form: ListPersonSavedI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ListPersonSaved, ListPersonSavedResponse>(
-            HttpType.Get,
-            "/account/saved",
-            form,
-            options,
-        );
-    }
-
-    /**
      * @summary List your created content.
      */
     @Security("bearerAuth")
@@ -2355,355 +1598,6 @@ export class LemmyHttp extends Controller {
         return this.#wrapper<ListPersonCreated, ListPersonCreatedResponse>(
             HttpType.Get,
             "/account/created",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary List your read content.
-     */
-    @Security("bearerAuth")
-    @Get("/account/read")
-    @Tags("Account")
-    async listPersonRead(
-        @Queries() form: ListPersonReadI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ListPersonRead, ListPersonReadResponse>(
-            HttpType.Get,
-            "/account/read",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary List your hidden content.
-     */
-    @Security("bearerAuth")
-    @Get("/account/hidden")
-    @Tags("Account")
-    async listPersonHidden(
-        @Queries() form: ListPersonHiddenI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ListPersonHidden, ListPersonHiddenResponse>(
-            HttpType.Get,
-            "/account/hidden",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary List your liked content.
-     */
-    @Security("bearerAuth")
-    @Get("/account/liked")
-    @Tags("Account")
-    async listPersonLiked(
-        @Queries() form: ListPersonLikedI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ListPersonLiked, ListPersonLikedResponse>(
-            HttpType.Get,
-            "/account/liked",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Add an admin to your site.
-     */
-    @Security("bearerAuth")
-    @Post("/admin/add")
-    @Tags("Admin")
-    async addAdmin(@Body() form: AddAdmin, @Inject() options?: RequestOptions) {
-        return this.#wrapper<AddAdmin, AddAdminResponse>(
-            HttpType.Post,
-            "/admin/add",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Get the unread registration applications count.
-     */
-    @Security("bearerAuth")
-    @Get("/admin/registration-application/count")
-    @Tags("Admin")
-    async getUnreadRegistrationApplicationCount(
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<object, GetUnreadRegistrationApplicationCountResponse>(
-            HttpType.Get,
-            "/admin/registration-application/count",
-            {},
-            options,
-        );
-    }
-
-    /**
-     * @summary List the registration applications.
-     */
-    @Security("bearerAuth")
-    @Get("/admin/registration-application/list")
-    @Tags("Admin")
-    async listRegistrationApplications(
-        @Queries() form: ListRegistrationApplicationsI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<
-            ListRegistrationApplications,
-            ListRegistrationApplicationsResponse
-        >(HttpType.Get, "/admin/registration-application/list", form, options);
-    }
-
-    /**
-     * @summary Approve a registration application
-     */
-    @Security("bearerAuth")
-    @Put("/admin/registration-application/approve")
-    @Tags("Admin")
-    async approveRegistrationApplication(
-        @Body() form: ApproveRegistrationApplication,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<
-            ApproveRegistrationApplication,
-            RegistrationApplicationResponse
-        >(HttpType.Put, "/admin/registration-application/approve", form, options);
-    }
-
-    /**
-     * @summary Get the application a profile submitted when they first registered their account
-     */
-    @Security("bearerAuth")
-    @Get("/admin/registration-application")
-    @Tags("Admin")
-    async getRegistrationApplication(
-        @Queries() form: GetRegistrationApplicationI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<
-            GetRegistrationApplication,
-            RegistrationApplicationResponse
-        >(HttpType.Get, "/admin/registration-application", form, options);
-    }
-
-    /**
-     * @summary Purge / Delete a person from the database.
-     */
-    @Security("bearerAuth")
-    @Post("/admin/purge/person")
-    @Tags("Admin")
-    async purgePerson(
-        @Body() form: PurgePerson,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<PurgePerson, SuccessResponse>(
-            HttpType.Post,
-            "/admin/purge/person",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Purge / Delete a category from the database.
-     */
-    @Security("bearerAuth")
-    @Post("/admin/purge/category")
-    @Tags("Admin")
-    async purgeCategory(
-        @Body() form: PurgeCategory,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<PurgeCategory, SuccessResponse>(
-            HttpType.Post,
-            "/admin/purge/category",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Purge / Delete a post from the database.
-     */
-    @Security("bearerAuth")
-    @Post("/admin/purge/post")
-    @Tags("Admin")
-    async purgePost(@Body() form: PurgePost, @Inject() options?: RequestOptions) {
-        return this.#wrapper<PurgePost, SuccessResponse>(
-            HttpType.Post,
-            "/admin/purge/post",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Purge / Delete a comment from the database.
-     */
-    @Security("bearerAuth")
-    @Post("/admin/purge/comment")
-    @Tags("Admin")
-    async purgeComment(
-        @Body() form: PurgeComment,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<PurgeComment, SuccessResponse>(
-            HttpType.Post,
-            "/admin/purge/comment",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Create a new custom emoji.
-     */
-    @Security("bearerAuth")
-    @Post("/custom-emoji")
-    @Tags("CustomEmoji")
-    async createCustomEmoji(
-        @Body() form: CreateCustomEmoji,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<CreateCustomEmoji, CustomEmojiResponse>(
-            HttpType.Post,
-            "/custom-emoji",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Edit an existing custom emoji.
-     */
-    @Security("bearerAuth")
-    @Put("/custom-emoji")
-    @Tags("CustomEmoji")
-    async editCustomEmoji(
-        @Body() form: EditCustomEmoji,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<EditCustomEmoji, CustomEmojiResponse>(
-            HttpType.Put,
-            "/custom-emoji",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Delete a custom emoji.
-     */
-    @Security("bearerAuth")
-    @Post("/custom-emoji/delete")
-    @Tags("CustomEmoji")
-    async deleteCustomEmoji(
-        @Body() form: DeleteCustomEmoji,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<DeleteCustomEmoji, SuccessResponse>(
-            HttpType.Post,
-            "/custom-emoji/delete",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary List custom emojis
-     */
-    @Security("bearerAuth")
-    @Security({})
-    @Get("/custom-emoji/list")
-    @Tags("CustomEmoji")
-    async listCustomEmojis(
-        @Queries() form: ListCustomEmojisI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ListCustomEmojis, ListCustomEmojisResponse>(
-            HttpType.Get,
-            "/custom-emoji/list",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Create a new tagline
-     */
-    @Security("bearerAuth")
-    @Post("/admin/tagline")
-    @Tags("Admin", "Tagline")
-    async createTagline(
-        @Body() form: CreateTagline,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<CreateTagline, TaglineResponse>(
-            HttpType.Post,
-            "/admin/tagline",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Edit an existing tagline
-     */
-    @Security("bearerAuth")
-    @Put("/admin/tagline")
-    @Tags("Admin", "Tagline")
-    async editTagline(
-        @Body() form: UpdateTagline,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<UpdateTagline, TaglineResponse>(
-            HttpType.Put,
-            "/admin/tagline",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Delete a tagline
-     */
-    @Security("bearerAuth")
-    @Post("/admin/tagline/delete")
-    @Tags("Admin", "Tagline")
-    async deleteTagline(
-        @Body() form: DeleteTagline,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<DeleteTagline, SuccessResponse>(
-            HttpType.Post,
-            "/admin/tagline/delete",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary List taglines.
-     */
-    @Security("bearerAuth")
-    @Security({})
-    @Get("/admin/tagline/list")
-    @Tags("Admin", "Tagline")
-    async listTaglines(
-        @Queries() form: ListTaglinesI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ListTaglines, ListTaglinesResponse>(
-            HttpType.Get,
-            "/admin/tagline/list",
             form,
             options,
         );
@@ -2870,93 +1764,6 @@ export class LemmyHttp extends Controller {
             options,
         );
     }
-
-    /**
-     * @summary Fetch federated instances.
-     */
-    @Get("/federated-instances")
-    @Tags("Miscellaneous")
-    async getFederatedInstances(@Inject() options?: RequestOptions) {
-        return this.#wrapper<object, GetFederatedInstancesResponse>(
-            HttpType.Get,
-            "/federated-instances",
-            {},
-            options,
-        );
-    }
-
-    /**
-     * @summary List profile reports.
-     */
-    @Security("bearerAuth")
-    @Get("/report/list")
-    @Tags("Admin")
-    async listReports(
-        @Queries() form: ListReportsI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ListReports, ListReportsResponse>(
-            HttpType.Get,
-            "/report/list",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Block an instance as profile.
-     */
-    @Security("bearerAuth")
-    @Post("/account/block/instance")
-    @Tags("Account")
-    async userBlockInstance(
-        @Body() form: UserBlockInstanceParams,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<UserBlockInstanceParams, SuccessResponse>(
-            HttpType.Post,
-            "/account/block/instance",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Globally block an instance as admin.
-     */
-    @Security("bearerAuth")
-    @Post("/admin/instance/block")
-    @Tags("Admin")
-    async adminBlockInstance(
-        @Body() form: AdminBlockInstanceParams,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<AdminBlockInstanceParams, SuccessResponse>(
-            HttpType.Post,
-            "/admin/instance/block",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Globally allow an instance as admin.
-     */
-    @Security("bearerAuth")
-    @Post("/admin/instance/allow")
-    @Tags("Admin")
-    async adminAllowInstance(
-        @Body() form: AdminAllowInstanceParams,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<AdminAllowInstanceParams, SuccessResponse>(
-            HttpType.Post,
-            "/admin/instance/allow",
-            form,
-            options,
-        );
-    }
-
 
     /**
      * @summary Visit profile

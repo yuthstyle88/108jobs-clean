@@ -2,7 +2,7 @@
 import LoadingCircle from "@/components/Common/Loading/LoadingCircle";
 import {CustomInput} from "@/components/ui/InputField";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {OAuthProvider,} from "lemmy-js-client";
+import {OAuthProvider,} from "108jobs-client";
 import {useRouter, useSearchParams} from "next/navigation";
 import {Component, useState} from "react";
 import {useForm} from "react-hook-form";

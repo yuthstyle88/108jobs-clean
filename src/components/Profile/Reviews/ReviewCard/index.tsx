@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import Image from "next/image";
-import { UserReviewView } from "lemmy-js-client";
+import { UserReviewView } from "108jobs-client";
 import {Stars} from "@/components/RatingDisplay";
 
 // Define interface for props

@@ -1,6 +1,6 @@
 "use client";
 import React, {useState} from "react";
-import {Person} from "lemmy-js-client";
+import {Person} from "108jobs-client";
 import ProfileHeader from "@/components/Profile/ProfileHeader";
 import ProfileSidebar from "@/components/Profile/ProfileSidebar";
 import PortfolioSlider from "@/components/Profile/PortfolioSlider";

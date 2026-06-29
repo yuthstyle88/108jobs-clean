@@ -1,6 +1,6 @@
 import {User, Mail, Calendar, FileText, X} from "lucide-react";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/Avatar";
-import {LocalUserView} from "lemmy-js-client";
+import {LocalUserView} from "108jobs-client";
 
 interface UserDetailModalProps {
     isOpen: boolean;

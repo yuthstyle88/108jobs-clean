@@ -1,5 +1,5 @@
 import {authCookieName} from "@/utils/config";
-import {GetSiteResponse, MyUserInfo} from "lemmy-js-client";
+import {GetSiteResponse, MyUserInfo} from "108jobs-client";
 import {isHttps} from "@/utils/env";
 import {LANGUAGE_COOKIE} from "@/constants/language";
 import {invalidateClientLanguageCache} from "@/utils/getClientCurrentLanguage";

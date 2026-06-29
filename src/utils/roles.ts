@@ -1,4 +1,4 @@
-import {CategoryId, CategoryModeratorView, GetSiteResponse, MyUserInfo, PersonView,} from "lemmy-js-client";
+import {CategoryId, CategoryModeratorView, GetSiteResponse, MyUserInfo, PersonView,} from "108jobs-client";
 
 export function amAdmin(myUserInfo?: MyUserInfo): boolean {
   return myUserInfo?.localUserView.localUser.admin ?? false;

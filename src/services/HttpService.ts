@@ -1,4 +1,4 @@
-import {LemmyHttp} from "lemmy-js-client";
+import {LemmyHttp} from "108jobs-client";
 import {getHttpBase} from "@/utils/env";
 import {UserService} from "@/services/UserService";
 import {isBrowser} from "@/utils";

@@ -1,6 +1,6 @@
 import {clearAuthCookie, isBrowser, setAuthJWTCookie, setLangCookie} from "@/utils/browser";
 import {jwtDecode} from "jwt-decode";
-import {LoginResponse, MyUserInfo} from "lemmy-js-client";
+import {LoginResponse, MyUserInfo} from "108jobs-client";
 import {HttpService} from "./index";
 import {toast} from "sonner";
 import {VALID_LANGUAGES} from "@/constants/language";

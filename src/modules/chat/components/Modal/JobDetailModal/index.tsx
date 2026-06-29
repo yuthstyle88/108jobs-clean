@@ -1,6 +1,6 @@
 import {useTranslation} from 'react-i18next';
 import React from "react";
-import {Post, PostPreview} from "lemmy-js-client";
+import {Post, PostPreview} from "108jobs-client";
 
 interface JobDetailModalProps {
     showJobDetailModal: boolean;

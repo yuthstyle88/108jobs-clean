@@ -10,7 +10,7 @@ import {hydrateUnread} from '@/modules/chat/store/unreadStore';
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {maybeHandlePresenceUpdate} from "@/modules/chat/utils";
 import {usePresenceStore} from "@/modules/chat/store/presenceStore";
-import {PresenceSnapshotItem, PresenceStatus} from "lemmy-js-client";
+import {PresenceSnapshotItem, PresenceStatus} from "108jobs-client";
 
 interface UserEventsContextValue {
     status: 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error';

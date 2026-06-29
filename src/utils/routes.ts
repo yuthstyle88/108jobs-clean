@@ -2,7 +2,7 @@
 
 // This list maps the routes to their corresponding Next.js page structure (for reference or generation tools)
 // Actual pages should be placed under /app or /pages depending on routing mode
-import {GetSiteResponse, MyUserInfo} from "lemmy-js-client";
+import {GetSiteResponse, MyUserInfo} from "108jobs-client";
 import {InitialFetchRequest, IRouteProps, RouteData} from "@/utils/types";
 import {LoginForm} from "@/components/Authentication/LoginForm";
 import {LoginFetchConfig,} from "@/components/Authentication/LoginForm/interface";

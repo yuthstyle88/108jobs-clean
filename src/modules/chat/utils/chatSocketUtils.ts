@@ -8,7 +8,7 @@ import type {
     ChatRoomId,
     ChatStatus,
     LocalUserId
-} from "lemmy-js-client";
+} from "108jobs-client";
 import {decrypt} from "@/utils";
 import {REQUEST_STATE} from "@/services/HttpService";
 import {dbg} from "@/modules/chat/utils/helpers";
@@ -514,7 +514,7 @@ export async function fetchHistoryPage(
     deps: {
         localUserId: number;
         receivedSet: Set<string>;
-        broadcast?: (m: import("lemmy-js-client").ChatMessage) => void;
+        broadcast?: (m: import("108jobs-client").ChatMessage) => void;
     }
 ) {
 

@@ -1,8 +1,8 @@
 {
-  "name": "lemmy-js-client",
-  "description": "A javascript / typescript client for Lemmy",
-  "version": "1.0.0-vote-view.0",
-  "author": "Dessalines",
+  "name": "108jobs-client",
+  "description": "TypeScript HTTP client for the 108jobs API",
+  "version": "1.0.0",
+  "author": "108jobs",
   "license": "AGPL-3.0",
   "main": "./dist/index.js",
   "files": [
@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LemmyNet/lemmy-js-client.git"
+    "url": "git+https://github.com/108Jobs/108jobs-clean.git"
   },
   "dependencies": {
     "@tsoa/runtime": "^6.6.0"

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { ListCategoriesResponse } from "lemmy-js-client";
+import type { ListCategoriesResponse } from "108jobs-client";
 
 export type CategoriesStore = {
   categories: ListCategoriesResponse | null;

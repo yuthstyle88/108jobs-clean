@@ -1,7 +1,7 @@
 "use client";
 
 import {ProfileImage} from "@/constants/images";
-import {PostId} from "lemmy-js-client";
+import {PostId} from "108jobs-client";
 import {formatDateToLong} from "@/utils";
 import {ArrowLeft, Coins} from "lucide-react";
 import Image from "next/image";

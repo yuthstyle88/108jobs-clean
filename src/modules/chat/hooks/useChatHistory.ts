@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {fetchHistoryPage} from '@/modules/chat/utils/chatSocketUtils';
-import {ChatMessage} from "lemmy-js-client";
+import {ChatMessage} from "108jobs-client";
 
 export type UseChatHistoryOptions = {
     roomId: string;

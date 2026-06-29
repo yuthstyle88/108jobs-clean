@@ -4,7 +4,7 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {REQUEST_STATE} from "@/services/HttpService"; // assuming you have this
-import {PaginationCursor} from "lemmy-js-client";
+import {PaginationCursor} from "108jobs-client";
 
 interface UsePaginatedRidersProps {
     verified?: boolean;

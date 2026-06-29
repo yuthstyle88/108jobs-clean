@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faEdit} from "@fortawesome/free-solid-svg-icons";
-import {Person} from "lemmy-js-client";
+import {Person} from "108jobs-client";
 import {ProfileImage} from "@/constants/images";
 import ChatNoWorkButton from "@/components/Common/Button/ChatNoWorkButton";
 import {useUserStore} from "@/store/useUserStore";

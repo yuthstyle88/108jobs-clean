@@ -12,7 +12,7 @@ import {useTranslation} from "react-i18next";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 import {toLanguageArray} from "@/constants/language";
 import {getJobTypeLabel} from "@/utils/helpers";
-import {JobType} from "lemmy-js-client";
+import {JobType} from "108jobs-client";
 import {PaginationControls} from "@/components/PaginationControls";
 import {faCoins} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";

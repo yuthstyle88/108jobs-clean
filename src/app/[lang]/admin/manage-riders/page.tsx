@@ -10,7 +10,7 @@ import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
 import {PaginationControls} from "@/components/PaginationControls";
 import {JSX, useState} from "react";
 import {cn} from "@/lib/utils";
-import {RiderId, RiderView, VehicleType} from "lemmy-js-client";
+import {RiderId, RiderView, VehicleType} from "108jobs-client";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 import {usePaginatedRiders} from "@/modules/admin/hooks/usePaginatedRiders";
 

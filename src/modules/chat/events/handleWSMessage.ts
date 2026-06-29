@@ -9,7 +9,7 @@ import {
     unwrapPhoenixFrame,
 } from "@/modules/chat/utils/chatSocketUtils";
 import {emitChatTyping,} from "@/modules/chat/events/index";
-import type {ChatMessage} from "lemmy-js-client";
+import type {ChatMessage} from "108jobs-client";
 import {
     buildMessageSignature,
     cleanupFetch,

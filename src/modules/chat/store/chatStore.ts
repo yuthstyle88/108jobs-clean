@@ -1,6 +1,6 @@
 // src/modules/chat/store/chatStore.ts
 import {create} from 'zustand'
-import {ChatMessage, ChatStatus} from 'lemmy-js-client'
+import {ChatMessage, ChatStatus} from '108jobs-client'
 import {normRoom} from "@/utils/helpers";
 import {useReadLastIdStore} from "@/modules/chat/store/readStore";
 import {isBrowser} from "@/utils";

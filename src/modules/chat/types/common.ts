@@ -1,4 +1,4 @@
-import {ChatMessage, LocalUserId} from "lemmy-js-client";
+import {ChatMessage, LocalUserId} from "108jobs-client";
 
 export type WsMessageSender = (data: MessagePayload) => void | Promise<void>;
 

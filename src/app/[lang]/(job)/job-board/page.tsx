@@ -5,7 +5,7 @@ import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {debounce} from "lodash";
-import {CategoryId, IntendedUse, JobType, LanguageId, PostSortType, SearchCombinedView,} from "lemmy-js-client";
+import {CategoryId, IntendedUse, JobType, LanguageId, PostSortType, SearchCombinedView,} from "108jobs-client";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import JobBoardTab from "@/components/JobBoardTab";
 import {useTranslation} from "react-i18next";

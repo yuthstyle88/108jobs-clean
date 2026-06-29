@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import React, { useState } from 'react';
-import { PersonId, SubmitUserReviewForm, WorkflowId } from 'lemmy-js-client';
+import { PersonId, SubmitUserReviewForm, WorkflowId } from '108jobs-client';
 
 interface SubmitReviewModalProps {
     showReviewModal: boolean;

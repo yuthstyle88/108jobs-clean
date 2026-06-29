@@ -1,6 +1,6 @@
 import {v4 as uuidv4} from 'uuid';
 import {emitChatNewMessage} from "@/modules/chat/events";
-import {ChatStatus, LocalUserId} from "lemmy-js-client";
+import {ChatStatus, LocalUserId} from "108jobs-client";
 import {WsMessageSender} from "@/modules/chat/types";
 
 export type Structured = Record<string, unknown>;

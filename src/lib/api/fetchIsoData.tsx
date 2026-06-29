@@ -24,7 +24,7 @@ import {
     ListCategoriesResponse,
     ListUserChatRoomsResponse,
     MyUserInfo
-} from "lemmy-js-client";
+} from "108jobs-client";
 import {getHttpBase} from "@/utils";
 import {getJwtCookieFromServer, setForwardedHeaders} from "@/utils/helper-server";
 

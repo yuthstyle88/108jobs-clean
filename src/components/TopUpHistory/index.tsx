@@ -4,7 +4,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useTranslation} from "react-i18next";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useCallback, useMemo, useState} from "react";
-import {CategoryNodeView, ListTopUpRequestQuery, TopUpRequestView} from "lemmy-js-client";
+import {CategoryNodeView, ListTopUpRequestQuery, TopUpRequestView} from "108jobs-client";
 import {format} from "date-fns";
 
 const TopUpHistory = () => {

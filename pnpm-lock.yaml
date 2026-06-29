@@ -98,9 +98,9 @@ dependencies:
   jwt-decode:
     specifier: ^4.0.0
     version: 4.0.0
-  lemmy-js-client:
-    specifier: file:./src/lib/lemmy-js-client
-    version: file:src/lib/lemmy-js-client
+  108jobs-client:
+    specifier: file:./src/lib/108jobs-client
+    version: file:src/lib/108jobs-client
   lodash:
     specifier: ^4.17.21
     version: 4.17.21
@@ -7910,9 +7910,9 @@ packages:
       react: 19.2.0
     dev: false
 
-  file:src/lib/lemmy-js-client:
-    resolution: {directory: src/lib/lemmy-js-client, type: directory}
-    name: lemmy-js-client
+  file:src/lib/108jobs-client:
+    resolution: {directory: src/lib/108jobs-client, type: directory}
+    name: 108jobs-client
     dependencies:
       '@tsoa/runtime': 6.6.0
     transitivePeerDependencies:

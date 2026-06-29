@@ -1,6 +1,6 @@
 import {useTranslation} from 'react-i18next';
 import React from "react";
-import {ChatRoomView} from "lemmy-js-client";
+import {ChatRoomView} from "108jobs-client";
 
 interface JobFlowContentProps {
     setIsFlowOpen: (open: boolean) => void;

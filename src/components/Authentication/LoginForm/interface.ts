@@ -1,6 +1,6 @@
 import React from "react";
 import {RequestState} from "@/services/HttpService";
-import {GetSiteResponse, LoginResponse, PublicOAuthProvider,} from "lemmy-js-client";
+import {GetSiteResponse, LoginResponse, PublicOAuthProvider,} from "108jobs-client";
 import {RouteData} from "@/utils/types"
 import {IRoutePropsWithFetch} from "@/utils/routes";
 

@@ -2,7 +2,7 @@
 // This provides typed helpers to emit and subscribe to chat CustomEvents
 // keeping window and event-name details in one place.
 import {isBrowser} from "@/utils/browser";
-import {ChatStatus} from "lemmy-js-client";
+import {ChatStatus} from "108jobs-client";
 
 type AnyRecord = Record<string, unknown>;
 

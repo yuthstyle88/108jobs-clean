@@ -1,4 +1,4 @@
-import type {ChatMessage} from 'lemmy-js-client';
+import type {ChatMessage} from '108jobs-client';
 
 /**
  * PhoenixSenderAdapter
