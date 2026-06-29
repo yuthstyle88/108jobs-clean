@@ -3,10 +3,10 @@ import type {CommentId} from "./CommentId";
 import type {LanguageId} from "./LanguageId";
 
 /**
- * Edit a comment.
+ * Edit a proposal.
  */
 export type EditComment = {
-  commentId: CommentId;
+  proposalId: CommentId;
   content?: string;
   languageId?: LanguageId;
 };

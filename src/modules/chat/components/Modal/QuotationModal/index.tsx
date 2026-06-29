@@ -10,7 +10,7 @@ import {CommentId, LocalUserId, PostId} from "@/lib/lemmy-js-client/src";
 export interface ProposedQuotePayload {
     partnerId: number;
     postId: number;
-    commentId?: number;
+    proposalId?: number;
     amount: number;
     proposal: string;
     projectName: string;
@@ -28,7 +28,7 @@ interface QuotationModalProps {
     // Accept any promise return (boolean | void) to be flexible with handlers
     onSubmit: (data: ProposedQuotePayload) => Promise<boolean | void>;
     postId?: PostId;
-    commentId?: CommentId;
+    proposalId?: CommentId;
     partnerId: LocalUserId;
     projectName?: string;
     amount?: number;
@@ -39,7 +39,7 @@ const QuotationModal: React.FC<QuotationModalProps> = ({
                                                            onClose,
                                                            onSubmit,
                                                            postId,
-                                                           commentId,
+                                                           proposalId,
                                                            partnerId,
                                                            projectName,
                                                            amount
@@ -92,7 +92,7 @@ const QuotationModal: React.FC<QuotationModalProps> = ({
     const [form, setForm] = useState<ProposedQuotePayload>({
         partnerId,
         postId: postId ?? 0,
-        commentId: commentId,
+        proposalId: proposalId,
         amount: amount || 0,
         proposal: '',
         projectName: projectName || '',
@@ -111,8 +111,8 @@ const QuotationModal: React.FC<QuotationModalProps> = ({
     }, [postId]);
 
     useEffect(() => {
-        setForm((prev) => ({...prev, commentId: commentId}));
-    }, [commentId]);
+        setForm((prev) => ({...prev, proposalId: proposalId}));
+    }, [proposalId]);
 
     const updateField = <K extends keyof ProposedQuotePayload>(key: K, value: ProposedQuotePayload[K]) => {
         setForm((prev) => {

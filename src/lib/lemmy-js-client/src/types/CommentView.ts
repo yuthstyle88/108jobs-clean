@@ -10,15 +10,15 @@ import type {Post} from "./Post";
 import type {TagsView} from "./TagsView";
 
 /**
- * A comment view.
+ * A proposal view (formerly CommentView — backend calls this ProposalView).
  */
 export type CommentView = {
-    comment: Comment;
+    proposal: Comment;
     creator: Person;
     post: Post;
     category: Category;
     categoryActions?: CategoryActions;
-    commentActions?: CommentActions;
+    proposalActions?: CommentActions;
     personActions?: PersonActions;
     instanceActions?: InstanceActions;
     creatorIsAdmin: boolean;

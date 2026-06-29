@@ -59,7 +59,7 @@ const JobBoardProposal = ({postId, jobCreatorId}: JobBoardProposalProps) => {
                     partnerPersonId,
                     roomId,
                     ...(cv.post.id ? {postId: cv.post.id} : {}),
-                    ...(cv?.comment?.id ? {currentCommentId: cv.comment.id} : {}),
+                    ...(cv?.proposal?.id ? {currentProposalId: cv.proposal.id} : {}),
                     roomName,
                 });
                 if (res.state === REQUEST_STATE.SUCCESS) {
@@ -81,7 +81,7 @@ const JobBoardProposal = ({postId, jobCreatorId}: JobBoardProposalProps) => {
     return (
         <main className="mt-6 md:mt-10 max-w-4xl mx-auto px-4 md:px-0">
             {/* Empty State */}
-            {!isLoading && (!proposals?.comments || proposals.comments.length === 0) && (
+            {!isLoading && (!proposals?.proposals || proposals.proposals.length === 0) && (
                 <div className="text-center py-12 bg-gray-50 rounded-xl">
                     <p className="text-lg font-medium text-text-secondary">
                         {t("jobBoardDetail.noProposal")}
@@ -90,11 +90,11 @@ const JobBoardProposal = ({postId, jobCreatorId}: JobBoardProposalProps) => {
             )}
 
             {/* Proposals List */}
-            {proposals?.comments && proposals.comments.length > 0 && (
+            {proposals?.proposals && proposals.proposals.length > 0 && (
                 <div className="space-y-6">
-                    {proposals.comments.map((cv: CommentView) => (
+                    {proposals.proposals.map((cv: CommentView) => (
                         <div
-                            key={cv.comment.id}
+                            key={cv.proposal.id}
                             className="bg-white border border-border-secondary rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
                         >
                             <div className="p-5 md:p-6">
@@ -131,7 +131,7 @@ const JobBoardProposal = ({postId, jobCreatorId}: JobBoardProposalProps) => {
                                         {/* Date - Mobile Top Right */}
                                         <div className="text-right">
                                             <p className="text-xs text-text-secondary font-medium whitespace-nowrap">
-                                                {new Date(cv.comment.publishedAt).toLocaleString(currentLocale, {
+                                                {new Date(cv.proposal.publishedAt).toLocaleString(currentLocale, {
                                                     month: "short",
                                                     day: "numeric",
                                                     year: "numeric",
@@ -146,7 +146,7 @@ const JobBoardProposal = ({postId, jobCreatorId}: JobBoardProposalProps) => {
                                     {/* Proposal Content */}
                                     <div
                                         className="text-text-primary text-base leading-relaxed break-words whitespace-pre-wrap">
-                                        {cv.comment.content}
+                                        {cv.proposal.content}
                                     </div>
 
                                     {/* Chat Button - Only for Job Creator */}

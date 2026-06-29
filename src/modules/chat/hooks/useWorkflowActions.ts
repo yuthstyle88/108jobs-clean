@@ -162,7 +162,7 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             const form: CreateInvoiceForm = {
                 employerId: data.partnerId,
                 postId: data.postId,
-                commentId: data.commentId,
+                proposalId: data.proposalId,
                 seqNumber: 1,
                 amount: data.amount,
                 proposal: data.proposal,

@@ -105,7 +105,7 @@ export const th = {
             quotationDesc: "กรอกข้อมูลเพื่อส่งใบเสนอราคาไปยังผู้ว่าจ้าง",
             employerId: "รหัสผู้ว่าจ้าง",
             postId: "รหัสโพสต์",
-            commentId: "รหัสคอมเมนต์",
+            proposalId: "รหัสคอมเมนต์",
             projectName: "ชื่อโครงการ",
             amount: "จำนวนเงิน",
             proposal: "ข้อเสนอ",
@@ -3542,7 +3542,7 @@ export const th = {
             vietnamCountryLabel: "เวียดนาม",
         },
         errors: {
-            alreadyCommented: "คุณได้ส่งข้อเสนอสำหรับงานนี้ไปแล้ว"
+            alreadyProposed: "คุณได้ส่งข้อเสนอสำหรับงานนี้ไปแล้ว"
         },
         jobApplication: {
             pageTitle: "เพิ่มโอกาสในการจ้างงานของคุณ! ด้วยประสบการณ์ที่เกี่ยวข้องและพอร์ตโฟลิโอ",

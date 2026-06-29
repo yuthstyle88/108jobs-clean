@@ -2,8 +2,8 @@
 import type {CommentView} from "./CommentView";
 
 /**
- * A comment response.
+ * A proposal response (backend field is proposalView).
  */
 export type CommentResponse = {
-  commentView: CommentView;
+  proposalView: CommentView;
 };

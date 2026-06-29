@@ -1455,7 +1455,7 @@ export class LemmyHttp extends Controller {
      * @summary Create a comment.
      */
     @Security("bearerAuth")
-    @Post("/comment")
+    @Post("/proposal")
     @Tags("Comment")
     async createComment(
         @Body() form: CreateComment,
@@ -1463,7 +1463,7 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<CreateComment, CommentResponse>(
             HttpType.Post,
-            "/comment",
+            "/proposal",
             form,
             options,
         );
@@ -1473,7 +1473,7 @@ export class LemmyHttp extends Controller {
      * @summary Edit a comment.
      */
     @Security("bearerAuth")
-    @Put("/comment")
+    @Put("/proposal")
     @Tags("Comment")
     async editComment(
         @Body() form: EditComment,
@@ -1481,7 +1481,7 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<EditComment, CommentResponse>(
             HttpType.Put,
-            "/comment",
+            "/proposal",
             form,
             options,
         );
@@ -1491,7 +1491,7 @@ export class LemmyHttp extends Controller {
      * @summary Delete a comment.
      */
     @Security("bearerAuth")
-    @Post("/comment/delete")
+    @Post("/proposal/delete")
     @Tags("Comment")
     async deleteComment(
         @Body() form: DeleteComment,
@@ -1499,7 +1499,7 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<DeleteComment, CommentResponse>(
             HttpType.Post,
-            "/comment/delete",
+            "/proposal/delete",
             form,
             options,
         );
@@ -1509,7 +1509,7 @@ export class LemmyHttp extends Controller {
      * @summary A moderator remove for a comment.
      */
     @Security("bearerAuth")
-    @Post("/comment/remove")
+    @Post("/proposal/remove")
     @Tags("Comment", "Moderator")
     async removeComment(
         @Body() form: RemoveComment,
@@ -1517,7 +1517,7 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<RemoveComment, CommentResponse>(
             HttpType.Post,
-            "/comment/remove",
+            "/proposal/remove",
             form,
             options,
         );
@@ -1527,7 +1527,7 @@ export class LemmyHttp extends Controller {
      * @summary Like / vote on a comment.
      */
     @Security("bearerAuth")
-    @Post("/comment/like")
+    @Post("/proposal/like")
     @Tags("Comment")
     async likeComment(
         @Body() form: CreateCommentLike,
@@ -1535,7 +1535,7 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<CreateCommentLike, CommentResponse>(
             HttpType.Post,
-            "/comment/like",
+            "/proposal/like",
             form,
             options,
         );
@@ -1545,7 +1545,7 @@ export class LemmyHttp extends Controller {
      * @summary List a comment's likes. Admin-only.
      */
     @Security("bearerAuth")
-    @Get("/comment/like/list")
+    @Get("/proposal/like/list")
     @Tags("Comment", "Admin")
     async listCommentLikes(
         @Queries() form: ListCommentLikesI,
@@ -1553,7 +1553,7 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<ListCommentLikes, ListCommentLikesResponse>(
             HttpType.Get,
-            "/comment/like/list",
+            "/proposal/like/list",
             form,
             options,
         );
@@ -1563,7 +1563,7 @@ export class LemmyHttp extends Controller {
      * @summary Save a comment.
      */
     @Security("bearerAuth")
-    @Put("/comment/save")
+    @Put("/proposal/save")
     @Tags("Comment")
     async saveComment(
         @Body() form: SaveComment,
@@ -1571,7 +1571,7 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<SaveComment, CommentResponse>(
             HttpType.Put,
-            "/comment/save",
+            "/proposal/save",
             form,
             options,
         );
@@ -1581,7 +1581,7 @@ export class LemmyHttp extends Controller {
      * @summary Distinguishes a comment (speak as moderator)
      */
     @Security("bearerAuth")
-    @Post("/comment/distinguish")
+    @Post("/proposal/distinguish")
     @Tags("Comment", "Moderator")
     async distinguishComment(
         @Body() form: DistinguishComment,
@@ -1589,7 +1589,7 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<DistinguishComment, CommentResponse>(
             HttpType.Post,
-            "/comment/distinguish",
+            "/proposal/distinguish",
             form,
             options,
         );
@@ -1600,7 +1600,7 @@ export class LemmyHttp extends Controller {
      */
     @Security("bearerAuth")
     @Security({})
-    @Get("/comment/list")
+    @Get("/proposal/list")
     @Tags("Comment")
     async getComments(
         @Queries() form: GetCommentsI = {},
@@ -1608,7 +1608,7 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<GetComments, GetCommentsResponse>(
             HttpType.Get,
-            "/comment/list",
+            "/proposal/list",
             form,
             options,
         );
@@ -1619,7 +1619,7 @@ export class LemmyHttp extends Controller {
      */
     @Security("bearerAuth")
     @Security({})
-    @Get("/comment/list/slim")
+    @Get("/proposal/list/slim")
     @Tags("Comment")
     async getCommentsSlim(
         @Queries() form: GetCommentsI = {},
@@ -1627,7 +1627,7 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<GetComments, GetCommentsSlimResponse>(
             HttpType.Get,
-            "/comment/list/slim",
+            "/proposal/list/slim",
             form,
             options,
         );
@@ -1638,7 +1638,7 @@ export class LemmyHttp extends Controller {
      */
     @Security("bearerAuth")
     @Security({})
-    @Get("/comment")
+    @Get("/proposal")
     @Tags("Comment")
     async getComment(
         @Queries() form: GetCommentI,
@@ -1646,7 +1646,7 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<GetComment, CommentResponse>(
             HttpType.Get,
-            "/comment",
+            "/proposal",
             form,
             options,
         );
@@ -1656,7 +1656,7 @@ export class LemmyHttp extends Controller {
      * @summary Report a comment.
      */
     @Security("bearerAuth")
-    @Post("/comment/report")
+    @Post("/proposal/report")
     @Tags("Comment")
     async createCommentReport(
         @Body() form: CreateCommentReport,
@@ -1664,7 +1664,7 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<CreateCommentReport, CommentReportResponse>(
             HttpType.Post,
-            "/comment/report",
+            "/proposal/report",
             form,
             options,
         );
@@ -1674,7 +1674,7 @@ export class LemmyHttp extends Controller {
      * @summary Resolve a comment report. Only a mod can do this.
      */
     @Security("bearerAuth")
-    @Put("/comment/report/resolve")
+    @Put("/proposal/report/resolve")
     @Tags("Comment", "Moderator")
     async resolveCommentReport(
         @Body() form: ResolveCommentReport,
@@ -1682,7 +1682,7 @@ export class LemmyHttp extends Controller {
     ) {
         return this.#wrapper<ResolveCommentReport, CommentReportResponse>(
             HttpType.Put,
-            "/comment/report/resolve",
+            "/proposal/report/resolve",
             form,
             options,
         );

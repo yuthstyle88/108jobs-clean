@@ -26,7 +26,7 @@ interface ProposedQuoteMessage {
     quote?: {
         employerId: number;
         postId: number;
-        commentId: number;
+        proposalId: number;
         amount: number;
         proposal: string;
         projectName: string;

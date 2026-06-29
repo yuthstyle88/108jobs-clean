@@ -55,8 +55,8 @@ const JobApplication = () => {
 
                 if (response.state === REQUEST_STATE.FAILED) {
                     const errName = response.err?.name ?? "unknownError";
-                    if (errName === 'alreadyCommented') {
-                        const messageError = t("errors.alreadyCommented", { defaultValue: t("global.submissionFailed") || "You have already submitted proposal on this job." });
+                    if (errName === 'alreadyProposed') {
+                        const messageError = t("errors.alreadyProposed", { defaultValue: t("global.submissionFailed") || "You have already submitted proposal on this job." });
                         errorMessage(null, null, messageError);
                         return;
                     }
