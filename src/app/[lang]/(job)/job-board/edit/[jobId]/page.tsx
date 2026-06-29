@@ -14,7 +14,7 @@ export default function EditPostPage() {
         isMutating: isLoading,
     } = useHttpGet("getPost", {
         id: Number(jobId),
-        proposalId: proposalId ? Number(proposalId) : undefined,
+        commentId: proposalId ? Number(proposalId) : undefined,
     });
 
     if (isLoading) return <LoadingBlur text="" />;
