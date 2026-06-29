@@ -1,6 +1,6 @@
 import {useMemo} from "react";
 import useSWRMutation from "swr/mutation";
-import {callHttp, EMPTY_REQUEST, Payload, REQUEST_STATE, RequestState, WrappedLemmyHttp,} from "@/services/HttpService";
+import {callHttp, EMPTY_REQUEST, Payload, REQUEST_STATE, RequestState, WrappedApi108Jobs,} from "@/services/HttpService";
 import {useGlobalError} from "@/contexts/GlobalErrorContext";
 import {useGlobalLoader} from "@/hooks/ui/GlobalLoaderContext";
 
@@ -12,7 +12,7 @@ import {useGlobalLoader} from "@/hooks/ui/GlobalLoaderContext";
  * const { execute, data, isMutating } = useHttpPost("uploadImage");
  * await execute({ file });
  */
-export const useHttpPost = <K extends keyof WrappedLemmyHttp>(method: K) => {
+export const useHttpPost = <K extends keyof WrappedApi108Jobs>(method: K) => {
   /** GlobalLoaderContext */
   const { showLoader, hideLoader } = useGlobalLoader();
 
@@ -28,7 +28,7 @@ export const useHttpPost = <K extends keyof WrappedLemmyHttp>(method: K) => {
     RequestState<Payload<K>>, // ค่า State ที่ SWR เก็บ
     Error, // ประเภท Error
     string, // Key ที่เป็น string
-    Parameters<WrappedLemmyHttp[K]> // Argument (Tuple) ที่จะส่งไป
+    Parameters<WrappedApi108Jobs[K]> // Argument (Tuple) ที่จะส่งไป
   >(
     `${String(method)}-http-post`, // Use method name as SWR key to avoid collisions
     async(_key, {arg}) => {
@@ -67,7 +67,7 @@ export const useHttpPost = <K extends keyof WrappedLemmyHttp>(method: K) => {
   );
 
   /** Execute Function (triggers API) */
-  const execute = (...args: Parameters<WrappedLemmyHttp[K]>) => {
+  const execute = (...args: Parameters<WrappedApi108Jobs[K]>) => {
     if (args.length === 0) {
       /* trigger without arguments */
       return (trigger as () => Promise<RequestState<Payload<K>>>)();
@@ -75,7 +75,7 @@ export const useHttpPost = <K extends keyof WrappedLemmyHttp>(method: K) => {
 
     /* trigger with arguments (tuple) */
     type TriggerWithArgs = (
-      arg: Parameters<WrappedLemmyHttp[K]>,
+      arg: Parameters<WrappedApi108Jobs[K]>,
       options?: unknown
     ) => Promise<RequestState<Payload<K>>>;
 

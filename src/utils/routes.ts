@@ -1,4 +1,4 @@
-// Route definitions for converting Lemmy Inferno Router to Next.js routing structure
+// Route definitions for Next.js routing structure
 
 // This list maps the routes to their corresponding Next.js page structure (for reference or generation tools)
 // Actual pages should be placed under /app or /pages depending on routing mode

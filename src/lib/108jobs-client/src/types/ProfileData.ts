@@ -7,7 +7,7 @@ import {Card} from "./Card";
  * ProfileData represents the profile's profile information.
  *
  * It contains both custom properties specific to our application and
- * properties from lemmy-js-client's LocalUser and Person types.
+ * properties from the 108jobs LocalUser and Person types.
  *
  * Overlapping properties:
  * - profile.username ~ person.name

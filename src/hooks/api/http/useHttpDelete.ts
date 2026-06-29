@@ -1,10 +1,10 @@
 import {useMemo} from "react";
 import useSWRMutation from "swr/mutation";
-import {callHttp, EMPTY_REQUEST, Payload, REQUEST_STATE, RequestState, WrappedLemmyHttp,} from "@/services/HttpService";
+import {callHttp, EMPTY_REQUEST, Payload, REQUEST_STATE, RequestState, WrappedApi108Jobs,} from "@/services/HttpService";
 import {useGlobalError} from "@/contexts/GlobalErrorContext";
 import {useGlobalLoader} from "@/hooks/ui/GlobalLoaderContext";
 
-export const useHttpDelete = <K extends keyof WrappedLemmyHttp>(method: K) => {
+export const useHttpDelete = <K extends keyof WrappedApi108Jobs>(method: K) => {
   const { setLoading } = useGlobalLoader();
   const { setError } = useGlobalError();
 
@@ -16,7 +16,7 @@ export const useHttpDelete = <K extends keyof WrappedLemmyHttp>(method: K) => {
     RequestState<Payload<K>>,
     Error,
     string,
-    Parameters<WrappedLemmyHttp[K]>
+    Parameters<WrappedApi108Jobs[K]>
   >(
     `${String(method)}-http-delete`,
     async (_key, { arg }) => {
@@ -43,11 +43,11 @@ export const useHttpDelete = <K extends keyof WrappedLemmyHttp>(method: K) => {
     [state]
   );
 
-  const execute = (...args: Parameters<WrappedLemmyHttp[K]>) => {
+  const execute = (...args: Parameters<WrappedApi108Jobs[K]>) => {
     if (args.length === 0) {
         return (trigger as () => Promise<RequestState<Payload<K>>>)();
     }
-    return (trigger as (arg: Parameters<WrappedLemmyHttp[K]>) => Promise<RequestState<Payload<K>>>)(args);
+    return (trigger as (arg: Parameters<WrappedApi108Jobs[K]>) => Promise<RequestState<Payload<K>>>)(args);
   };
 
   return { state, data, execute, isMutating };

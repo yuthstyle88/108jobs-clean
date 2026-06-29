@@ -163,13 +163,6 @@ export const toLocalTime = (input: string | number | Date, locale: string) => {
 };
 
 /**
- * Converts timestamp string to Unix timestamp in seconds, as used by Lemmy API
- */
-export function getUnixTimeLemmy(text?: string): number | undefined {
-    return text ? new Date(text).getTime() / 1000 : undefined;
-}
-
-/**
  * Converts timestamp string to Unix timestamp in milliseconds, as used by JavaScript
  */
 export function getUnixTime(text?: string): number | undefined {

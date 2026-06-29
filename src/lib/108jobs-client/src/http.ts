@@ -197,17 +197,17 @@ enum HttpType {
 type RequestOptions = Pick<RequestInit, "signal">;
 
 /**
- * Helps build lemmy HTTP requests.
+ * HTTP client for the 108jobs API.
  */
 @Route("api/v4")
-export class LemmyHttp extends Controller {
+export class Api108Jobs extends Controller {
     #apiUrl: string;
     #headers: { [key: string]: string } = {};
     #fetchFunction: typeof fetch = fetch.bind(globalThis);
 
     /**
-     * Generates a new instance of LemmyHttp.
-     * @param baseUrl the base url, without the vX version: https://lemmy.ml -> goes to https://lemmy.ml/api/vX
+     * Generates a new instance of Api108Jobs.
+     * @param baseUrl the base url, without the vX version: https://api.108jobs.com -> goes to https://api.108jobs.com/api/vX
      * @param headers optional headers. Should contain `x-real-ip` and `x-forwarded-for` .
      */
     constructor(
@@ -607,7 +607,7 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary Search lemmy. If `search-term` is a url it also attempts to fetch it, just like `resolve-object`.
+     * @summary Search. If `search-term` is a url it also attempts to fetch it.
      */
     @Security("bearerAuth")
     @Security({})
@@ -1001,7 +1001,7 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary Log into lemmy.
+     * @summary Log in.
      */
     @Post("/account/auth/login")
     @Tags("Account")
@@ -1033,7 +1033,7 @@ export class LemmyHttp extends Controller {
     }
 
     /**
-     * @summary Log into lemmy.
+     * @summary Log in.
      */
     @Post("/account/auth/update-term")
     @Tags("Account")
@@ -2543,11 +2543,11 @@ export class LemmyHttp extends Controller {
         try {
             json = await response.json();
         } catch {
-            throw new LemmyError(response.statusText);
+            throw new ApiRequestError(response.statusText);
         }
 
         if (!response.ok) {
-            throw new LemmyError(json.error ?? response.statusText, json.message);
+            throw new ApiRequestError(json.error ?? response.statusText, json.message);
         } else {
             return json;
         }
@@ -2578,17 +2578,17 @@ function createFormData(image: File | Buffer, fieldName: string = "images[]"): F
 }
 
 /**
- * A Lemmy error type.
+ * Thrown when an API request fails.
  *
  * The name is the i18n translatable error code.
  * The msg is either an empty string, or extra non-translatable info.
  */
-export class LemmyError extends Error {
+export class ApiRequestError extends Error {
     constructor(name: string, msg?: string) {
         super(msg ?? "");
         this.name = name;
 
         // Set the prototype explicitly.
-        Object.setPrototypeOf(this, LemmyError.prototype);
+        Object.setPrototypeOf(this, ApiRequestError.prototype);
     }
 }

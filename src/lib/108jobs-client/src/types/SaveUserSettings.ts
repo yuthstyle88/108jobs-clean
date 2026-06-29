@@ -46,7 +46,7 @@ export type SaveUserSettings = {
      */
     defaultCommentSortType?: CommentSortType;
     /**
-     * The language of the lemmy interface
+     * The language of the interface
      */
     interfaceLanguage?: string;
     /**

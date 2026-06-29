@@ -1,4 +1,4 @@
-import {LemmyHttp} from "108jobs-client";
+import {Api108Jobs} from "108jobs-client";
 import {getHttpBase} from "@/utils/env";
 import {UserService} from "@/services/UserService";
 import {isBrowser} from "@/utils";
@@ -44,8 +44,8 @@ export type SuccessRequestState<T> = {
   data: T;
 };
 
-export type Payload<K extends keyof WrappedLemmyHttp> =
-  Awaited<ReturnType<WrappedLemmyHttp[K]>> extends RequestState<infer D>
+export type Payload<K extends keyof WrappedApi108Jobs> =
+  Awaited<ReturnType<WrappedApi108Jobs[K]>> extends RequestState<infer D>
     ? D
     : never;
 
@@ -62,36 +62,36 @@ export type RequestState<T> =
 
 /* ============================================================ */
 
-export type WrappedLemmyHttp = WrappedLemmyHttpClient & {
-  [K in keyof LemmyHttp]: LemmyHttp[K] extends (...args: any[]) => any
-    ? ReturnType<LemmyHttp[K]> extends Promise<infer U>
-      ? (...args: Parameters<LemmyHttp[K]>) => Promise<RequestState<U>>
-      : (...args: Parameters<LemmyHttp[K]>) => Promise<RequestState<LemmyHttp[K]>>
-    : LemmyHttp[K];
+export type WrappedApi108Jobs = WrappedApiClient & {
+  [K in keyof Api108Jobs]: Api108Jobs[K] extends (...args: any[]) => any
+    ? ReturnType<Api108Jobs[K]> extends Promise<infer U>
+      ? (...args: Parameters<Api108Jobs[K]>) => Promise<RequestState<U>>
+      : (...args: Parameters<Api108Jobs[K]>) => Promise<RequestState<Api108Jobs[K]>>
+    : Api108Jobs[K];
 };
 
 /**
- * Wrapped LemmyHttp client that provides consistent request state handling
+ * Wrapped Api108Jobs client that provides consistent request state handling
  * and implements caching for GET requests to improve performance.
  */
-class WrappedLemmyHttpClient {
-  rawClient: LemmyHttp;
+class WrappedApiClient {
+  rawClient: Api108Jobs;
   cache: Map<string, {data: any, timestamp: number}> = new Map();
   /** Tracks in-flight GET requests to prevent duplicate concurrent fetches */
   inFlight: Map<string, Promise<any>> = new Map();
   cacheTTL: number = 60000; // Cache TTL in milliseconds (1 minute)
   [prop: string]: any;
 
-  constructor(client: LemmyHttp) {
+  constructor(client: Api108Jobs) {
     this.rawClient = client;
 
-    // Create wrapped methods for all LemmyHttp methods
+    // Create wrapped methods for all Api108Jobs methods
     for (const key of Object.getOwnPropertyNames(
       Object.getPrototypeOf(this.rawClient),
     )) {
       if (key !== "constructor") {
         this[key] = async(
-          ...args: Parameters<LemmyHttp[keyof LemmyHttp]>
+          ...args: Parameters<Api108Jobs[keyof Api108Jobs]>
         ) => {
           // Return loading state first for better UX
           const loadingPromise = Promise.resolve(LOADING_REQUEST);
@@ -182,22 +182,22 @@ class WrappedLemmyHttpClient {
 }
 
 /* ------------------ public helpers -------------------------- */
-export function wrapClient(client: LemmyHttp) {
-  return new WrappedLemmyHttpClient(client) as unknown as WrappedLemmyHttp;
+export function wrapClient(client: Api108Jobs) {
+  return new WrappedApiClient(client) as unknown as WrappedApi108Jobs;
 }
 
 /**
- * HttpService provides a singleton instance of the wrapped LemmyHttp client
+ * HttpService provides a singleton instance of the wrapped Api108Jobs client
  * with additional functionality for caching and request management.
  */
 export class HttpService {
   static #_instance: HttpService;
-  #client: WrappedLemmyHttp;
+  #client: WrappedApi108Jobs;
   #requestTimeout: number = 30000; // Default timeout: 30 seconds
 
   private constructor() {
-    const lemmyHttp = new LemmyHttp(getHttpBase());
-    this.#client = wrapClient(lemmyHttp);
+    const apiClient = new Api108Jobs(getHttpBase());
+    this.#client = wrapClient(apiClient);
 
     // Add request timeout handling to all methods
     this.#addTimeoutToMethods();
@@ -308,17 +308,17 @@ function ensureAuthHeader() {
 
 /* ===== Generic helper ======================================= */
 export function callHttp<
-  K extends keyof WrappedLemmyHttp,
+  K extends keyof WrappedApi108Jobs,
 >(
   method: K,
-  ...args: Parameters<WrappedLemmyHttp[K]>
-): ReturnType<WrappedLemmyHttp[K]> {
+  ...args: Parameters<WrappedApi108Jobs[K]>
+): ReturnType<WrappedApi108Jobs[K]> {
     if(isBrowser() && UserService.Instance?.authInfo?.auth) {
         ensureAuthHeader();
     }
   // Do not inject auth into payload; rely on Authorization header
   return HttpService.client[method](...args) as ReturnType<
-    WrappedLemmyHttp[K]
+    WrappedApi108Jobs[K]
   >;
 }
 
