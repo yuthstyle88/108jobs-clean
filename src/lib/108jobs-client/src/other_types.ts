@@ -1,44 +1,25 @@
 import {AdminListUsers} from "./types/AdminListUsers";
 import {CategoryIdQuery} from "./types/CategoryIdQuery";
+import {ChatHistoryQuery} from "./types/ChatHistoryQuery";
 import {DeleteImageParams} from "./types/DeleteImageParams";
-import {GetComment} from "./types/GetComment";
-import {GetComments} from "./types/GetComments";
+import {GetBankAccounts} from "./types/GetBankAccounts";
+import {GetBillingByRoomQuery} from "./types/GetBillingByRoomQuery";
 import {GetCategory} from "./types/GetCategory";
-import {GetCategoryPendingFollowsCount} from "./types/GetCategoryPendingFollowsCount";
-import {GetModlog} from "./types/GetModlog";
+import {GetComments} from "./types/GetComments";
 import {GetPersonDetails} from "./types/GetPersonDetails";
 import {GetPost} from "./types/GetPost";
 import {GetPosts} from "./types/GetPosts";
-import {GetRandomCategory} from "./types/GetRandomCategory";
-import {GetRegistrationApplication} from "./types/GetRegistrationApplication";
-import {GetReportCount} from "./types/GetReportCount";
 import {GetSiteMetadata} from "./types/GetSiteMetadata";
-import {ListCommentLikes} from "./types/ListCommentLikes";
-import {ListCategories} from "./types/ListCategories";
-import {ListCategoryPendingFollows} from "./types/ListCategoryPendingFollows";
-import {ListCustomEmojis} from "./types/ListCustomEmojis";
-import {ListNotifications} from "./types/ListNotifications";
-import {ListMedia} from "./types/ListMedia";
-import {ListPersonContent} from "./types/ListPersonContent";
-import {ListPersonHidden} from "./types/ListPersonHidden";
-import {ListPersonLiked} from "./types/ListPersonLiked";
-import {ListPersonRead} from "./types/ListPersonRead";
-import {ListPersonCreated} from "./types/ListPersonCreated";
-import {ListPersonSaved} from "./types/ListPersonSaved";
-import {ListPostLikes} from "./types/ListPostLikes";
-import {ListRegistrationApplications} from "./types/ListRegistrationApplications";
-import {ListReports} from "./types/ListReports";
-import {ListTaglines} from "./types/ListTaglines";
-import {ResolveObject} from "./types/ResolveObject";
-import {Search} from "./types/Search";
-import {ListUserChatRoomsQuery} from "./types/ListUserChatRoomsQuery";
-import {GetBankAccounts} from "./types/GetBankAccounts";
-import {ChatHistoryQuery} from "./types/ChatHistoryQuery";
-import {GetBillingByRoomQuery} from "./types/GetBillingByRoomQuery";
 import {LastReadQuery} from "./types/LastReadQuery";
-import {PeerStatusQuery} from "./types/PeerStatusQuery";
-import {ListUserReviewsQuery} from "./types/ListUserReviewsQuery";
+import {ListCategories} from "./types/ListCategories";
+import {ListMedia} from "./types/ListMedia";
+import {ListNotifications} from "./types/ListNotifications";
+import {ListPersonCreated} from "./types/ListPersonCreated";
 import {ListRidersQuery} from "./types/ListRidersQuery";
+import {ListUserChatRoomsQuery} from "./types/ListUserChatRoomsQuery";
+import {ListUserReviewsQuery} from "./types/ListUserReviewsQuery";
+import {PeerStatusQuery} from "./types/PeerStatusQuery";
+import {Search} from "./types/Search";
 
 export const VERSION = "v4";
 
@@ -51,13 +32,7 @@ export interface UploadImage {
 export interface ListMediaI extends ListMedia {
 }
 
-export interface GetModlogI extends GetModlog {
-}
-
 export interface SearchI extends Search {
-}
-
-export interface ResolveObjectI extends ResolveObject {
 }
 
 export interface GetCategoryI extends GetCategory {
@@ -66,80 +41,25 @@ export interface GetCategoryI extends GetCategory {
 export interface ListCategoriesI extends ListCategories {
 }
 
-export interface GetCategoryPendingFollowsCountI
-    extends GetCategoryPendingFollowsCount {
-}
-
-export interface ListCategoryPendingFollowsI
-    extends ListCategoryPendingFollows {
-}
-
-export interface GetRandomCategoryI extends GetRandomCategory {
-}
-
 export interface GetPostI extends GetPost {
 }
 
 export interface GetPostsI extends GetPosts {
 }
 
-export interface ListPostLikesI extends ListPostLikes {
-}
-
 export interface GetSiteMetadataI extends GetSiteMetadata {
-}
-
-export interface ListCommentLikesI extends ListCommentLikes {
 }
 
 export interface GetCommentsI extends GetComments {
 }
 
-export interface GetCommentI extends GetComment {
-}
-
 export interface GetPersonDetailsI extends GetPersonDetails {
-}
-
-export interface ListPersonContentI extends ListPersonContent {
-}
-
-export interface GetReportCountI extends GetReportCount {
 }
 
 export interface ListNotificationsI extends ListNotifications {
 }
 
-export interface ListPersonSavedI extends ListPersonSaved {
-}
-
-export interface ListPersonReadI extends ListPersonRead {
-}
-
 export interface ListPersonCreatedI extends ListPersonCreated {
-}
-
-export interface ListPersonHiddenI extends ListPersonHidden {
-}
-
-export interface ListPersonLikedI extends ListPersonLiked {
-}
-
-export interface ListRegistrationApplicationsI
-    extends ListRegistrationApplications {
-}
-
-export interface GetRegistrationApplicationI
-    extends GetRegistrationApplication {
-}
-
-export interface ListCustomEmojisI extends ListCustomEmojis {
-}
-
-export interface ListTaglinesI extends ListTaglines {
-}
-
-export interface ListReportsI extends ListReports {
 }
 
 export interface DeleteImageParamsI extends DeleteImageParams {
@@ -169,7 +89,6 @@ export interface PeerStatusQueryI extends PeerStatusQuery {
 export interface GetBillingByRoomQueryI extends GetBillingByRoomQuery {
 }
 
-// Bank Accounts (admin list)
 export interface GetBankAccountsI extends GetBankAccounts {
 }
 
