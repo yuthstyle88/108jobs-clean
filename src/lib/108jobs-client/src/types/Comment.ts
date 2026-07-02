@@ -32,8 +32,13 @@ export type Comment = {
    */
   distinguished: boolean;
   languageId: LanguageId;
+  score: number;
+  upvotes: number;
+  downvotes: number;
   /**
    * The total number of children in this comment branch.
    */
   childCount: number;
+  reportCount: number;
+  unresolvedReportCount: number;
 };

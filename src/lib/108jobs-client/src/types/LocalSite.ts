@@ -27,6 +27,10 @@ export type LocalSite = {
    */
   requireEmailVerification: boolean;
   /**
+   * An optional registration application questionnaire in markdown.
+   */
+  applicationQuestion?: string;
+  /**
    * Whether the instance is private or public.
    */
   privateInstance: boolean;
@@ -39,6 +43,10 @@ export type LocalSite = {
    * An optional legal disclaimer page.
    */
   legalInformation?: string;
+  /**
+   * Whether new applications email admins.
+   */
+  applicationEmailAdmins: boolean;
   /**
    * An optional regex to filter words.
    */
@@ -58,6 +66,10 @@ export type LocalSite = {
   publishedAt: string;
   updatedAt?: string;
   registrationMode: RegistrationMode;
+  /**
+   * Whether to email admins on new reports.
+   */
+  reportsEmailAdmins: boolean;
   /**
    * Default value for [LocalSite.post_listing_mode]
    */

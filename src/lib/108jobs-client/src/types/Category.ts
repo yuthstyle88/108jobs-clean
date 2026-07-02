@@ -70,6 +70,8 @@ export type Category = {
      */
     usersActiveHalfYear: number;
     subscribersLocal: number;
+    reportCount: number;
+    unresolvedReportCount: number;
     localRemoved: boolean;
     path: string;
     active: boolean;

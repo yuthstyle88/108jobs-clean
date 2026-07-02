@@ -76,10 +76,15 @@ export type Post = {
    */
   scheduledPublishTimeAt?: string;
   comments: number;
+  score: number;
+  upvotes: number;
+  downvotes: number;
   /**
    * The time of the newest comment in the post.
    */
   newestCommentTimeAt: string;
+  reportCount: number;
+  unresolvedReportCount: number;
   pending: boolean;
   intendedUse: IntendedUse;
   jobType: JobType;
