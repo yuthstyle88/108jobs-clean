@@ -33,14 +33,6 @@ export type Category = {
      */
     nsfw: boolean;
     /**
-     * The federated ap_id.
-     */
-    apId: DbUrl;
-    /**
-     * Whether the category is local.
-     */
-    local: boolean;
-    /**
      * A URL for an icon.
      */
     icon?: DbUrl;
@@ -78,8 +70,6 @@ export type Category = {
      */
     usersActiveHalfYear: number;
     subscribersLocal: number;
-    reportCount: number;
-    unresolvedReportCount: number;
     localRemoved: boolean;
     path: string;
     active: boolean;

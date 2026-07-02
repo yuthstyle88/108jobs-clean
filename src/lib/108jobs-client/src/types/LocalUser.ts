@@ -6,7 +6,6 @@ import type {PersonId} from "./PersonId";
 import type {PostListingMode} from "./PostListingMode";
 import type {PostSortType} from "./PostSortType";
 import type {SensitiveString} from "./SensitiveString";
-import type {VoteShow} from "./VoteShow";
 
 /**
  * A local profile.
@@ -35,10 +34,6 @@ export type LocalUser = {
    * Whether to show bot accounts.
    */
   showBotAccounts: boolean;
-  /**
-   * Whether to show read posts.
-   */
-  showReadPosts: boolean;
   /**
    * Whether their email has been verified.
    */
@@ -100,9 +95,4 @@ export type LocalUser = {
    * A default time range limit to apply to post sorts, in seconds.
    */
   defaultPostTimeRangeSeconds?: number;
-  showScore: boolean;
-  showUpvotes: boolean;
-  showDownvotes: VoteShow;
-  showUpvotePercentage: boolean;
-  showPersonVotes: boolean;
 };

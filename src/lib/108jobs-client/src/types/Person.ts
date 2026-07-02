@@ -22,17 +22,9 @@ export type Person = {
     publishedAt: string;
     updatedAt?: string;
     /**
-     * The federated ap_id.
-     */
-    apId: DbUrl;
-    /**
      * An optional bio, in markdown.
      */
     bio?: string;
-    /**
-     * Whether the person is local to our site.
-     */
-    local: boolean;
     /**
      * A URL for a banner.
      */

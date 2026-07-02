@@ -54,14 +54,6 @@ export type Post = {
    */
   thumbnailUrl?: DbUrl;
   /**
-   * The federated activity id / ap_id.
-   */
-  apId: DbUrl;
-  /**
-   * Whether the post is local.
-   */
-  local: boolean;
-  /**
    * A video url for the link.
    */
   embedVideoUrl?: DbUrl;
@@ -84,20 +76,10 @@ export type Post = {
    */
   scheduledPublishTimeAt?: string;
   comments: number;
-  score: number;
-  upvotes: number;
-  downvotes: number;
   /**
    * The time of the newest comment in the post.
    */
   newestCommentTimeAt: string;
-  reportCount: number;
-  unresolvedReportCount: number;
-  /**
-   * If a local profile posts in a remote category, the comment is hidden until it is confirmed
-   * accepted by the category (by receiving it back via federation).
-   */
-  federationPending: boolean;
   pending: boolean;
   intendedUse: IntendedUse;
   jobType: JobType;

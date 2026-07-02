@@ -5,7 +5,6 @@ import type {ListingType} from "./ListingType";
 import type {PostListingMode} from "./PostListingMode";
 import type {PostSortType} from "./PostSortType";
 import type {SensitiveString} from "./SensitiveString";
-import type {VoteShow} from "./VoteShow";
 import {PortfolioPic} from "./PortfolioPic";
 import {WorkSample} from "./WorkSample";
 
@@ -50,9 +49,6 @@ export type SaveUserSettings = {
      */
     interfaceLanguage?: string;
     /**
-     * Your display name, which can contain strange characters, and does not need to be unique.
-     */
-    /**
      * Your email.
      */
     email?: SensitiveString;
@@ -84,10 +80,6 @@ export type SaveUserSettings = {
      */
     showBotAccounts?: boolean;
     /**
-     * Whether to show read posts.
-     */
-    showReadPosts?: boolean;
-    /**
      * A list of languages you are able to see discussion in.
      */
     discussionLanguages?: Array<LanguageId>;
@@ -118,13 +110,6 @@ export type SaveUserSettings = {
      */
     collapseBotComments?: boolean;
     /**
-     * Some vote display mode settings
-     */
-    showScores?: boolean;
-    showUpvotes?: boolean;
-    showDownvotes?: VoteShow;
-    showUpvotePercentage?: boolean;
-    /**
      * Whether to automatically mark fetched posts as read.
      */
     autoMarkFetchedPostsAsRead?: boolean;
@@ -132,10 +117,6 @@ export type SaveUserSettings = {
      * Whether to hide posts containing images/videos.
      */
     hideMedia?: boolean;
-    /**
-     * Whether to show vote totals given to others.
-     */
-    showPersonVotes?: boolean;
     /**
      * Your contacts (e.g., "LineID:xxx|Facebook:yyy|Email:zzz|Phone:aaa")
      */
