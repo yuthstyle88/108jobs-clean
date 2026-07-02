@@ -50,11 +50,7 @@ type ImmutableListKey =
     | "personCommentMention"
     | "category"
     | "privateMessage"
-    | "post"
-    | "postReport"
-    | "commentReport"
-    | "privateMessageReport"
-    | "registrationApplication";
+    | "post";
 
 export function editListImmutable<
     T extends { [key in F]: { id: number } },

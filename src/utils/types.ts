@@ -1,6 +1,5 @@
 import {
     Comment,
-    CommentReply,
     CommentView,
     CategoryView,
     CreateOAuthProvider,
@@ -8,7 +7,6 @@ import {
     ListCategoriesResponse,
     ListUserChatRoomsResponse,
     MyUserInfo,
-    PersonCommentMention,
     PersonView,
 } from "108jobs-client";
 import {RequestState} from "@/services/HttpService";
@@ -80,35 +78,7 @@ export enum BanType {
     Site,
 }
 
-export enum PersonDetailsView {
-    Overview = "Overview",
-    Comments = "Comments",
-    Posts = "Posts",
-    Saved = "Saved",
-    Uploads = "Uploads",
-}
-
-export enum PurgeType {
-    Person,
-    Category,
-    Post,
-    Comment,
-}
-
-export enum VoteType {
-    Upvote,
-    Downvote,
-}
-
-export enum VoteContentType {
-    Post,
-    Comment,
-}
-
-export type CommentNodeView = CommentView & {
-    personCommentMention?: PersonCommentMention;
-    commentReply?: CommentReply;
-};
+export type CommentNodeView = CommentView;
 
 export interface CommentNodeI {
     commentView: CommentNodeView;

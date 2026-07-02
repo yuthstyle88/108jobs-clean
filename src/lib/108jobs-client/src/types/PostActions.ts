@@ -16,10 +16,6 @@ export type PostActions = {
    */
   readCommentsAmount?: number;
   /**
-   * When the post was saved.
-   */
-  savedAt?: string;
-  /**
    * When the post was liked.
    */
   likedAt?: string;

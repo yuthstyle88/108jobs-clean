@@ -13,7 +13,6 @@ import {GetSiteMetadata} from "./types/GetSiteMetadata";
 import {LastReadQuery} from "./types/LastReadQuery";
 import {ListCategories} from "./types/ListCategories";
 import {ListMedia} from "./types/ListMedia";
-import {ListNotifications} from "./types/ListNotifications";
 import {ListPersonCreated} from "./types/ListPersonCreated";
 import {ListRidersQuery} from "./types/ListRidersQuery";
 import {ListUserChatRoomsQuery} from "./types/ListUserChatRoomsQuery";
@@ -54,9 +53,6 @@ export interface GetCommentsI extends GetComments {
 }
 
 export interface GetPersonDetailsI extends GetPersonDetails {
-}
-
-export interface ListNotificationsI extends ListNotifications {
 }
 
 export interface ListPersonCreatedI extends ListPersonCreated {

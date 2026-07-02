@@ -50,9 +50,6 @@ export type SaveUserSettings = {
      */
     interfaceLanguage?: string;
     /**
-     * Your display name, which can contain strange characters, and does not need to be unique.
-     */
-    /**
      * Your email.
      */
     email?: SensitiveString;
