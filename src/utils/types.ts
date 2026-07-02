@@ -1,6 +1,5 @@
 import {
     Comment,
-    CommentReply,
     CommentView,
     CategoryView,
     CreateOAuthProvider,
@@ -8,7 +7,6 @@ import {
     ListCategoriesResponse,
     ListUserChatRoomsResponse,
     MyUserInfo,
-    PersonCommentMention,
     PersonView,
 } from "108jobs-client";
 import {RequestState} from "@/services/HttpService";
@@ -105,10 +103,7 @@ export enum VoteContentType {
     Comment,
 }
 
-export type CommentNodeView = CommentView & {
-    personCommentMention?: PersonCommentMention;
-    commentReply?: CommentReply;
-};
+export type CommentNodeView = CommentView;
 
 export interface CommentNodeI {
     commentView: CommentNodeView;
