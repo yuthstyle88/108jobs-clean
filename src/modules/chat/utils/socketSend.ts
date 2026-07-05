@@ -62,7 +62,8 @@ export function wsSend(socket: any, obj: any) {
 }
 
 /**
- * Wait for an ack ('chat:ack') that matches the given message id.
+ * Wait for a phx_reply ack (see WS_EVENT.AckConfirm's counterpart on the
+ * inbound side) that matches the given message id.
  * Uses onAny/onMessage if available; otherwise resolves false after timeout.
  */
 export function waitForAck(deps: SendMessageDeps, clientId: string, timeoutMs = 4000): Promise<boolean> {
