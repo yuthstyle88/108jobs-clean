@@ -1,19 +1,27 @@
 import {clearAuthCookie, isBrowser, setAuthJWTCookie, setLangCookie} from "@/utils/browser";
 import {jwtDecode} from "jwt-decode";
-import {LoginResponse, MyUserInfo} from "108jobs-client";
+import {MyUserInfo} from "108jobs-client";
 import {HttpService} from "./index";
+import {isSuccess} from "./HttpService";
 import {toast} from "sonner";
 import {VALID_LANGUAGES} from "@/constants/language";
 
+export const JOBS_ADMIN_ROLE = "jobs:admin";
+
 export interface Claims {
-    acceptedTerms: boolean;
-    isAdmin: boolean;
-    sub: number;
+    sub: string;
     iss: string;
+    aud: string;
+    exp: number;
     iat: number;
-    email: string;
-    role: string;
-    lang: string;
+    roles: string[];
+    realm: string;
+    platform: string;
+    tenant_id: string;
+}
+
+export function isAdminClaims(claims?: Claims): boolean {
+    return Array.isArray(claims?.roles) && claims.roles.includes(JOBS_ADMIN_ROLE);
 }
 
 interface AuthInfo {
@@ -50,43 +58,54 @@ export class UserService {
         return Boolean(this.authInfo?.auth);
     }
 
-    public async login({
-        res,
-        showToast = false,
-    }: {
-        res: LoginResponse | string;
-        showToast?: boolean;
-    }): Promise<void> {
-        if (isBrowser() && typeof res !== "string" && res.jwt) {
-            if (showToast) {
-                toast("loggedIn");
-            }
-            // 1) Client-side cookie (kept for immediate client state)
-            setAuthJWTCookie(res.jwt);
-            this.#setAuthInfo(res.jwt);
-            this.#hydrateReadLastMap();
+    public async login(accessToken: string, showToast = false): Promise<void> {
+        if (!isBrowser() || !accessToken) return;
 
-            // 2) Server-side cookie (so Next.js middleware sees it on the very next request)
-            //    This expects a Next.js Route Handler at /api/session that sets HttpOnly cookies via Set-Cookie.
-            //    Important: credentials: 'include' so the browser stores the cookie for this origin.
-            try {
-                await fetch('/api/session', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ jwt: res.jwt })
-                });
-            } catch (e) {
-                console.warn('[UserService.login] Failed to POST /api/session', e);
-            }
-
-            // Give the browser a tiny moment to flush Set-Cookie I/O (helps Safari after OAuth/login)
-            await new Promise<void>(r => setTimeout(r, 60));
-
-            // 3) Language cookie (non-HttpOnly for client-side reads)
-            if (!VALID_LANGUAGES.includes(this.currentLanguage)) return;
-            setLangCookie(this.currentLanguage);
+        if (showToast) {
+            toast("loggedIn");
         }
+        // 1) Client-side cookie (kept for immediate client state)
+        setAuthJWTCookie(accessToken);
+        this.#setAuthInfo(accessToken);
+        this.#hydrateReadLastMap();
+
+        // 2) Server-side cookie (so Next.js middleware sees it on the very next request)
+        //    This expects a Next.js Route Handler at /api/session that sets HttpOnly cookies via Set-Cookie.
+        //    Important: credentials: 'include' so the browser stores the cookie for this origin.
+        try {
+            await fetch('/api/session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ jwt: accessToken })
+            });
+        } catch (e) {
+            console.warn('[UserService.login] Failed to POST /api/session', e);
+        }
+
+        // Give the browser a tiny moment to flush Set-Cookie I/O (helps Safari after OAuth/login)
+        await new Promise<void>(r => setTimeout(r, 60));
+
+        // 3) Profile fields (language, accepted-terms) no longer live on the JWT --
+        //    fetch them once from the real API. Falls back to existing defaults on
+        //    failure rather than blocking login: the user is still logged in even
+        //    if this one call hiccups, and the next getMyUser()-backed page load
+        //    will pick up the real values.
+        try {
+            const myUser = await HttpService.client.getMyUser();
+            if (isSuccess(myUser)) {
+                this.myUserInfo = myUser.data;
+                const localUser = myUser.data.localUserView.localUser;
+                this.currentLanguage = localUser.interfaceLanguage || this.currentLanguage || 'th';
+                this.acceptedTerms = Boolean(localUser.acceptedTerms);
+            }
+        } catch (e) {
+            console.warn('[UserService.login] Failed to hydrate profile via getMyUser()', e);
+        }
+
+        // 4) Language cookie (non-HttpOnly for client-side reads)
+        if (!VALID_LANGUAGES.includes(this.currentLanguage)) return;
+        setLangCookie(this.currentLanguage);
     }
 
     public async setToken(jwt: string): Promise<void> {
@@ -170,12 +189,8 @@ export class UserService {
         try {
             const claims = jwtDecode<Claims>(jwt ?? "");
             this.authInfo = { auth: jwt, claims };
-            this.currentLanguage = claims?.lang;
-            this.acceptedTerms = Boolean(claims?.acceptedTerms);
         } catch {
             this.authInfo = { jwt } as AuthInfo;
-            this.currentLanguage = this.currentLanguage || 'th';
-            this.acceptedTerms = false;
         }
     }
 }
