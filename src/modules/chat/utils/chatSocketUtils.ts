@@ -12,6 +12,7 @@ import type {
 import {decrypt} from "@/utils";
 import {REQUEST_STATE} from "@/services/HttpService";
 import {dbg} from "@/modules/chat/utils/helpers";
+import {WS_EVENT} from "@/modules/chat/protocol/wireEvents";
 
 // ---- Centralized browser/event helpers (reduce duplication across contexts) ----
 
@@ -126,7 +127,7 @@ export function normalizePhoenixEnvelope(
         }
 
         // --- update events ---
-        if (evLower === 'chat:update') {
+        if (evLower === WS_EVENT.Update) {
             return {
                 event: ev,
                 roomId: rid,
@@ -138,7 +139,7 @@ export function normalizePhoenixEnvelope(
         }
 
         // --- read_up_to events ---
-        if (ev === 'readUpTo') {
+        if (ev === WS_EVENT.ReadUpTo) {
             return {
                 event: ev,
                 roomId: rid,
@@ -647,7 +648,7 @@ export function makeEmitReadAcker(
                 }
             }
             try {
-                emit('chat:read', payload);
+                emit(WS_EVENT.ReadUpTo, payload);
             } catch (e) {
                 try {
                     console.warn('[read-ack][emit] push failed', e);

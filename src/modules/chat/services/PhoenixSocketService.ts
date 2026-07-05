@@ -6,6 +6,7 @@
  */
 import {Socket as PhoenixSocket} from "phoenix";
 import {buildActixWsUrl} from "@/modules/chat/utils/chatSocketUtils";
+import { WS_EVENT } from "@/modules/chat/protocol/wireEvents";
 
 export interface RealtimeChannelAdapter {
     readyState: number; // 0 connecting, 1 open, 2 closing, 3 closed
@@ -26,8 +27,8 @@ export interface RealtimeChannelAdapter {
 
 const DEV = typeof process !== "undefined" && process.env.NODE_ENV !== "production";
 const isInternalEvent = (ev?: string): boolean => !!ev && (
-    ev.startsWith("chan_reply") || ev === "heartbeat" || ev === "presence_state" || ev === "presence_diff" ||
-    ev === "phx_reply" || ev === "phx_error" || ev === "phx_leave"
+    ev.startsWith("chan_reply") || ev === WS_EVENT.Heartbeat || ev === "presence_state" || ev === "presence_diff" ||
+    ev === "phx_reply" || ev === "phx_error" || ev === WS_EVENT.PhxLeave
 );
 
 export function getChannelAdapter(token: string, topic: string, roomId: string, senderId: number): RealtimeChannelAdapter {
@@ -59,7 +60,7 @@ export function getChannelAdapter(token: string, topic: string, roomId: string, 
         send(data: string | Record<string, any>) {
             try {
                 const payload = typeof data === "string" ? JSON.parse(data) : data;
-                (ch as any).push("chat:message", payload);
+                (ch as any).push(WS_EVENT.Message, payload);
             } catch (e) {
                 if (DEV) console.error("[phoenix] send() invalid JSON payload", {data, e});
                 adapter.onerror?.({code: "INVALID_JSON", reason: "send() expects a JSON string or object", data});
@@ -73,10 +74,10 @@ export function getChannelAdapter(token: string, topic: string, roomId: string, 
             }
         },
         sendHeartbeat(payload?: Record<string, any>) {
-            const base = { senderId, event: "heartbeat" };
+            const base = { senderId, event: WS_EVENT.Heartbeat };
             const merged = typeof payload === 'object' && payload ? { ...base, ...payload } : base;
             try {
-                ch.push("heartbeat", merged);
+                ch.push(WS_EVENT.Heartbeat, merged);
                 try { adapter.onheartbeat?.(Date.now()); } catch {}
                 try { if (typeof window !== 'undefined') window.dispatchEvent(new Event('chat:heartbeat')); } catch {}
                 if (DEV) console.debug("[phoenix] custom heartbeat sent", merged);
@@ -103,13 +104,13 @@ export function getChannelAdapter(token: string, topic: string, roomId: string, 
     // --- Protocol helpers ---
     adapter.ackConfirm = (clientIds: string[]) => {
         try {
-            (ch as any).push("ackConfirm", { roomId, senderId, clientIds });
+            (ch as any).push(WS_EVENT.AckConfirm, { roomId, senderId, clientIds });
         } catch (e) { if (DEV) console.warn("[phoenix] ackConfirm failed", e); }
     };
 
     adapter.syncPending = (list: string[], sseqNext?: string) => {
         try {
-            (ch as any).push("sync:pending", {
+            (ch as any).push(WS_EVENT.SyncPending, {
                 roomId, senderId, list,
                 sseqHello: sseqNext ? { next: sseqNext } : undefined,
             });

@@ -1,4 +1,5 @@
 import {ChatMessage, LocalUserId} from "108jobs-client";
+import type { WsEventValue } from "@/modules/chat/protocol/wireEvents";
 
 export type WsMessageSender = (data: MessagePayload) => void | Promise<void>;
 
@@ -26,27 +27,15 @@ export const TYPING_EVENT_NAMES = ['chat:typing'];
 export const EVENTS = [
     'phxReply',
     'forward',
-    'chat:message',
-    'chat:typing',
-    'chat:read',
-    "chat:ack",
-    "sync:pending",
     'historyPage',
 ];
 
 export type PhoenixEvent =
+  | WsEventValue
   | "phxJoin"
   | "phxLeave"
   | "phxReply"
   | "phxError"
-  | "phxElose"
-  | "chat:message"
-  | "chat:typing"
-  | "chat:read"
-  | "chat:readUpTo"
-  | "chat:update"
-  | "chat:ack"
-  | "sync:pending"
   | "forward"
   | "historyPage";
 
