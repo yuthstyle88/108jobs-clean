@@ -7,6 +7,7 @@ import {NormalizedEnvelope} from "@/modules/chat/utils/chatSocketUtils";
 import {RoomView} from "@/modules/chat/types";
 import {usePresenceStore} from "@/modules/chat/store/presenceStore";
 import {PresenceStatus} from "108jobs-client";
+import { WS_EVENT } from "@/modules/chat/protocol/wireEvents";
 
 // Type guard: narrow a NormalizedEnvelope to the typing envelope (explicit interface)
 export type TypingEnv = {
@@ -81,7 +82,7 @@ export async function maybeHandleStatusChange(env: any, roomId: string): Promise
 export function maybeHandleReadReceipt(env: any, fallbackRoomId: string): boolean {
     try {
         const evName = String(env?.event || env?.content || "");
-        if (evName !== "readUpTo") return false;
+        if (evName !== WS_EVENT.ReadUpTo) return false;
 
         const roomId = String(env?.roomId || env?.topic || fallbackRoomId);
         const lastReadMessageId = String(env?.lastReadMessageId || "");

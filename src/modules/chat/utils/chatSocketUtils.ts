@@ -127,7 +127,7 @@ export function normalizePhoenixEnvelope(
         }
 
         // --- update events ---
-        if (evLower === 'chat:update') {
+        if (evLower === WS_EVENT.Update) {
             return {
                 event: ev,
                 roomId: rid,
@@ -139,7 +139,7 @@ export function normalizePhoenixEnvelope(
         }
 
         // --- read_up_to events ---
-        if (ev === 'readUpTo') {
+        if (ev === WS_EVENT.ReadUpTo) {
             return {
                 event: ev,
                 roomId: rid,
