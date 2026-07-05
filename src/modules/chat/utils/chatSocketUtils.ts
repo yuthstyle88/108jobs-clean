@@ -12,6 +12,7 @@ import type {
 import {decrypt} from "@/utils";
 import {REQUEST_STATE} from "@/services/HttpService";
 import {dbg} from "@/modules/chat/utils/helpers";
+import {WS_EVENT} from "@/modules/chat/protocol/wireEvents";
 
 // ---- Centralized browser/event helpers (reduce duplication across contexts) ----
 
@@ -647,7 +648,7 @@ export function makeEmitReadAcker(
                 }
             }
             try {
-                emit('chat:read', payload);
+                emit(WS_EVENT.ReadUpTo, payload);
             } catch (e) {
                 try {
                     console.warn('[read-ack][emit] push failed', e);

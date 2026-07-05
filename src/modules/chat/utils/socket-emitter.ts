@@ -1,3 +1,5 @@
+import {WS_EVENT} from "@/modules/chat/protocol/wireEvents";
+
 // ---- Optional emitter helper (no DOM emits) -------------------------------
 export type SocketEmitLike = {
   emit?: (evt: string, payload: any) => void;
@@ -19,8 +21,8 @@ export function makeReadAckEmitter(
   return (evt: string, payload: any) => {
     let enriched: any = { ...(payload || {}) };
 
-    // Normalize only for chat:read — backend expects camelCase keys: roomId, readerId, lastReadMessageId
-    if (evt === 'chat:read') {
+    // Normalize only for WS_EVENT.ReadUpTo — backend expects camelCase keys: roomId, readerId, lastReadMessageId
+    if (evt === WS_EVENT.ReadUpTo) {
       const roomId = enriched.roomId ?? enriched.topic ?? enriched.roomId;
       const lastReadMessageId =
         enriched.lastReadMessageId ??
