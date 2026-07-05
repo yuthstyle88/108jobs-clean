@@ -10,6 +10,7 @@ import {
 } from "@/modules/chat/utils/chatSocketUtils";
 import {emitChatTyping,} from "@/modules/chat/events/index";
 import type {ChatMessage} from "108jobs-client";
+import { WS_EVENT } from "@/modules/chat/protocol/wireEvents";
 import {
     buildMessageSignature,
     cleanupFetch,
@@ -120,11 +121,23 @@ export function createHandleWSMessage(deps: HandlerDeps) {
 
     const handleAckProtocol = (rawEvt: string, payload: any) => {
         try {
+            // NOTE: this branch is currently unreachable. api-108jobs sends its
+            // ack-reminder response under the wire string "sync:pending" (see
+            // AnyIncomingEvent::SyncPending in bridge_message.rs), never a
+            // distinct "ackReminder" string -- so this rich per-clientId
+            // reconciliation (chatOutbox.markPending + chatChannel.ackConfirm)
+            // never runs; the `evt === 'sync:pending'` branch below handles
+            // the real inbound event instead, via the simpler handleSyncPending()
+            // (which does not read this payload's clientIds). Deliberately left
+            // unwired rather than fixed here -- see the design spec's "Finding"
+            // section: whether to make this fire is a product decision, not a
+            // side effect of a naming pass. "ackReminder" has no WS_EVENT entry
+            // since the backend has no matching ChatEvent variant.
             if (rawEvt === 'ackReminder') {
                 const ids: string[] = payload?.data?.payload?.clientIds ?? [];
                 (window as any)?.chatOutbox?.markPending?.(roomId, localUserId, ids);
                 (window as any)?.chatChannel?.ackConfirm?.(ids);
-            } else if (rawEvt === 'messageAck') {
+            } else if (rawEvt === WS_EVENT.MessageAck) {
                 const cid: string | undefined = payload?.data?.payload?.clientId;
                 if (cid) {
                     (window as any)?.chatOutbox?.markDelivered?.(roomId, localUserId, cid);
@@ -221,12 +234,12 @@ export function createHandleWSMessage(deps: HandlerDeps) {
             if (await maybeHandlePresenceUpdate(env, localUserId)) return null;
 
             // 2) Sync and Ack Protocol
-            if (evt === 'sync:pending') {
+            if (evt === WS_EVENT.SyncPending) {
                 handleSyncPending();
                 return null;
             }
 
-            if (evt === 'ackReminder' || evt === 'messageAck') {
+            if (evt === 'ackReminder' || evt === WS_EVENT.MessageAck) {
                 handleAckProtocol(evt, payload);
                 return;
             }

@@ -3,7 +3,7 @@ import {isBrowser} from "@/utils/browser";
 import Toastify from "toastify-js";
 
 export function isAuthPath(pathname: string) {
-  return /^\/(create_.*?|inbox|settings|admin|reports|registration-applications|activitypub.*?)\b/g.test(
+  return /^\/(create_.*?|inbox|settings|admin)\b/g.test(
     pathname,
   );
 }

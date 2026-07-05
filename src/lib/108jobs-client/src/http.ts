@@ -29,7 +29,6 @@ import type {
     LastReadQueryI,
     ListCategoriesI,
     ListMediaI,
-    ListNotificationsI,
     ListPersonCreatedI,
     ListUserChatRoomsQueryI, ListUserReviewsQueryI, PeerStatusQueryI,
     SearchI,
@@ -47,10 +46,6 @@ import type {BanFromCategoryResponse} from "./types/BanFromCategoryResponse";
 import type {BanksResponse} from "./types/BankList";
 import type {BanPerson} from "./types/BanPerson";
 import type {BanPersonResponse} from "./types/BanPersonResponse";
-import type {BlockCategory} from "./types/BlockCategory";
-import type {BlockCategoryResponse} from "./types/BlockCategoryResponse";
-import type {BlockPerson} from "./types/BlockPerson";
-import type {BlockPersonResponse} from "./types/BlockPersonResponse";
 import type {ChangePassword} from "./types/ChangePassword";
 import type {CommentResponse} from "./types/CommentResponse";
 import type {CategoryIdQuery} from "./types/CategoryIdQuery";
@@ -95,11 +90,8 @@ import type {GetPostsResponse} from "./types/GetPostsResponse";
 import type {GetSiteMetadata} from "./types/GetSiteMetadata";
 import type {GetSiteMetadataResponse} from "./types/GetSiteMetadataResponse";
 import type {GetSiteResponse} from "./types/GetSiteResponse";
-import type {GetUnreadCountResponse} from "./types/GetUnreadCountResponse";
 import type {GetUnreadSnapshotResponse} from "./types/GetUnreadSnapshotResponse";
 import type {PresenceSnapshotItem} from "./types/PresenceSnapshotItem";
-import type {HideCategory} from "./types/HideCategory";
-import type {HidePost} from "./types/HidePost";
 import type {IdentityCardForm} from "./types/IdentityCardForm";
 import type {IdentityCardResponse} from "./types/IdentityCardResponse";
 import type {ListCategories} from "./types/ListCategories";
@@ -107,15 +99,12 @@ import type {ListCategoriesResponse} from "./types/ListCategoriesResponse";
 import type {ListLoginsResponse} from "./types/ListLoginsResponse";
 import type {ListMedia} from "./types/ListMedia";
 import type {ListMediaResponse} from "./types/ListMediaResponse";
-import type {ListNotifications} from "./types/ListNotifications";
-import type {ListNotificationsResponse} from "./types/ListNotificationsResponse";
 import type {ListPersonCreated} from "./types/ListPersonCreated";
 import type {ListPersonCreatedResponse} from "./types/ListPersonCreatedResponse";
 import type {ListBankAccountsResponse} from "./types/ListBankAccountsResponse";
 import type {GetBankAccounts} from "./types/GetBankAccounts";
 import type {Login} from "./types/Login";
 import type {LoginResponse} from "./types/LoginResponse";
-import type {MarkNotificationAsRead} from "./types/MarkNotificationAsRead";
 import type {MyUserInfo} from "./types/MyUserInfo";
 import type {OAuthProvider} from "./types/OAuthProvider";
 import type {PasswordChangeAfterReset} from "./types/PasswordChangeAfterReset";
@@ -716,24 +705,6 @@ export class Api108Jobs extends Controller {
     }
 
     /**
-     * @summary Block a category.
-     */
-    @Security("bearerAuth")
-    @Post("/account/block/category")
-    @Tags("Account", "Category")
-    async blockCategory(
-        @Body() form: BlockCategory,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<BlockCategory, BlockCategoryResponse>(
-            HttpType.Post,
-            "/account/block/category",
-            form,
-            options,
-        );
-    }
-
-    /**
      * @summary Delete a category.
      */
     @Security("bearerAuth")
@@ -746,24 +717,6 @@ export class Api108Jobs extends Controller {
         return this.#wrapper<DeleteCategory, CategoryResponse>(
             HttpType.Post,
             "/category/delete",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Hide a category from public / "All" view. Admins only.
-     */
-    @Security("bearerAuth")
-    @Put("/category/hide")
-    @Tags("Category", "Admin")
-    async hideCategory(
-        @Body() form: HideCategory,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<HideCategory, SuccessResponse>(
-            HttpType.Put,
-            "/category/hide",
             form,
             options,
         );
@@ -870,21 +823,6 @@ export class Api108Jobs extends Controller {
         return this.#wrapper<DeletePost, PostResponse>(
             HttpType.Post,
             "/post/delete",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Hide a post from list views.
-     */
-    @Security("bearerAuth")
-    @Post("/post/hide")
-    @Tags("Post")
-    async hidePost(@Body() form: HidePost, @Inject() options?: RequestOptions) {
-        return this.#wrapper<HidePost, SuccessResponse>(
-            HttpType.Post,
-            "/post/hide",
             form,
             options,
         );
@@ -1117,24 +1055,6 @@ export class Api108Jobs extends Controller {
     }
 
     /**
-     * @summary Block a person.
-     */
-    @Security("bearerAuth")
-    @Post("/account/block/person")
-    @Tags("Account")
-    async blockPerson(
-        @Body() form: BlockPerson,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<BlockPerson, BlockPersonResponse>(
-            HttpType.Post,
-            "/account/block/person",
-            form,
-            options,
-        );
-    }
-
-    /**
      * @summary Fetch a Captcha.
      */
     @Get("/account/auth/get-captcha")
@@ -1307,39 +1227,6 @@ export class Api108Jobs extends Controller {
     }
 
     /**
-     * @summary Mark all replies as read.
-     */
-    @Security("bearerAuth")
-    @Post("/account/mark-as-read/all")
-    @Tags("Account")
-    async markAllNotificationsAsRead(@Inject() options?: RequestOptions) {
-        return this.#wrapper<object, SuccessResponse>(
-            HttpType.Post,
-            "/account/mark-as-read/all",
-            {},
-            options,
-        );
-    }
-
-    /**
-     * @summary Mark a comment as read.
-     */
-    @Security("bearerAuth")
-    @Post("/account/mark-as-read")
-    @Tags("Account")
-    async markNotificationAsRead(
-        @Body() form: MarkNotificationAsRead,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<MarkNotificationAsRead, SuccessResponse>(
-            HttpType.Post,
-            "/account/mark-as-read",
-            form,
-            options,
-        );
-    }
-
-    /**
      * @summary Save your profile settings.
      */
     @Security("bearerAuth")
@@ -1478,39 +1365,6 @@ export class Api108Jobs extends Controller {
         return this.#wrapper<ChangePassword, LoginResponse>(
             HttpType.Put,
             "/account/auth/change-password",
-            form,
-            options,
-        );
-    }
-
-    /**
-     * @summary Get your unread counts.
-     */
-    @Security("bearerAuth")
-    @Get("/account/unread-count")
-    @Tags("Account")
-    async getUnreadCount(@Inject() options?: RequestOptions) {
-        return this.#wrapper<object, GetUnreadCountResponse>(
-            HttpType.Get,
-            "/account/unread-count",
-            {},
-            options,
-        );
-    }
-
-    /**
-     * @summary Get your inbox (replies, comment mentions, post mentions, and messages)
-     */
-    @Security("bearerAuth")
-    @Get("/account/notifications")
-    @Tags("Account")
-    async listNotifications(
-        @Queries() form: ListNotificationsI,
-        @Inject() options?: RequestOptions,
-    ) {
-        return this.#wrapper<ListNotifications, ListNotificationsResponse>(
-            HttpType.Get,
-            "/account/notifications",
             form,
             options,
         );

@@ -3,6 +3,7 @@ import {UserService} from "@/services";
 import {encrypt} from "@/utils";
 import {dbg} from "@/modules/chat/utils";
 import {MessagePayload, PhoenixEvent, PhoenixPacket, SendMessageDeps} from "@/modules/chat/types";
+import {WS_EVENT} from "@/modules/chat/protocol/wireEvents";
 import {createMessage} from "@/modules/chat/domain/entities/message";
 import {waitForAck, wsSend} from "@/modules/chat/utils/socketSend";
 import {useChatStore} from "@/modules/chat/store/chatStore";
@@ -33,13 +34,13 @@ export interface SendEventDeps {
 export function sendTyping(deps: SendEventDeps, typing: boolean) {
     const a = (deps as any).adapter;
     if (!a) return;
-    wsSend(a, createEvent('chat:typing', {typing, senderId: deps.senderId, roomId: deps.roomId}));
+    wsSend(a, createEvent(WS_EVENT.Typing, {typing, senderId: deps.senderId, roomId: deps.roomId}));
 }
 
 export function sendReadReceipt(deps: SendEventDeps, lastMessageId: string) {
     const a = (deps as any).adapter;
     if (!a) return;
-    const pkt = createEvent('chat:readUpTo', {
+    const pkt = createEvent(WS_EVENT.ReadUpTo, {
         secure: false,
         roomId: deps.roomId,
         readerId: deps.senderId,
@@ -52,7 +53,7 @@ export function sendReadReceipt(deps: SendEventDeps, lastMessageId: string) {
 export function sendRoomUpdateEvent(deps: SendEventDeps, update: Record<string, any>) {
     const a = (deps as any).adapter;
     if (!a) return;
-    wsSend(a, createEvent('chat:update', {roomId: deps.roomId, ...update}));
+    wsSend(a, createEvent(WS_EVENT.Update, {roomId: deps.roomId, ...update}));
 }
 
 /**
@@ -62,7 +63,7 @@ export function sendRoomUpdateEvent(deps: SendEventDeps, update: Record<string, 
 export function sendDeliveryAck(deps: SendEventDeps, messageId: string) {
     const a = (deps as any).adapter;
     if (!a) return;
-    const pkt = createEvent('chat:ack', {
+    const pkt = createEvent(WS_EVENT.AckConfirm, {
         roomId: deps.roomId,
         receiverId: deps.senderId,
         messageId: String(messageId || '')
@@ -86,7 +87,7 @@ async function doSend(deps: SendMessageDeps, msg: ChatMessage): Promise<{ id: st
     if (!s) return {id, sent: false};
     dbg('doSend:start', {id, roomId: (deps as any)?.roomId});
     try {
-        const result = await s.sendMessage('chat:message', msg);
+        const result = await s.sendMessage(WS_EVENT.Message, msg);
         if (!result) return (dbg('doSend:sendMessage failed', {id}), {id, sent: false});
 
         // Transport send initiated successfully → mark as 'sending'
