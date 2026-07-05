@@ -28,7 +28,7 @@ export async function proxy(req: NextRequest) {
     try {
         const claims = parseJwtClaims(token) as any;
         jwtLang = typeof claims?.lang === 'string' ? claims.lang : undefined;
-        isAdmin = Boolean(claims?.isAdmin);
+        isAdmin = Array.isArray(claims?.roles) && claims.roles.includes("jobs:admin");
     } catch {}
 
     const cookieLng = req.cookies.get(LANGUAGE_COOKIE)?.value ?? '';
