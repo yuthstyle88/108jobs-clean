@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-const CHAT_MODULE_ROOT = join(__dirname, "..", "..");
+const CHAT_MODULE_ROOT = join(__dirname, "..");
 
 function listTsFiles(dir: string): string[] {
   const out: string[] = [];
