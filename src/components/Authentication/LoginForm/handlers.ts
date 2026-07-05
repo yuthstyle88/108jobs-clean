@@ -1,4 +1,4 @@
-import {LoginResponse, OAuthProvider,} from "108jobs-client";
+import {IdentityPlatformLoginResponse, OAuthProvider,} from "108jobs-client";
 import {HttpService, UserService} from "@/services";
 import {setIsoData} from "@/utils/app";
 import {LoginFormClass} from "@/components/Authentication/LoginForm";
@@ -8,7 +8,7 @@ import {isSuccess, REQUEST_STATE} from "@/services/HttpService";
 import {getAppName} from "@/utils/appConfig";
 import {isBrowser} from "@/utils";
 import {jwtDecode} from "jwt-decode";
-import {Claims} from "@/services/UserService";
+import {isAdminClaims, Claims} from "@/services/UserService";
 
 export const handleUseOAuthProvider = async (params: {
     oauthProvider: OAuthProvider;
@@ -56,10 +56,9 @@ export const handleLogin = async (i: LoginFormClass, data: any) => {
         }
     }));
     try {
-        const loginRes = await HttpService.client.login({
+        const loginRes = await HttpService.client.loginWithIdentityPlatform({
             usernameOrEmail,
             password,
-            totp2faToken: i.state.form.totp2faToken || undefined,
         });
 
         switch (loginRes.state) {
@@ -68,7 +67,6 @@ export const handleLogin = async (i: LoginFormClass, data: any) => {
                 const {formMethods, t} = i.props;
 
                 const errorActions: Record<string, () => void> = {
-                    missingTotpToken: () => i.setState({show2faModal: true}),
                     userNotFound: () =>
                         formMethods.setError("usernameOrEmail", {
                             type: "manual",
@@ -110,12 +108,10 @@ export const handleLogin = async (i: LoginFormClass, data: any) => {
     }
 };
 
-export async function handleLoginSuccess(i: LoginFormClass, loginRes: LoginResponse) {
-    await UserService.Instance.login({
-        res: loginRes,
-    });
-    const claims = jwtDecode<Claims>(loginRes.jwt ?? "");
-    if (claims && claims.isAdmin) {
+export async function handleLoginSuccess(i: LoginFormClass, loginRes: IdentityPlatformLoginResponse) {
+    await UserService.Instance.login(loginRes.accessToken);
+    const claims = jwtDecode<Claims>(loginRes.accessToken);
+    if (isAdminClaims(claims)) {
         window.location.replace("/admin/dashboard");
         return;
     }
@@ -139,34 +135,6 @@ export async function handleLoginSuccess(i: LoginFormClass, loginRes: LoginRespo
     } catch (error) {
         console.error("Error updating isoData:", error);
     }
-}
-
-export async function handleSubmitTotp(i: LoginFormClass, totp: string) {
-    const {usernameOrEmail, password} = i.state.form;
-    const {t} = i.props;
-
-    i.setState(prev => ({
-        form: {
-            ...prev.form,
-            totp2faToken: totp,
-        },
-    }));
-
-    const loginRes = await HttpService.client.login({
-        usernameOrEmail,
-        password,
-        totp2faToken: totp,
-    });
-
-    const successful = isSuccess(loginRes);
-    if (successful) {
-        await handleLoginSuccess(i,
-            loginRes.data);
-    } else {
-        i.props.setApiError(t("totp.invalidCode"));
-    }
-
-    return successful;
 }
 
 export function getLoginQueryParams(source?: string): LoginProps {
