@@ -939,8 +939,9 @@ Remove the entire `{this.state.show2faModal && (...)}` block (current lines 158-
             <div>
                 <form onSubmit={handleSubmit((data: any) => handleLogin(this,
                     data))} className="space-y-5">
-```//... (rest of the form body unchanged from here on)
 ```
+
+(The rest of `render()`'s returned JSX — the input fields, submit button, register/forgot-password links, OAuth buttons — is unchanged from the current file; only the `show2faModal` block above it and the imports/state noted above are removed.)
 
 - [ ] **Step 4: Update `State` interface's `show2faModal` field**
 
