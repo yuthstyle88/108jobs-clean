@@ -1,4 +1,4 @@
-import {clearAuthCookie, isBrowser, setAuthJWTCookie, setLangCookie} from "@/utils/browser";
+import {clearAuthCookie, getRefreshTokenCookie, isBrowser, setAuthJWTCookie, setLangCookie, setRefreshTokenCookie} from "@/utils/browser";
 import {jwtDecode} from "jwt-decode";
 import {MyUserInfo} from "108jobs-client";
 import {HttpService} from "./index";
@@ -40,6 +40,7 @@ export class UserService {
     private constructor() {
         this.#setAuthInfo();
         this.#hydrateReadLastMap();
+        this.#scheduleRefresh();
     }
 
     public static get Instance() {
@@ -58,7 +59,7 @@ export class UserService {
         return Boolean(this.authInfo?.auth);
     }
 
-    public async login(accessToken: string, showToast = false): Promise<void> {
+    public async login(accessToken: string, refreshToken?: string, showToast = false): Promise<void> {
         if (!isBrowser() || !accessToken) return;
 
         if (showToast) {
@@ -69,8 +70,10 @@ export class UserService {
         // so it's already visible to SSR/middleware on the very next request --
         // no separate server-side HttpOnly cookie round trip is needed.
         setAuthJWTCookie(accessToken);
+        if (refreshToken) setRefreshTokenCookie(refreshToken);
         this.#setAuthInfo(accessToken);
         this.#hydrateReadLastMap();
+        this.#scheduleRefresh();
 
         // Profile fields (language, accepted-terms) no longer live on the JWT --
         //    fetch them once from the real API. Falls back to existing defaults on
@@ -109,6 +112,7 @@ export class UserService {
 
     public async logout() {
         try {
+            this.#clearRefreshTimer();
             this.authInfo = undefined;
             this.myUserInfo = undefined;
 
@@ -171,6 +175,45 @@ export class UserService {
             this.authInfo = { auth: jwt, claims };
         } catch {
             this.authInfo = { jwt } as AuthInfo;
+        }
+    }
+
+    static readonly #REFRESH_MARGIN_MS = 60_000;
+    #refreshTimer?: ReturnType<typeof setTimeout>;
+
+    #scheduleRefresh() {
+        this.#clearRefreshTimer();
+        if (!isBrowser()) return;
+        const claims = this.authInfo?.claims;
+        const refreshToken = getRefreshTokenCookie();
+        if (!claims?.exp || !refreshToken) return;
+        const delay = Math.max(0, claims.exp * 1000 - Date.now() - UserService.#REFRESH_MARGIN_MS);
+        this.#refreshTimer = setTimeout(() => {
+            void this.#refreshAccessToken();
+        }, delay);
+    }
+
+    #clearRefreshTimer() {
+        if (this.#refreshTimer) clearTimeout(this.#refreshTimer);
+        this.#refreshTimer = undefined;
+    }
+
+    async #refreshAccessToken() {
+        const refreshToken = getRefreshTokenCookie();
+        if (!refreshToken) return;
+        try {
+            const res = await HttpService.client.refreshWithIdentityPlatform({ refreshToken });
+            if (isSuccess(res)) {
+                setAuthJWTCookie(res.data.accessToken);
+                setRefreshTokenCookie(res.data.refreshToken);
+                this.#setAuthInfo(res.data.accessToken);
+                this.#scheduleRefresh();
+            } else {
+                await this.logout();
+            }
+        } catch (e) {
+            console.warn('[UserService.refreshAccessToken] refresh failed, logging out', e);
+            await this.logout();
         }
     }
 }
