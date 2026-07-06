@@ -64,29 +64,15 @@ export class UserService {
         if (showToast) {
             toast("loggedIn");
         }
-        // 1) Client-side cookie (kept for immediate client state)
+        // Client-side cookie. proxy.ts's middleware reads this same cookie
+        // (falls back to authCookieName when the "jwt"-named cookie is absent),
+        // so it's already visible to SSR/middleware on the very next request --
+        // no separate server-side HttpOnly cookie round trip is needed.
         setAuthJWTCookie(accessToken);
         this.#setAuthInfo(accessToken);
         this.#hydrateReadLastMap();
 
-        // 2) Server-side cookie (so Next.js middleware sees it on the very next request)
-        //    This expects a Next.js Route Handler at /api/session that sets HttpOnly cookies via Set-Cookie.
-        //    Important: credentials: 'include' so the browser stores the cookie for this origin.
-        try {
-            await fetch('/api/session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ jwt: accessToken })
-            });
-        } catch (e) {
-            console.warn('[UserService.login] Failed to POST /api/session', e);
-        }
-
-        // Give the browser a tiny moment to flush Set-Cookie I/O (helps Safari after OAuth/login)
-        await new Promise<void>(r => setTimeout(r, 60));
-
-        // 3) Profile fields (language, accepted-terms) no longer live on the JWT --
+        // Profile fields (language, accepted-terms) no longer live on the JWT --
         //    fetch them once from the real API. Falls back to existing defaults on
         //    failure rather than blocking login: the user is still logged in even
         //    if this one call hiccups, and the next getMyUser()-backed page load
@@ -129,12 +115,6 @@ export class UserService {
             if (isBrowser()) {
                 // Clear client-side cookies
                 clearAuthCookie();
-
-                // Invalidate session cookie on server (if exists)
-                await fetch('/api/session', {
-                    method: 'DELETE',
-                    credentials: 'include',
-                }).catch(() => {});
 
                 // Clear possible legacy cache
                 window.caches?.delete?.('instance-cache');
