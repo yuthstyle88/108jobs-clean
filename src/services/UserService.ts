@@ -180,6 +180,8 @@ export class UserService {
     }
 
     static readonly #REFRESH_MARGIN_MS = 60_000;
+    static readonly #REFRESH_RETRY_DELAY_MS = 3_000;
+    static readonly #MAX_REFRESH_RETRIES = 2;
     #refreshTimer?: ReturnType<typeof setTimeout>;
 
     #scheduleRefresh() {
@@ -199,7 +201,7 @@ export class UserService {
         this.#refreshTimer = undefined;
     }
 
-    async #refreshAccessToken() {
+    async #refreshAccessToken(retryCount = 0) {
         const refreshToken = getRefreshTokenCookie();
         if (!refreshToken) return;
         try {
@@ -210,11 +212,36 @@ export class UserService {
                 this.#setAuthInfo(res.data.accessToken);
                 this.#scheduleRefresh();
             } else {
-                await this.logout();
+                await this.#handleRefreshFailure(refreshToken, retryCount);
             }
         } catch (e) {
-            console.warn('[UserService.refreshAccessToken] refresh failed, logging out', e);
-            await this.logout();
+            console.warn('[UserService.refreshAccessToken] refresh attempt failed', e);
+            await this.#handleRefreshFailure(refreshToken, retryCount);
         }
+    }
+
+    // A failed refresh is not necessarily a dead session. Two recoverable
+    // cases: another open tab may have already rotated the (origin-shared)
+    // refresh-token cookie -- Identity-Platform invalidates the old token
+    // the instant any tab's rotation succeeds, so if the cookie no longer
+    // matches what we just sent, a sibling tab won the race and we can
+    // retry immediately with its fresh value; or the failure was a plain
+    // transient network blip, worth one delayed retry. Only give up and
+    // log out once retries are exhausted or the access token has actually
+    // expired -- logging out immediately on the first failure would tear
+    // down every tab's session over an ordinary multi-tab race.
+    async #handleRefreshFailure(attemptedRefreshToken: string, retryCount: number) {
+        const exp = this.authInfo?.claims?.exp;
+        const stillValid = Boolean(exp) && exp! * 1000 > Date.now();
+        const canRetry = stillValid && retryCount < UserService.#MAX_REFRESH_RETRIES;
+        if (canRetry) {
+            const siblingAlreadyRotated = getRefreshTokenCookie() !== attemptedRefreshToken;
+            this.#clearRefreshTimer();
+            this.#refreshTimer = setTimeout(() => {
+                void this.#refreshAccessToken(retryCount + 1);
+            }, siblingAlreadyRotated ? 0 : UserService.#REFRESH_RETRY_DELAY_MS);
+            return;
+        }
+        await this.logout();
     }
 }

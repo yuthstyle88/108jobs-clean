@@ -22,6 +22,7 @@ describe("isAdminClaims", () => {
 
 import { UserService } from "./UserService";
 import { HttpService } from "./HttpService";
+import { getAuthJWTCookie } from "@/utils/browser";
 
 describe("UserService profile hydration", () => {
   it("sources currentLanguage and acceptedTerms from getMyUser(), not from JWT claims", async () => {
@@ -123,6 +124,127 @@ describe("UserService refresh scheduling", () => {
 
     expect(refreshSpy).toHaveBeenCalledTimes(1);
     expect(refreshSpy).toHaveBeenCalledWith({ refreshToken: "a-refresh-token" });
+
+    document.cookie = "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  });
+
+  it("retries once after a failed refresh while the access token is still valid, and succeeds without logging out", async () => {
+    vi.spyOn(HttpService, "client", "get").mockReturnValue({
+      getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
+      refreshWithIdentityPlatform: vi.fn()
+        .mockRejectedValueOnce(new Error("network blip"))
+        .mockResolvedValueOnce({
+          state: "success",
+          data: { accessToken: "new-token", refreshToken: "new-refresh", expiresIn: 3600 },
+        }),
+    } as any);
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const header = { alg: "none" };
+    const payload = { sub: "1", iss: "auth-service", aud: "jobs", exp: nowSeconds + 120, iat: nowSeconds, roles: ["user"], realm: "r", platform: "p", tenant_id: "t" };
+    const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString("base64url");
+    const fakeJwt = `${b64(header)}.${b64(payload)}.sig`;
+
+    await UserService.Instance.login(fakeJwt, "a-refresh-token");
+
+    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
+    expect(refreshSpy).not.toHaveBeenCalled();
+
+    // First attempt fires at ~60s and fails (network blip). The access token
+    // still has ~60s of life left, so this must NOT trigger a logout -- it
+    // should instead schedule a retry.
+    await vi.advanceTimersByTimeAsync(61_000);
+
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
+    expect(UserService.Instance.authInfo).toBeDefined();
+    expect(UserService.Instance.authInfo?.claims?.exp).toBe(payload.exp);
+
+    // Retry fires 3s later and succeeds.
+    await vi.advanceTimersByTimeAsync(3_000);
+
+    expect(refreshSpy).toHaveBeenCalledTimes(2);
+    expect(UserService.Instance.authInfo).toBeDefined();
+    expect(getAuthJWTCookie()).toBe("new-token");
+  });
+
+  it("logs out after the retry also fails", async () => {
+    vi.spyOn(HttpService, "client", "get").mockReturnValue({
+      getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
+      logout: vi.fn().mockResolvedValue({ state: "success" }),
+      refreshWithIdentityPlatform: vi.fn().mockRejectedValue(new Error("network blip")),
+    } as any);
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const header = { alg: "none" };
+    const payload = { sub: "1", iss: "auth-service", aud: "jobs", exp: nowSeconds + 120, iat: nowSeconds, roles: ["user"], realm: "r", platform: "p", tenant_id: "t" };
+    const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString("base64url");
+    const fakeJwt = `${b64(header)}.${b64(payload)}.sig`;
+
+    await UserService.Instance.login(fakeJwt, "a-refresh-token");
+
+    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
+    expect(refreshSpy).not.toHaveBeenCalled();
+
+    // Original attempt at ~60s fails.
+    await vi.advanceTimersByTimeAsync(61_000);
+
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
+    expect(UserService.Instance.authInfo).toBeDefined();
+
+    // First retry (+3s) also fails. retryCount was 0, still < MAX_REFRESH_RETRIES=2,
+    // so another retry is scheduled instead of giving up.
+    await vi.advanceTimersByTimeAsync(3_000);
+
+    expect(refreshSpy).toHaveBeenCalledTimes(2);
+    expect(UserService.Instance.authInfo).toBeDefined();
+
+    // Second retry (+3s) also fails. retryCount was 1, now == MAX_REFRESH_RETRIES=2,
+    // so retries are exhausted and logout() is called.
+    await vi.advanceTimersByTimeAsync(3_000);
+
+    expect(refreshSpy).toHaveBeenCalledTimes(3);
+    expect(UserService.Instance.authInfo).toBeUndefined();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("detects a sibling tab's already-rotated refresh token and retries immediately instead of waiting", async () => {
+    vi.spyOn(HttpService, "client", "get").mockReturnValue({
+      getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
+      refreshWithIdentityPlatform: vi.fn()
+        .mockImplementationOnce(async () => {
+          // Simulates a sibling tab's rotation landing in the shared cookie
+          // at roughly the same moment this tab's own request is rejected.
+          document.cookie = "refresh_token=rt-from-sibling; path=/;";
+          throw new Error("refresh_token_reuse");
+        })
+        .mockResolvedValueOnce({
+          state: "success",
+          data: { accessToken: "sibling-rotated-token", refreshToken: "sibling-rotated-refresh", expiresIn: 3600 },
+        }),
+    } as any);
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const header = { alg: "none" };
+    const payload = { sub: "1", iss: "auth-service", aud: "jobs", exp: nowSeconds + 120, iat: nowSeconds, roles: ["user"], realm: "r", platform: "p", tenant_id: "t" };
+    const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString("base64url");
+    const fakeJwt = `${b64(header)}.${b64(payload)}.sig`;
+
+    await UserService.Instance.login(fakeJwt, "rt-original");
+
+    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
+
+    // Token expires in 120s; REFRESH_MARGIN_MS is 60s, so the initial refresh
+    // fires at ~60s. Its failure handler detects the sibling-rotated cookie
+    // and schedules the retry with a 0ms delay, so the retry runs within this
+    // same advance (a 0ms timer gets no separate time budget to wait out) --
+    // the sequence of calls, rather than an intermediate call count, is what
+    // proves the retry fired immediately rather than after the fixed delay.
+    await vi.advanceTimersByTimeAsync(61_000);
+
+    expect(refreshSpy).toHaveBeenCalledTimes(2);
+    expect(refreshSpy).toHaveBeenNthCalledWith(1, { refreshToken: "rt-original" });
+    expect(refreshSpy).toHaveBeenNthCalledWith(2, { refreshToken: "rt-from-sibling" });
+    expect(UserService.Instance.authInfo).toBeDefined();
 
     document.cookie = "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
   });
