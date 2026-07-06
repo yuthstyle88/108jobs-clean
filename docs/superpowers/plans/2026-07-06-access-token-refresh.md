@@ -29,6 +29,7 @@
 - Create: `crates/http/src/crud/user/refresh_via_identity_platform.rs`
 - Modify: `crates/http/src/crud/user/mod.rs`
 - Modify: `src/api_routes.rs` (import block at lines 69-75, route block at lines 358-362)
+- Modify: `crates/http/Cargo.toml` (add `app_108jobs_identity = { workspace = true }` — discovered missing during implementation; `crates/http` didn't previously depend on `crates/identity` at all, but already has the identical pattern established for `app_108jobs_db_views_site` (`login_via_identity_platform.rs` imports `LoginRequest` from it the same way this task imports `RefreshTokenRequest` from `app_108jobs_identity::refresh`). No feature flag needed — `RefreshTokenRequest` has no `#[cfg(feature = ...)]` gates. Confirmed no circular dependency (`crates/identity` doesn't depend on `crates/http`).
 
 **Interfaces:**
 - Consumes: `App108Context::settings()` (`crates/api/api_utils/src/context.rs:70`, returns `&'static Settings`), `identity_platform_base_url(settings: &Settings) -> App108Result<String>` (`identity_platform.rs:238`), `RefreshTokenRequest { refresh_token: String }` (`crates/identity/src/refresh.rs:12-15`), `IdentityPlatformLoginResponse { access_token, refresh_token, expires_in }` (`crates/http/src/crud/user/login_via_identity_platform.rs:18`, already `pub`).
@@ -208,7 +209,7 @@ Expected: no errors from any of the three commands.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add crates/api/api_utils/src/identity_platform.rs crates/http/src/crud/user/refresh_via_identity_platform.rs crates/http/src/crud/user/mod.rs src/api_routes.rs
+git add crates/api/api_utils/src/identity_platform.rs crates/http/src/crud/user/refresh_via_identity_platform.rs crates/http/src/crud/user/mod.rs src/api_routes.rs crates/http/Cargo.toml Cargo.lock
 git commit -m "feat(auth): add standalone Identity-Platform token-refresh endpoint
 
 Exposes login_with_identity_platform's sibling refresh_with_identity_platform
@@ -217,10 +218,17 @@ login/register-via-identity-platform pattern exactly. Reuses the existing
 RefreshTokenRequest and IdentityPlatformLoginResponse types -- no new
 backend response type needed.
 
+Adds app_108jobs_identity as a new crates/http dependency (needed for
+RefreshTokenRequest) -- crates/http had no prior dependency on
+crates/identity; the same cross-crate-import pattern already exists for
+app_108jobs_db_views_site, so this isn't a new architectural precedent.
+
 The request shape sent to Identity-Platform ({refresh_token} snake_case)
 is an assumption, not a confirmed fact -- verify during manual end-to-end
 testing (final task of this plan)."
 ```
+
+(Only add `Cargo.lock` to the commit if it actually changed — check `git status` first; adding a new workspace-internal dependency edge may or may not touch the lockfile depending on how it's structured.)
 
 ---
 
