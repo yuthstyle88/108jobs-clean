@@ -104,6 +104,7 @@ export class UserService {
         setAuthJWTCookie(jwt);
         // Update auth info
         this.#setAuthInfo(jwt);
+        this.#scheduleRefresh();
 
       } catch (e) {
         console.warn('[UserService.setToken] Failed to set token', e);

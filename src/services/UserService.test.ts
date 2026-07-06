@@ -92,4 +92,38 @@ describe("UserService refresh scheduling", () => {
     const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
     expect(refreshSpy).not.toHaveBeenCalled();
   });
+
+  it("re-arms the refresh timer from setToken(), the page-reload rehydration path", async () => {
+    vi.spyOn(HttpService, "client", "get").mockReturnValue({
+      getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
+      refreshWithIdentityPlatform: vi.fn().mockResolvedValue({
+        state: "success",
+        data: { accessToken: "new-token", refreshToken: "new-refresh", expiresIn: 3600 },
+      }),
+    } as any);
+
+    // setToken() is called by UserServiceContext on every app mount/reload,
+    // reading the access-token cookie back into memory -- it must re-arm the
+    // refresh timer the same way login() does, using the refresh-token cookie
+    // that a prior login() already left in place.
+    document.cookie = "refresh_token=a-refresh-token; path=/;";
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const header = { alg: "none" };
+    const payload = { sub: "1", iss: "auth-service", aud: "jobs", exp: nowSeconds + 120, iat: nowSeconds, roles: ["user"], realm: "r", platform: "p", tenant_id: "t" };
+    const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString("base64url");
+    const fakeJwt = `${b64(header)}.${b64(payload)}.sig`;
+
+    await UserService.Instance.setToken(fakeJwt);
+
+    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
+    expect(refreshSpy).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(61_000);
+
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
+    expect(refreshSpy).toHaveBeenCalledWith({ refreshToken: "a-refresh-token" });
+
+    document.cookie = "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  });
 });
