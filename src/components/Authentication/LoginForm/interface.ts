@@ -1,6 +1,6 @@
 import React from "react";
 import {RequestState} from "@/services/HttpService";
-import {GetSiteResponse, LoginResponse, PublicOAuthProvider,} from "108jobs-client";
+import {GetSiteResponse, IdentityPlatformLoginResponse, PublicOAuthProvider,} from "108jobs-client";
 import {RouteData} from "@/utils/types"
 import {IRoutePropsWithFetch} from "@/utils/routes";
 
@@ -8,13 +8,11 @@ export interface LoginFormProps {
   formState: {
     usernameOrEmail: string;
     password: string;
-    totp2faToken?: string;
   };
   setFormState: React.Dispatch<
     React.SetStateAction<{
       usernameOrEmail: string;
       password: string;
-      totp2faToken?: string;
     }>
   >;
   switchToRegister: () => void;
@@ -23,15 +21,13 @@ export interface LoginFormProps {
 
 
 export interface State {
-  loginRes: RequestState<LoginResponse>;
+  loginRes: RequestState<IdentityPlatformLoginResponse>;
   form: {
     usernameOrEmail: string;
     password: string;
-    totp2faToken?: string;
   };
 
   siteRes: GetSiteResponse | null;
-  show2faModal: boolean;
   showOAuthModal: boolean;
   showPassword: boolean;
   oauthProviders: PublicOAuthProvider[];

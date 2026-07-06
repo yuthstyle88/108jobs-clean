@@ -4,21 +4,14 @@ import {AuthFormContainer} from "@/components/Authentication/AuthFormContainer";
 import {RegisterForm} from "@/components/Authentication/RegisterForm";
 import {AuthenticateIcon} from "@/constants/icons";
 import {CategoriesImage} from "@/constants/images";
-import {RegisterDataProps} from "@/types/register-data";
 import Image from "next/image";
 import {useRouter} from "next/navigation";
 import {useState} from "react";
-import {VerifyOTPForm} from "@/components/Authentication/VerifyOTP";
 import {useTranslation} from "react-i18next";
-
-type ViewState = "register" | "verify-otp" | "resend-otp";
 
 export default function RegisterPage() {
     const {t} = useTranslation();
     const route = useRouter();
-
-    const [currentView, setCurrentView] = useState<ViewState>("register");
-    const [dataDataRegister, setDataDataRegister] = useState<RegisterDataProps>();
     const [apiError, setApiError] = useState<string | null>(null);
 
     return (
@@ -40,13 +33,6 @@ export default function RegisterPage() {
                             </h2>
                         </div>
                     </div>
-                    {/*<div className="flex gap-2 items-center">*/}
-                    {/*    <DotLottieReact*/}
-                    {/*        src="/lottie/concept-banner.lottie"*/}
-                    {/*        loop*/}
-                    {/*        autoplay*/}
-                    {/*    />*/}
-                    {/*</div>*/}
                     <div className="grid gap-4 grid-cols-2">
                         <div className="flex gap-2 items-center">
                             <Image
@@ -112,33 +98,12 @@ export default function RegisterPage() {
                         src={CategoriesImage.logodefault}
                         alt="logo"
                     />
-                    {currentView === "register" && (
-                        <AuthFormContainer
-                            title={t("authen.titleCreateAccount")}
-                            onBack={() => route.push("/login")}
-                        >
-                            <RegisterForm
-                                setApiError={setApiError}
-                                switchToVerifyOTP={(data) => {
-                                    if (data) {
-                                        setDataDataRegister(data);
-                                        setCurrentView("verify-otp");
-                                    }
-                                }}
-                            />
-
-                        </AuthFormContainer>
-                    )}
-                    {currentView === "verify-otp" && (
-                        <AuthFormContainer
-                            title={t("authen.titleVerifyingCode")}
-                        >
-                            <VerifyOTPForm
-                                setApiError={setApiError}
-                                email={dataDataRegister}
-                            />
-                        </AuthFormContainer>
-                    )}
+                    <AuthFormContainer
+                        title={t("authen.titleCreateAccount")}
+                        onBack={() => route.push("/login")}
+                    >
+                        <RegisterForm setApiError={setApiError}/>
+                    </AuthFormContainer>
                 </div>
             </div>
         </div>

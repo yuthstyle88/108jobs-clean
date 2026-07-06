@@ -22,8 +22,7 @@ const ClientOnlyGuestSection = ({globalLanguageData}: ClientOnlyGuestSectionProp
         return <div></div>;
     }
 
-    const role = UserService.Instance.authInfo?.claims?.role || "Guest";
-    const isGuest = role === "Guest";
+    const isGuest = !UserService.Instance.isLoggedIn;
 
     if (!isGuest) {
         return null;

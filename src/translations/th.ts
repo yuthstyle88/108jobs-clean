@@ -458,12 +458,16 @@ export const th = {
             pleaseEnterEmailOrUsernameMin6:
                 "กรุณากรอกอีเมลหรือชื่อผู้ใช้อย่างน้อย 6 ตัวอักษร",
             usernameMax32: "ชื่อผู้ใช้ต้องไม่เกิน 32 ตัวอักษร",
+            usernameMin3: "ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร",
             passwordMin6: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
+            passwordMismatch: "รหัสผ่านไม่ตรงกัน",
             placeholderCaptchaAnswer: "กรอกคำตอบของแคปช่า",
             usernameMin6: "ชื่อผู้ใช้ต้องมีอย่างน้อย 6 ตัวอักษร",
             invalidEmail: "กรุณากรอกอีเมลที่ถูกต้อง",
             titleLoginForm: "ยินดีต้อนรับกลับมา",
             notMatchPassword: "รหัสผ่านไม่ตรงกัน",
+            labelPasswordVerify: "ยืนยันรหัสผ่าน",
+            placeholderPasswordVerify: "กรอกรหัสผ่านอีกครั้ง",
             reloadCaptcha: "โหลดใหม่",
             captchaIncorrect: "คำตอบของแคปช่าไม่ถูกต้อง",
             errorLoadingCaptcha:

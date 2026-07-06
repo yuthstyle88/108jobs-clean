@@ -94,6 +94,8 @@ import type {GetUnreadSnapshotResponse} from "./types/GetUnreadSnapshotResponse"
 import type {PresenceSnapshotItem} from "./types/PresenceSnapshotItem";
 import type {IdentityCardForm} from "./types/IdentityCardForm";
 import type {IdentityCardResponse} from "./types/IdentityCardResponse";
+import type {IdentityPlatformAuthResponse} from "./types/IdentityPlatformAuthResponse";
+import type {IdentityPlatformLoginResponse} from "./types/IdentityPlatformLoginResponse";
 import type {ListCategories} from "./types/ListCategories";
 import type {ListCategoriesResponse} from "./types/ListCategoriesResponse";
 import type {ListLoginsResponse} from "./types/ListLoginsResponse";
@@ -111,6 +113,7 @@ import type {PasswordChangeAfterReset} from "./types/PasswordChangeAfterReset";
 import type {PasswordReset} from "./types/PasswordReset";
 import type {PostResponse} from "./types/PostResponse";
 import type {ProfileData} from "./types/ProfileData";
+import type {RegisterIdentityPlatform} from "./types/RegisterIdentityPlatform";
 import type {ResendVerificationEmail} from "./types/ResendVerificationEmail";
 import type {SaveUserProfile} from "./types/SaveUserProfile";
 import type {SaveUserSettings} from "./types/SaveUserSettings";
@@ -939,14 +942,31 @@ export class Api108Jobs extends Controller {
     }
 
     /**
-     * @summary Log in.
+     * @summary Log in via Identity-Platform.
      */
-    @Post("/account/auth/login")
+    @Post("/account/auth/login/identity-platform")
     @Tags("Account")
-    async login(@Body() form: Login, @Inject() options?: RequestOptions) {
-        return this.#wrapper<Login, LoginResponse>(
+    async loginWithIdentityPlatform(@Body() form: Login, @Inject() options?: RequestOptions) {
+        return this.#wrapper<Login, IdentityPlatformLoginResponse>(
             HttpType.Post,
-            "/account/auth/login",
+            "/account/auth/login/identity-platform",
+            form,
+            options,
+        );
+    }
+
+    /**
+     * @summary Register (and immediately log in) via Identity-Platform.
+     */
+    @Post("/account/auth/register/identity-platform")
+    @Tags("Account")
+    async registerWithIdentityPlatform(
+        @Body() form: RegisterIdentityPlatform,
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<RegisterIdentityPlatform, IdentityPlatformAuthResponse>(
+            HttpType.Post,
+            "/account/auth/register/identity-platform",
             form,
             options,
         );

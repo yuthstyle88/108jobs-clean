@@ -123,9 +123,7 @@ export default function OAuthCallbackPage() {
 async function handleLoginSuccess(loginData: LoginResponse, prev?: string) {
   try {
     // Ensure login side-effects (cookies, session) complete before navigation (Safari-sensitive)
-    await UserService.Instance.login({
-      res: loginData,
-    });
+    await UserService.Instance.login(loginData.jwt ?? "");
 
     // Clear temporary OAuth state
     try { localStorage.removeItem("oauthState"); } catch {}
