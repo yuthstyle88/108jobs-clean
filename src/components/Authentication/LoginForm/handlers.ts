@@ -109,7 +109,7 @@ export const handleLogin = async (i: LoginFormClass, data: any) => {
 };
 
 export async function handleLoginSuccess(i: LoginFormClass, loginRes: IdentityPlatformLoginResponse) {
-    await UserService.Instance.login(loginRes.accessToken);
+    await UserService.Instance.login(loginRes.accessToken, loginRes.refreshToken);
     const claims = jwtDecode<Claims>(loginRes.accessToken);
     if (isAdminClaims(claims)) {
         window.location.replace("/admin/dashboard");

@@ -91,7 +91,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                     break;
                 }
                 case REQUEST_STATE.SUCCESS: {
-                    await UserService.Instance.login(registerRes.data.accessToken);
+                    await UserService.Instance.login(registerRes.data.accessToken, registerRes.data.refreshToken);
                     const claims = jwtDecode<Claims>(registerRes.data.accessToken);
                     if (isAdminClaims(claims)) {
                         window.location.href = "/admin/dashboard";
