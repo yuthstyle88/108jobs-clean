@@ -22,7 +22,7 @@ describe("isAdminClaims", () => {
 
 import { UserService } from "./UserService";
 import { HttpService } from "./HttpService";
-import { getAuthJWTCookie } from "@/utils/browser";
+import { getAuthJWTCookie, setAuthJWTCookie } from "@/utils/browser";
 
 describe("UserService profile hydration", () => {
   it("sources currentLanguage and acceptedTerms from getMyUser(), not from JWT claims", async () => {
@@ -247,5 +247,86 @@ describe("UserService refresh scheduling", () => {
     expect(UserService.Instance.authInfo).toBeDefined();
 
     document.cookie = "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  });
+});
+
+describe("UserService refresh scheduling with Web Locks", () => {
+  let mockLocksRequest: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    mockLocksRequest = vi.fn((_name: string, callback: () => Promise<unknown>) => {
+      return Promise.resolve().then(callback);
+    });
+    Object.defineProperty(navigator, "locks", {
+      value: { request: mockLocksRequest },
+      configurable: true,
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    // @ts-expect-error -- test-only stub; real jsdom has no `locks` property
+    delete navigator.locks;
+  });
+
+  it("adopts an already-fresh cookie without calling the network", async () => {
+    vi.spyOn(HttpService, "client", "get").mockReturnValue({
+      getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
+      refreshWithIdentityPlatform: vi.fn(),
+    } as any);
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const header = { alg: "none" };
+    const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString("base64url");
+    const makeJwt = (exp: number) => {
+      const payload = { sub: "1", iss: "auth-service", aud: "jobs", exp, iat: nowSeconds, roles: ["user"], realm: "r", platform: "p", tenant_id: "t" };
+      return `${b64(header)}.${b64(payload)}.sig`;
+    };
+
+    // Schedules a refresh at ~60s (exp is 120s out, REFRESH_MARGIN_MS is 60s).
+    const staleJwt = makeJwt(nowSeconds + 120);
+    await UserService.Instance.login(staleJwt, "a-refresh-token");
+
+    // Simulate a sibling tab completing a refresh in the meantime: overwrite
+    // the access-token cookie with a fresh one, well outside REFRESH_MARGIN_MS.
+    const freshJwt = makeJwt(nowSeconds + 10_000);
+    setAuthJWTCookie(freshJwt);
+
+    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
+
+    await vi.advanceTimersByTimeAsync(61_000);
+
+    expect(mockLocksRequest).toHaveBeenCalled();
+    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(UserService.Instance.authInfo?.claims?.exp).toBe(nowSeconds + 10_000);
+  });
+
+  it("performs the real refresh under the lock when the cookie is still near-expiry, invoking the Locks API with the expected name", async () => {
+    vi.spyOn(HttpService, "client", "get").mockReturnValue({
+      getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
+      refreshWithIdentityPlatform: vi.fn().mockResolvedValue({
+        state: "success",
+        data: { accessToken: "new-token", refreshToken: "new-refresh", expiresIn: 3600 },
+      }),
+    } as any);
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const header = { alg: "none" };
+    const payload = { sub: "1", iss: "auth-service", aud: "jobs", exp: nowSeconds + 120, iat: nowSeconds, roles: ["user"], realm: "r", platform: "p", tenant_id: "t" };
+    const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString("base64url");
+    const fakeJwt = `${b64(header)}.${b64(payload)}.sig`;
+
+    await UserService.Instance.login(fakeJwt, "a-refresh-token");
+
+    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
+    expect(refreshSpy).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(61_000);
+
+    expect(mockLocksRequest).toHaveBeenCalledTimes(1);
+    expect(mockLocksRequest).toHaveBeenCalledWith("108jobs-refresh-token-lock", expect.any(Function));
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
+    expect(refreshSpy).toHaveBeenCalledWith({ refreshToken: "a-refresh-token" });
   });
 });

@@ -1,4 +1,4 @@
-import {clearAuthCookie, getRefreshTokenCookie, isBrowser, setAuthJWTCookie, setLangCookie, setRefreshTokenCookie} from "@/utils/browser";
+import {clearAuthCookie, getAuthJWTCookie, getRefreshTokenCookie, isBrowser, setAuthJWTCookie, setLangCookie, setRefreshTokenCookie} from "@/utils/browser";
 import {jwtDecode} from "jwt-decode";
 import {MyUserInfo} from "108jobs-client";
 import {HttpService} from "./index";
@@ -182,6 +182,7 @@ export class UserService {
     static readonly #REFRESH_MARGIN_MS = 60_000;
     static readonly #REFRESH_RETRY_DELAY_MS = 3_000;
     static readonly #MAX_REFRESH_RETRIES = 2;
+    static readonly #REFRESH_LOCK_NAME = "108jobs-refresh-token-lock";
     #refreshTimer?: ReturnType<typeof setTimeout>;
 
     #scheduleRefresh() {
@@ -192,13 +193,53 @@ export class UserService {
         if (!claims?.exp || !refreshToken) return;
         const delay = Math.max(0, claims.exp * 1000 - Date.now() - UserService.#REFRESH_MARGIN_MS);
         this.#refreshTimer = setTimeout(() => {
-            void this.#refreshAccessToken();
+            this.#refreshAccessTokenCoordinated();
         }, delay);
     }
 
     #clearRefreshTimer() {
         if (this.#refreshTimer) clearTimeout(this.#refreshTimer);
         this.#refreshTimer = undefined;
+    }
+
+    // Re-reads the *current* access-token cookie (not this tab's possibly-stale
+    // in-memory claims) and adopts it if it's already fresh enough that no
+    // refresh is needed right now -- the case where another tab already
+    // refreshed while this tab was scheduled or queued for the lock. Returns
+    // true if it adopted (caller should not attempt a network refresh).
+    #adoptCookieIfFresh(): boolean {
+        const currentToken = getAuthJWTCookie();
+        if (!currentToken) return false;
+        let claims: Claims;
+        try {
+            claims = jwtDecode<Claims>(currentToken);
+        } catch {
+            return false;
+        }
+        if (!claims.exp || claims.exp * 1000 - Date.now() <= UserService.#REFRESH_MARGIN_MS) return false;
+        this.#setAuthInfo(currentToken);
+        this.#scheduleRefresh();
+        return true;
+    }
+
+    // Entry point the scheduled timer calls. When the Web Locks API is
+    // available, wraps the attempt in a per-origin exclusive lock so at most
+    // one tab is ever inside #refreshAccessToken at a time -- eliminating the
+    // multi-tab race at its source rather than narrowing its timing window.
+    // Falls back to today's unlocked behavior (round-1/2 mitigation still
+    // active) when navigator.locks doesn't exist.
+    #refreshAccessTokenCoordinated(): void {
+        const attempt = async () => {
+            if (this.#adoptCookieIfFresh()) return;
+            await this.#refreshAccessToken();
+        };
+        if (typeof navigator !== "undefined" && "locks" in navigator) {
+            void navigator.locks.request(UserService.#REFRESH_LOCK_NAME, attempt).catch((e) => {
+                console.warn("[UserService.refreshAccessTokenCoordinated] lock request failed", e);
+            });
+        } else {
+            void attempt();
+        }
     }
 
     async #refreshAccessToken(retryCount = 0) {
