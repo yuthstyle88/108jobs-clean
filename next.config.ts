@@ -111,15 +111,22 @@ const nextConfig: NextConfig = {
         ];
     },
 
-    // Long-term caching for static assets and wasm files
+    // Long-term caching for static assets and wasm files.
+    // The immutable directive on /_next/static/* is production-only: it assumes
+    // content-hashed filenames that never change without a new hash, which holds
+    // for a production build but not for Turbopack's dev-mode chunk URLs (those
+    // don't reliably get new names on every rebuild). Applying it in dev let
+    // browsers cache a stale JS chunk under an "immutable" contract and never
+    // re-fetch it across page reloads or dev-server restarts, silently serving
+    // old code while the source and compiled output were both already correct.
     async headers() {
         return [
-            {
+            ...(process.env.NODE_ENV === 'production' ? [{
                 source: '/_next/static/:path*',
                 headers: [
                     { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
                 ],
-            },
+            }] : []),
             {
                 source: '/static/wasm/:path*',
                 headers: [
