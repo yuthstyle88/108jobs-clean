@@ -8,4 +8,9 @@ describe("Api108Jobs identity-platform methods", () => {
     expect(typeof client.registerWithIdentityPlatform).toBe("function");
     expect((client as unknown as Record<string, unknown>).login).toBeUndefined();
   });
+
+  it("exposes refreshWithIdentityPlatform", () => {
+    const client = new Api108Jobs("http://localhost:8536");
+    expect(typeof client.refreshWithIdentityPlatform).toBe("function");
+  });
 });

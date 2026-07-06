@@ -1,4 +1,4 @@
-import {clearAuthCookie, isBrowser, setAuthJWTCookie, setLangCookie} from "@/utils/browser";
+import {clearAuthCookie, getAuthJWTCookie, getRefreshTokenCookie, isBrowser, setAuthJWTCookie, setLangCookie, setRefreshTokenCookie} from "@/utils/browser";
 import {jwtDecode} from "jwt-decode";
 import {MyUserInfo} from "108jobs-client";
 import {HttpService} from "./index";
@@ -40,6 +40,7 @@ export class UserService {
     private constructor() {
         this.#setAuthInfo();
         this.#hydrateReadLastMap();
+        this.#scheduleRefresh();
     }
 
     public static get Instance() {
@@ -58,7 +59,7 @@ export class UserService {
         return Boolean(this.authInfo?.auth);
     }
 
-    public async login(accessToken: string, showToast = false): Promise<void> {
+    public async login(accessToken: string, refreshToken?: string, showToast = false): Promise<void> {
         if (!isBrowser() || !accessToken) return;
 
         if (showToast) {
@@ -69,8 +70,10 @@ export class UserService {
         // so it's already visible to SSR/middleware on the very next request --
         // no separate server-side HttpOnly cookie round trip is needed.
         setAuthJWTCookie(accessToken);
+        if (refreshToken) setRefreshTokenCookie(refreshToken);
         this.#setAuthInfo(accessToken);
         this.#hydrateReadLastMap();
+        this.#scheduleRefresh();
 
         // Profile fields (language, accepted-terms) no longer live on the JWT --
         //    fetch them once from the real API. Falls back to existing defaults on
@@ -101,6 +104,7 @@ export class UserService {
         setAuthJWTCookie(jwt);
         // Update auth info
         this.#setAuthInfo(jwt);
+        this.#scheduleRefresh();
 
       } catch (e) {
         console.warn('[UserService.setToken] Failed to set token', e);
@@ -109,6 +113,7 @@ export class UserService {
 
     public async logout() {
         try {
+            this.#clearRefreshTimer();
             this.authInfo = undefined;
             this.myUserInfo = undefined;
 
@@ -172,5 +177,112 @@ export class UserService {
         } catch {
             this.authInfo = { jwt } as AuthInfo;
         }
+    }
+
+    static readonly #REFRESH_MARGIN_MS = 60_000;
+    static readonly #REFRESH_RETRY_DELAY_MS = 3_000;
+    static readonly #MAX_REFRESH_RETRIES = 2;
+    static readonly #REFRESH_LOCK_NAME = "108jobs-refresh-token-lock";
+    #refreshTimer?: ReturnType<typeof setTimeout>;
+
+    #scheduleRefresh() {
+        this.#clearRefreshTimer();
+        if (!isBrowser()) return;
+        const claims = this.authInfo?.claims;
+        const refreshToken = getRefreshTokenCookie();
+        if (!claims?.exp || !refreshToken) return;
+        const delay = Math.max(0, claims.exp * 1000 - Date.now() - UserService.#REFRESH_MARGIN_MS);
+        this.#refreshTimer = setTimeout(() => {
+            this.#refreshAccessTokenCoordinated();
+        }, delay);
+    }
+
+    #clearRefreshTimer() {
+        if (this.#refreshTimer) clearTimeout(this.#refreshTimer);
+        this.#refreshTimer = undefined;
+    }
+
+    // Re-reads the *current* access-token cookie (not this tab's possibly-stale
+    // in-memory claims) and adopts it if it's already fresh enough that no
+    // refresh is needed right now -- the case where another tab already
+    // refreshed while this tab was scheduled or queued for the lock. Returns
+    // true if it adopted (caller should not attempt a network refresh).
+    #adoptCookieIfFresh(): boolean {
+        const currentToken = getAuthJWTCookie();
+        if (!currentToken) return false;
+        let claims: Claims;
+        try {
+            claims = jwtDecode<Claims>(currentToken);
+        } catch {
+            return false;
+        }
+        if (!claims.exp || claims.exp * 1000 - Date.now() <= UserService.#REFRESH_MARGIN_MS) return false;
+        this.#setAuthInfo(currentToken);
+        this.#scheduleRefresh();
+        return true;
+    }
+
+    // Entry point the scheduled timer calls. When the Web Locks API is
+    // available, wraps the attempt in a per-origin exclusive lock so at most
+    // one tab is ever inside #refreshAccessToken at a time -- eliminating the
+    // multi-tab race at its source rather than narrowing its timing window.
+    // Falls back to today's unlocked behavior (round-1/2 mitigation still
+    // active) when navigator.locks doesn't exist.
+    #refreshAccessTokenCoordinated(retryCount = 0): void {
+        const attempt = async () => {
+            if (this.#adoptCookieIfFresh()) return;
+            await this.#refreshAccessToken(retryCount);
+        };
+        if (typeof navigator !== "undefined" && "locks" in navigator) {
+            void navigator.locks.request(UserService.#REFRESH_LOCK_NAME, attempt).catch((e) => {
+                console.warn("[UserService.refreshAccessTokenCoordinated] lock request failed", e);
+            });
+        } else {
+            void attempt();
+        }
+    }
+
+    async #refreshAccessToken(retryCount = 0) {
+        const refreshToken = getRefreshTokenCookie();
+        if (!refreshToken) return;
+        try {
+            const res = await HttpService.client.refreshWithIdentityPlatform({ refreshToken });
+            if (isSuccess(res)) {
+                setAuthJWTCookie(res.data.accessToken);
+                setRefreshTokenCookie(res.data.refreshToken);
+                this.#setAuthInfo(res.data.accessToken);
+                this.#scheduleRefresh();
+            } else {
+                await this.#handleRefreshFailure(refreshToken, retryCount);
+            }
+        } catch (e) {
+            console.warn('[UserService.refreshAccessToken] refresh attempt failed', e);
+            await this.#handleRefreshFailure(refreshToken, retryCount);
+        }
+    }
+
+    // A failed refresh is not necessarily a dead session. Two recoverable
+    // cases: another open tab may have already rotated the (origin-shared)
+    // refresh-token cookie -- Identity-Platform invalidates the old token
+    // the instant any tab's rotation succeeds, so if the cookie no longer
+    // matches what we just sent, a sibling tab won the race and we can
+    // retry immediately with its fresh value; or the failure was a plain
+    // transient network blip, worth one delayed retry. Only give up and
+    // log out once retries are exhausted or the access token has actually
+    // expired -- logging out immediately on the first failure would tear
+    // down every tab's session over an ordinary multi-tab race.
+    async #handleRefreshFailure(attemptedRefreshToken: string, retryCount: number) {
+        const exp = this.authInfo?.claims?.exp;
+        const stillValid = Boolean(exp) && exp! * 1000 > Date.now();
+        const canRetry = stillValid && retryCount < UserService.#MAX_REFRESH_RETRIES;
+        if (canRetry) {
+            const siblingAlreadyRotated = getRefreshTokenCookie() !== attemptedRefreshToken;
+            this.#clearRefreshTimer();
+            this.#refreshTimer = setTimeout(() => {
+                this.#refreshAccessTokenCoordinated(retryCount + 1);
+            }, siblingAlreadyRotated ? 0 : UserService.#REFRESH_RETRY_DELAY_MS);
+            return;
+        }
+        await this.logout();
     }
 }

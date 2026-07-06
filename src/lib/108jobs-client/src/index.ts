@@ -144,6 +144,7 @@ export type {PostView} from "./types/PostView";
 export type {PublicOAuthProvider} from "./types/PublicOAuthProvider";
 export type {RegistrationMode} from "./types/RegistrationMode";
 export type {RegisterIdentityPlatform} from "./types/RegisterIdentityPlatform";
+export type {RefreshIdentityPlatform} from "./types/RefreshIdentityPlatform";
 export type {ResendVerificationEmail} from "./types/ResendVerificationEmail";
 export type {Rider} from "./types/Rider";
 export type {RiderId} from "./types/RiderId";

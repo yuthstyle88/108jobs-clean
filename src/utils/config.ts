@@ -18,6 +18,7 @@ export const relTags = "noopener nofollow";
 export const emDash = "\u2014";
 export const authCookieName =  process.env.NEXT_PUBLIC_APP_NAME ?? "108jobs.com" ;
 export const JWT =  "jwt";
+export const REFRESH_TOKEN_COOKIE = "refresh_token";
 export const adultConsentCookieKey = "adultConsent";
 
 // No. of max displayed categories per

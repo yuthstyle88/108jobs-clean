@@ -113,6 +113,7 @@ import type {PasswordChangeAfterReset} from "./types/PasswordChangeAfterReset";
 import type {PasswordReset} from "./types/PasswordReset";
 import type {PostResponse} from "./types/PostResponse";
 import type {ProfileData} from "./types/ProfileData";
+import type {RefreshIdentityPlatform} from "./types/RefreshIdentityPlatform";
 import type {RegisterIdentityPlatform} from "./types/RegisterIdentityPlatform";
 import type {ResendVerificationEmail} from "./types/ResendVerificationEmail";
 import type {SaveUserProfile} from "./types/SaveUserProfile";
@@ -950,6 +951,23 @@ export class Api108Jobs extends Controller {
         return this.#wrapper<Login, IdentityPlatformLoginResponse>(
             HttpType.Post,
             "/account/auth/login/identity-platform",
+            form,
+            options,
+        );
+    }
+
+    /**
+     * @summary Refresh an access token via Identity-Platform.
+     */
+    @Post("/account/auth/refresh/identity-platform")
+    @Tags("Account")
+    async refreshWithIdentityPlatform(
+        @Body() form: RefreshIdentityPlatform,
+        @Inject() options?: RequestOptions,
+    ) {
+        return this.#wrapper<RefreshIdentityPlatform, IdentityPlatformLoginResponse>(
+            HttpType.Post,
+            "/account/auth/refresh/identity-platform",
             form,
             options,
         );
