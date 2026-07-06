@@ -84,8 +84,10 @@ Then add this test inside the file's existing `mod tests { ... }` block (add it 
 
 - [ ] **Step 2: Run the new test to verify it passes**
 
-Run: `cargo test -p app_108jobs_api_utils refresh_request_body_serializes_snake_case`
-Expected: `refresh_request_body_serializes_snake_case ... ok` (1 passed).
+Run: `cargo test -p app_108jobs_api_utils --features full refresh_request_body_serializes_snake_case`
+Expected: `1 passed, N filtered out`.
+
+Note the `--features full` flag is required here specifically — `app_108jobs_api_utils` has a `full` Cargo feature (`crates/api/api_utils/Cargo.toml`, pulling in `app_108jobs_db/full` and friends) that this workspace's CI enables via its workspace-wide `cargo test --workspace` command (`.woodpecker.yml:150`). Checking or testing this one crate in isolation via a bare `-p app_108jobs_api_utils` (no `--features full`) fails with ~20+ unrelated-looking errors (`unresolved import diesel`, `ExpressionMethods` not in scope, etc.) — this is a Cargo feature-unification artifact, not a real break in the codebase. Confirmed: `cargo check -p app_108jobs_http` and `cargo check -p app_108jobs_api_server` (Step 6, below) both already succeed without any extra flags, since they pull in `app_108jobs_api_utils` correctly as part of the larger dependency graph — only a standalone check/test of `app_108jobs_api_utils` itself needs `--features full`.
 
 - [ ] **Step 3: Write the new handler file**
 
