@@ -329,4 +329,41 @@ describe("UserService refresh scheduling with Web Locks", () => {
     expect(refreshSpy).toHaveBeenCalledTimes(1);
     expect(refreshSpy).toHaveBeenCalledWith({ refreshToken: "a-refresh-token" });
   });
+
+  it("routes the retry back through the lock instead of calling #refreshAccessToken directly", async () => {
+    vi.spyOn(HttpService, "client", "get").mockReturnValue({
+      getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
+      refreshWithIdentityPlatform: vi.fn()
+        .mockRejectedValueOnce(new Error("network blip"))
+        .mockResolvedValueOnce({
+          state: "success",
+          data: { accessToken: "new-token", refreshToken: "new-refresh", expiresIn: 3600 },
+        }),
+    } as any);
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const header = { alg: "none" };
+    const payload = { sub: "1", iss: "auth-service", aud: "jobs", exp: nowSeconds + 120, iat: nowSeconds, roles: ["user"], realm: "r", platform: "p", tenant_id: "t" };
+    const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString("base64url");
+    const fakeJwt = `${b64(header)}.${b64(payload)}.sig`;
+
+    await UserService.Instance.login(fakeJwt, "a-refresh-token");
+
+    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
+
+    // Initial attempt at ~60s fails (network blip), acquiring the lock once.
+    await vi.advanceTimersByTimeAsync(61_000);
+
+    expect(mockLocksRequest).toHaveBeenCalledTimes(1);
+    expect(refreshSpy).toHaveBeenCalledTimes(1);
+
+    // Retry fires 3s later. It must ALSO acquire the lock -- not call
+    // #refreshAccessToken directly, unlocked -- which is exactly the bug
+    // this test exists to catch.
+    await vi.advanceTimersByTimeAsync(3_000);
+
+    expect(mockLocksRequest).toHaveBeenCalledTimes(2);
+    expect(refreshSpy).toHaveBeenCalledTimes(2);
+    expect(UserService.Instance.authInfo).toBeDefined();
+  });
 });

@@ -228,10 +228,10 @@ export class UserService {
     // multi-tab race at its source rather than narrowing its timing window.
     // Falls back to today's unlocked behavior (round-1/2 mitigation still
     // active) when navigator.locks doesn't exist.
-    #refreshAccessTokenCoordinated(): void {
+    #refreshAccessTokenCoordinated(retryCount = 0): void {
         const attempt = async () => {
             if (this.#adoptCookieIfFresh()) return;
-            await this.#refreshAccessToken();
+            await this.#refreshAccessToken(retryCount);
         };
         if (typeof navigator !== "undefined" && "locks" in navigator) {
             void navigator.locks.request(UserService.#REFRESH_LOCK_NAME, attempt).catch((e) => {
@@ -279,7 +279,7 @@ export class UserService {
             const siblingAlreadyRotated = getRefreshTokenCookie() !== attemptedRefreshToken;
             this.#clearRefreshTimer();
             this.#refreshTimer = setTimeout(() => {
-                void this.#refreshAccessToken(retryCount + 1);
+                this.#refreshAccessTokenCoordinated(retryCount + 1);
             }, siblingAlreadyRotated ? 0 : UserService.#REFRESH_RETRY_DELAY_MS);
             return;
         }
