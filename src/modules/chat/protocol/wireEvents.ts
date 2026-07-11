@@ -22,6 +22,12 @@ export const WS_EVENT = Object.freeze({
   Heartbeat: "heartbeat",
   Message: "chat:message",
   MessageAck: "messageAck",
+  /** Server-to-client only: a sent message failed to make it into the
+   * durable buffer backing persistence. Carries the same `clientId` shape
+   * as MessageAck, so it can drive the same resend-until-ack tracking
+   * instead of only a client-side timeout (see api-108jobs'
+   * crates/ws/src/broker/bridge_message.rs, add_messages_to_room). */
+  MessageNack: "messageNack",
   AckConfirm: "ackConfirm",
   SyncPending: "sync:pending",
   ReadUpTo: "readUpTo",
