@@ -48,13 +48,23 @@ export class ResendManager {
     /**
      * เรียกเมื่อส่งข้อความล้มเหลวครั้งแรก (หรือครั้งต่อ ๆ มา)
      * จะตั้ง retry meta และรอบเวลา next
+     *
+     * Also self-schedules the actual resend after the computed delay --
+     * nothing else revisits a staged retry (only a manual UI retry button
+     * or an offline->online transition trigger a flush), so without this,
+     * calling onSendFailure would only ever stage state that's never acted
+     * on until the user notices and retries by hand.
      */
-    onSendFailure(messageId: string) {
+    onSendFailure(messageId: string, roomId: string) {
         const {retryMeta} = this.store.getState()
         const prev = retryMeta[messageId]
         const retry = (prev?.retry ?? 0)
         const delay = this.backoffDelay(retry)
         this.store.upsertRetryMeta(messageId, {retry, next: Date.now() + delay})
+        setTimeout(() => {
+            this.flushActive(roomId).catch(() => {
+            })
+        }, delay)
     }
 
     /** ปลุกเฉพาะห้องปัจจุบันให้ลองส่งใหม่ */

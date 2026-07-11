@@ -27,6 +27,10 @@ describe("WS_EVENT matches the backend's ChatEvent::as_str() exactly", () => {
     expect(WS_EVENT.MessageAck).toBe("messageAck");
   });
 
+  it("MessageNack (inbound only, server->client)", () => {
+    expect(WS_EVENT.MessageNack).toBe("messageNack");
+  });
+
   it("AckConfirm (outbound, client->server)", () => {
     expect(WS_EVENT.AckConfirm).toBe("ackConfirm");
   });

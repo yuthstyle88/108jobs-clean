@@ -9,7 +9,68 @@ import {GlobalAckMatcher} from "@/modules/chat/utils/AckMatcher";
 import {isBrowser} from "@/utils/browser";
 import {ChatMessageModel} from "@/modules/chat/types";
 import {ChatRoomId, ChatStatus} from "108jobs-client";
+import {WS_EVENT} from "@/modules/chat/protocol/wireEvents";
 
+
+/**
+ * Filters+maps a messagesByRoom snapshot down to the subset ResendManager
+ * can safely act on: status "failed" with every field its retry path
+ * needs. Extracted as its own pure function (no React/store coupling) so
+ * this selection logic is directly unit-testable -- this exact selection
+ * previously read from the store's `listMessages` field, which no real
+ * message-adding code path (addMessage/addSending/upsertMessage) ever
+ * populates, so it always returned an empty list and ResendManager could
+ * never find anything to resend, regardless of status or retry meta.
+ */
+export function selectFailedMessagesForResend(
+    messagesByRoom: Record<string, any[]> | undefined | null
+): ChatMessageModel[] {
+    const rawList = Object.values(messagesByRoom ?? {}).flatMap((arr) =>
+        Array.isArray(arr) ? arr : []
+    );
+    return rawList
+        .filter((m: any) => (
+            m?.status === "failed" &&
+            typeof m?.id === "string" && m.id.length > 0 &&
+            typeof m?.roomId === "string" && m.roomId.length > 0 &&
+            typeof m?.senderId === "number" && Number.isFinite(m.senderId) &&
+            typeof m?.content === "string" && m.content.length > 0 &&
+            typeof m?.createdAt === "string" && m.createdAt.length > 0
+        ))
+        .map((m: any) => ({
+            id: m.id as string,
+            roomId: m.roomId as ChatRoomId,
+            senderId: m.senderId as number,
+            secure: Boolean(m.secure),
+            content: m.content as string,
+            status: "failed" as ChatStatus,
+            createdAt: m.createdAt as string,
+            isOwner: Boolean(m.isOwner),
+        }));
+}
+
+/**
+ * Extracts {clientId, roomId} from a raw messageNack WS event, handling the
+ * same defensive envelope-unwrapping (single vs. double-wrapped "forward"
+ * envelope) as the existing ack path (see the `toAck` handler below).
+ * Returns null when the payload carries no clientId, or when no roomId can
+ * be resolved from either the payload or the fallback. Extracted as a pure
+ * function so this parsing is directly unit-testable without a real WS/DOM
+ * harness.
+ */
+export function parseNackPayload(
+    raw: any,
+    fallbackRoomId: string | undefined
+): { clientId: string; roomId: string } | null {
+    const inner = raw?.payload?.payload ?? raw?.payload ?? raw;
+    const isForward = inner?.event && inner?.payload;
+    const p = isForward ? inner.payload : inner;
+    const clientId = p?.clientId ? String(p.clientId) : undefined;
+    if(!clientId) return null;
+    const roomId = String(p?.roomId ?? fallbackRoomId ?? "");
+    if(!roomId) return null;
+    return {clientId, roomId};
+}
 
 function pickChannel(ws: any, roomId?: string) {
     if(!ws) return null;
@@ -77,32 +138,14 @@ export const PhoenixChatBridgeProvider: React.FC<WebSocketProviderProps> = ({chi
         const port: ChatStorePort = {
             getState: () => {
                 const s = useChatStore.getState();
-                // Strict gate: only messages with complete required fields are allowed to resend.
-                // This prevents resend loops when malformed drafts slip into the failed list.
-                const rawList = Array.isArray(s.listMessages) ? s.listMessages : [];
-                // ResendManager expects a list named failedMessages, but we supply only failed ones as per the new policy.
-                const pendings: ChatMessageModel[] = rawList
-                  .filter((m: any) => {
-                      return (
-                          m?.status === "failed" &&
-                          typeof m?.id === "string" && m.id.length > 0 &&
-                          typeof m?.roomId === "string" && m.roomId.length > 0 &&
-                          typeof m?.senderId === "number" && Number.isFinite(m.senderId) &&
-                          typeof m?.content === "string" && m.content.length > 0 &&
-                          typeof m?.createdAt === "string" && m.createdAt.length > 0
-                      );
-                  })
-                  .map((m: any) => ({
-                      id: m.id as string,
-                      roomId: m.roomId as ChatRoomId,
-                      senderId: m.senderId as number,
-                      secure: Boolean(m.secure),
-                      content: m.content as string,
-                      status: "failed" as ChatStatus,
-                      createdAt: m.createdAt as string,
-                      isOwner: Boolean(m.isOwner),
-                  }));
-                return {failedMessages: pendings, retryMeta: s.retryMeta};
+                // Strict gate (see selectFailedMessagesForResend): only messages
+                // with complete required fields are allowed to resend. This
+                // prevents resend loops when malformed drafts slip into the
+                // failed list.
+                return {
+                    failedMessages: selectFailedMessagesForResend(s.messagesByRoom),
+                    retryMeta: s.retryMeta,
+                };
             },
             upsertRetryMeta: useChatStore.getState().upsertRetryMeta,
             dropRetryMeta: useChatStore.getState().dropRetryMeta,
@@ -235,6 +278,51 @@ export const PhoenixChatBridgeProvider: React.FC<WebSocketProviderProps> = ({chi
             };
         }
     }, [ws, roomId]);
+
+    // Inbound: messageNack -> mark the message failed and arm ResendManager's
+    // retry, using the same clientId the message was originally sent with.
+    // Mirrors the api-108jobs contract: a nack means the message never made
+    // it into durable storage, so the client should react like any other
+    // send failure (see ResendManager.onSendFailure's own doc comment)
+    // instead of only finding out via a much longer ack-wait timeout.
+    useEffect(() => {
+        if(!ws) return;
+        const ch = pickChannel(ws, roomId);
+
+        const toNack = (raw: any) => {
+            try {
+                const parsed = parseNackPayload(raw, roomId);
+                if(!parsed) return;
+                store.markFailed(parsed.roomId, parsed.clientId);
+                servicesRef.current.resend?.onSendFailure(parsed.clientId, parsed.roomId);
+            } catch {
+            }
+        };
+
+        if(ch && typeof ch.on === "function") {
+            try {
+                ch.on(WS_EVENT.MessageNack, toNack);
+            } catch {
+            }
+            return () => {
+                try {
+                    ch.off?.(WS_EVENT.MessageNack, toNack);
+                } catch {
+                }
+            };
+        } else {
+            try {
+                ws.on?.(WS_EVENT.MessageNack, toNack);
+            } catch {
+            }
+            return () => {
+                try {
+                    ws.off?.(WS_EVENT.MessageNack, toNack);
+                } catch {
+                }
+            };
+        }
+    }, [ws, roomId, store]);
 
     // Promote in store when AckMatcher confirms a clientId
     useEffect(() => {
