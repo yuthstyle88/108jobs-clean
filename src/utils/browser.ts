@@ -1,4 +1,4 @@
-import {authCookieName, REFRESH_TOKEN_COOKIE} from "@/utils/config";
+import {authCookieName} from "@/utils/config";
 import {GetSiteResponse, MyUserInfo} from "108jobs-client";
 import {isHttps} from "@/utils/env";
 import {LANGUAGE_COOKIE} from "@/constants/language";
@@ -25,11 +25,6 @@ export function canShare() {
 
 export function clearAuthCookie() {
   document.cookie = serializeCookie(authCookieName, "", {
-    maxAge: -1,
-    sameSite: "lax",
-    path: "/",
-  });
-  document.cookie = serializeCookie(REFRESH_TOKEN_COOKIE, "", {
     maxAge: -1,
     sameSite: "lax",
     path: "/",
@@ -141,27 +136,6 @@ export function setAuthJWTCookie(jwt: string) {
 export function getAuthJWTCookie(): string | null {
   if (!isBrowser()) return null;
   const name = `${authCookieName}=`;
-  const parts = (document.cookie || "").split(/;\s*/);
-  for (const part of parts) {
-    if (part.startsWith(name)) {
-      return decodeURIComponent(part.slice(name.length));
-    }
-  }
-  return null;
-}
-
-export function setRefreshTokenCookie(refreshToken: string) {
-  document.cookie = serializeCookie(REFRESH_TOKEN_COOKIE, refreshToken, {
-    maxAge: 365 * 24 * 60 * 60,
-    secure: isHttps(),
-    sameSite: "lax",
-    path: "/",
-  });
-}
-
-export function getRefreshTokenCookie(): string | null {
-  if (!isBrowser()) return null;
-  const name = `${REFRESH_TOKEN_COOKIE}=`;
   const parts = (document.cookie || "").split(/;\s*/);
   for (const part of parts) {
     if (part.startsWith(name)) {

@@ -1,4 +1,4 @@
-import {clearAuthCookie, getAuthJWTCookie, getRefreshTokenCookie, isBrowser, setAuthJWTCookie, setLangCookie, setRefreshTokenCookie} from "@/utils/browser";
+import {clearAuthCookie, getAuthJWTCookie, isBrowser, setAuthJWTCookie, setLangCookie} from "@/utils/browser";
 import {jwtDecode} from "jwt-decode";
 import {MyUserInfo} from "108jobs-client";
 import {HttpService} from "./index";
@@ -70,7 +70,7 @@ export class UserService {
         // so it's already visible to SSR/middleware on the very next request --
         // no separate server-side HttpOnly cookie round trip is needed.
         setAuthJWTCookie(accessToken);
-        if (refreshToken) setRefreshTokenCookie(refreshToken);
+        if (refreshToken) await UserService.#persistRefreshToken(refreshToken);
         this.#setAuthInfo(accessToken);
         this.#hydrateReadLastMap();
         this.#scheduleRefresh();
@@ -120,6 +120,12 @@ export class UserService {
             if (isBrowser()) {
                 // Clear client-side cookies
                 clearAuthCookie();
+
+                // Clear the HttpOnly refresh-token cookie server-side -- client JS
+                // cannot clear it directly.
+                try {
+                    await fetch("/api/auth/session", { method: "DELETE", credentials: "same-origin" });
+                } catch {}
 
                 // Clear possible legacy cache
                 window.caches?.delete?.('instance-cache');
@@ -179,6 +185,23 @@ export class UserService {
         }
     }
 
+    // Hands the refresh token to the server so it can be stored as an
+    // HttpOnly, Secure cookie -- it is never written to document.cookie.
+    // Best-effort: a failure here just means auto-refresh won't work until
+    // the next login, not that the user is logged out.
+    static async #persistRefreshToken(refreshToken: string): Promise<void> {
+        try {
+            await fetch("/api/auth/session", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ refreshToken }),
+            });
+        } catch (e) {
+            console.warn("[UserService.persistRefreshToken] Failed to persist refresh token", e);
+        }
+    }
+
     static readonly #REFRESH_MARGIN_MS = 60_000;
     static readonly #REFRESH_RETRY_DELAY_MS = 3_000;
     static readonly #MAX_REFRESH_RETRIES = 2;
@@ -189,8 +212,11 @@ export class UserService {
         this.#clearRefreshTimer();
         if (!isBrowser()) return;
         const claims = this.authInfo?.claims;
-        const refreshToken = getRefreshTokenCookie();
-        if (!claims?.exp || !refreshToken) return;
+        // Whether a refresh token actually exists is no longer something JS can
+        // see (it's an HttpOnly cookie) -- /api/auth/refresh is the source of
+        // truth for that; a missing/expired refresh cookie just makes the
+        // scheduled attempt fail, which #handleRefreshFailure resolves via logout().
+        if (!claims?.exp) return;
         const delay = Math.max(0, claims.exp * 1000 - Date.now() - UserService.#REFRESH_MARGIN_MS);
         this.#refreshTimer = setTimeout(() => {
             this.#refreshAccessTokenCoordinated();
@@ -243,44 +269,40 @@ export class UserService {
     }
 
     async #refreshAccessToken(retryCount = 0) {
-        const refreshToken = getRefreshTokenCookie();
-        if (!refreshToken) return;
         try {
-            const res = await HttpService.client.refreshWithIdentityPlatform({ refreshToken });
-            if (isSuccess(res)) {
-                setAuthJWTCookie(res.data.accessToken);
-                setRefreshTokenCookie(res.data.refreshToken);
-                this.#setAuthInfo(res.data.accessToken);
+            const res = await fetch("/api/auth/refresh", { method: "POST", credentials: "same-origin" });
+            if (res.ok) {
+                const data = await res.json() as { accessToken: string };
+                setAuthJWTCookie(data.accessToken);
+                this.#setAuthInfo(data.accessToken);
                 this.#scheduleRefresh();
             } else {
-                await this.#handleRefreshFailure(refreshToken, retryCount);
+                await this.#handleRefreshFailure(retryCount);
             }
         } catch (e) {
             console.warn('[UserService.refreshAccessToken] refresh attempt failed', e);
-            await this.#handleRefreshFailure(refreshToken, retryCount);
+            await this.#handleRefreshFailure(retryCount);
         }
     }
 
-    // A failed refresh is not necessarily a dead session. Two recoverable
-    // cases: another open tab may have already rotated the (origin-shared)
-    // refresh-token cookie -- Identity-Platform invalidates the old token
-    // the instant any tab's rotation succeeds, so if the cookie no longer
-    // matches what we just sent, a sibling tab won the race and we can
-    // retry immediately with its fresh value; or the failure was a plain
-    // transient network blip, worth one delayed retry. Only give up and
-    // log out once retries are exhausted or the access token has actually
-    // expired -- logging out immediately on the first failure would tear
-    // down every tab's session over an ordinary multi-tab race.
-    async #handleRefreshFailure(attemptedRefreshToken: string, retryCount: number) {
+    // A failed refresh is not necessarily a dead session: it may be a sibling
+    // tab that already rotated the (HttpOnly, origin-shared) refresh cookie,
+    // or a plain transient network blip -- either way worth one delayed
+    // retry. The retry re-enters #refreshAccessTokenCoordinated, whose
+    // #adoptCookieIfFresh() check picks up a sibling's already-rotated JWT
+    // cookie without hitting the network again. Only give up and log out
+    // once retries are exhausted or the access token has actually expired --
+    // logging out immediately on the first failure would tear down every
+    // tab's session over an ordinary multi-tab race.
+    async #handleRefreshFailure(retryCount: number) {
         const exp = this.authInfo?.claims?.exp;
         const stillValid = Boolean(exp) && exp! * 1000 > Date.now();
         const canRetry = stillValid && retryCount < UserService.#MAX_REFRESH_RETRIES;
         if (canRetry) {
-            const siblingAlreadyRotated = getRefreshTokenCookie() !== attemptedRefreshToken;
             this.#clearRefreshTimer();
             this.#refreshTimer = setTimeout(() => {
                 this.#refreshAccessTokenCoordinated(retryCount + 1);
-            }, siblingAlreadyRotated ? 0 : UserService.#REFRESH_RETRY_DELAY_MS);
+            }, UserService.#REFRESH_RETRY_DELAY_MS);
             return;
         }
         await this.logout();
