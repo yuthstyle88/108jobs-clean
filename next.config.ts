@@ -120,6 +120,29 @@ const nextConfig: NextConfig = {
     // re-fetch it across page reloads or dev-server restarts, silently serving
     // old code while the source and compiled output were both already correct.
     async headers() {
+        // Same-origin browser API calls only ever hit our own /api/* routes; the
+        // one cross-origin exception is direct calls to NEXT_PUBLIC_API_BASE_URL
+        // made by the generated 108jobs-client (login, register, refresh handoff,
+        // etc.), so connect-src has to allow that origin explicitly.
+        const apiOrigin = (() => {
+            try {
+                return new URL(process.env.NEXT_PUBLIC_API_BASE_URL ?? '').origin;
+            } catch {
+                return '';
+            }
+        })();
+        const csp = [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline'",
+            "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data: https://cdn.108jobs.com",
+            "font-src 'self' data:",
+            `connect-src ${["'self'", apiOrigin].filter(Boolean).join(' ')}`,
+            "frame-ancestors 'none'",
+            "base-uri 'self'",
+            "form-action 'self'",
+        ].join('; ');
+
         return [
             ...(process.env.NODE_ENV === 'production' ? [{
                 source: '/_next/static/:path*',
@@ -134,17 +157,30 @@ const nextConfig: NextConfig = {
                     { key: 'Content-Type', value: 'application/wasm' },
                 ],
             },
+            {
+                source: '/(.*)',
+                headers: [
+                    { key: 'Content-Security-Policy', value: csp },
+                ],
+            },
         ];
     },
     // Rewrites to backend/CDN (replace env as needed)
     async rewrites() {
+        // Fail closed: an unset API_INTERNAL_URL in production must not silently
+        // route real traffic to the staging backend.
+        if (!process.env.API_INTERNAL_URL && process.env.NODE_ENV === 'production') {
+            throw new Error('API_INTERNAL_URL must be set in production (refusing to fall back to the staging backend)');
+        }
         const apiBase = process.env.API_INTERNAL_URL ?? 'https://api-staging.108jobs.com';
         return {
-            // Ensure filesystem route `/api/session` wins before any proxying
+            // Ensure these filesystem routes win before any proxying
             beforeFiles: [
                 { source: '/session', destination: '/api/session' },
                 { source: '/:lang(th|en|vi)/session', destination: '/api/session' },
                 { source: '/api/session', destination: '/api/session' },
+                { source: '/api/auth/session', destination: '/api/auth/session' },
+                { source: '/api/auth/refresh', destination: '/api/auth/refresh' },
             ],
             // Proxy other API routes and static uploads
             afterFiles: [

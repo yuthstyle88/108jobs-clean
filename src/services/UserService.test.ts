@@ -44,6 +44,14 @@ describe("UserService profile hydration", () => {
   });
 });
 
+function jsonResponse(body: unknown, init?: ResponseInit): Response {
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+    ...init,
+  });
+}
+
 describe("UserService refresh scheduling", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -51,16 +59,17 @@ describe("UserService refresh scheduling", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it("schedules exactly one refresh call after login, firing before the token's expiry", async () => {
     vi.spyOn(HttpService, "client", "get").mockReturnValue({
       getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
-      refreshWithIdentityPlatform: vi.fn().mockResolvedValue({
-        state: "success",
-        data: { accessToken: "new-token", refreshToken: "new-refresh", expiresIn: 3600 },
-      }),
     } as any);
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({})) // /api/auth/session from login()
+      .mockResolvedValueOnce(jsonResponse({ accessToken: "new-token", expiresIn: 3600 })); // /api/auth/refresh
+    vi.stubGlobal("fetch", fetchMock);
 
     const nowSeconds = Math.floor(Date.now() / 1000);
     const header = { alg: "none" };
@@ -70,45 +79,65 @@ describe("UserService refresh scheduling", () => {
 
     await UserService.Instance.login(fakeJwt, "a-refresh-token");
 
-    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
-    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith("/api/auth/session", expect.objectContaining({
+      method: "POST",
+      body: JSON.stringify({ refreshToken: "a-refresh-token" }),
+    }));
 
     // Token expires in 120s from "now"; REFRESH_MARGIN_MS is 60s, so the
     // timer should fire at ~60s, well before the full 120s.
     await vi.advanceTimersByTimeAsync(61_000);
 
-    expect(refreshSpy).toHaveBeenCalledTimes(1);
-    expect(refreshSpy).toHaveBeenCalledWith({ refreshToken: "a-refresh-token" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenNthCalledWith(2, "/api/auth/refresh", expect.objectContaining({ method: "POST" }));
+    expect(getAuthJWTCookie()).toBe("new-token");
   });
 
-  it("does not schedule a refresh when no refreshToken is provided", async () => {
+  it("does not persist a refresh cookie when no refreshToken is provided (e.g. OAuth login), but still attempts -- and fails closed via logout -- off the JWT's own exp", async () => {
     vi.spyOn(HttpService, "client", "get").mockReturnValue({
       getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
-      refreshWithIdentityPlatform: vi.fn(),
+      logout: vi.fn().mockResolvedValue({ state: "success" }),
     } as any);
+    // No refresh cookie exists server-side either, so every /api/auth/refresh 401s.
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ error: "no_refresh_token" }, { status: 401 }));
+    vi.stubGlobal("fetch", fetchMock);
 
-    await UserService.Instance.login("some-token-without-refresh");
-    await vi.advanceTimersByTimeAsync(10 * 60 * 1000);
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    const header = { alg: "none" };
+    const payload = { sub: "1", iss: "auth-service", aud: "jobs", exp: nowSeconds + 120, iat: nowSeconds, roles: ["user"], realm: "r", platform: "p", tenant_id: "t" };
+    const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString("base64url");
+    const fakeJwt = `${b64(header)}.${b64(payload)}.sig`;
 
-    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
-    expect(refreshSpy).not.toHaveBeenCalled();
+    await UserService.Instance.login(fakeJwt);
+
+    // login() never called /api/auth/session since there's no refresh token.
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    // A refresh attempt is still scheduled off the JWT's own exp, unlike the
+    // old design where an absent refresh-token cookie skipped scheduling
+    // entirely. It 401s (no server-side refresh cookie either), retries
+    // twice, then logs out -- a clean end state rather than a session that
+    // silently goes stale. logout() itself makes one more fetch call (DELETE
+    // /api/auth/session) on top of the 3 failed refresh attempts.
+    await vi.advanceTimersByTimeAsync(61_000 + 3_000 + 3_000);
+
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(fetchMock).toHaveBeenLastCalledWith("/api/auth/session", expect.objectContaining({ method: "DELETE" }));
+    expect(UserService.Instance.authInfo).toBeUndefined();
   });
 
   it("re-arms the refresh timer from setToken(), the page-reload rehydration path", async () => {
     vi.spyOn(HttpService, "client", "get").mockReturnValue({
       getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
-      refreshWithIdentityPlatform: vi.fn().mockResolvedValue({
-        state: "success",
-        data: { accessToken: "new-token", refreshToken: "new-refresh", expiresIn: 3600 },
-      }),
     } as any);
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ accessToken: "new-token", expiresIn: 3600 }));
+    vi.stubGlobal("fetch", fetchMock);
 
     // setToken() is called by UserServiceContext on every app mount/reload,
     // reading the access-token cookie back into memory -- it must re-arm the
-    // refresh timer the same way login() does, using the refresh-token cookie
-    // that a prior login() already left in place.
-    document.cookie = "refresh_token=a-refresh-token; path=/;";
-
+    // refresh timer the same way login() does. The refresh token itself now
+    // lives server-side only (HttpOnly cookie), invisible to this test.
     const nowSeconds = Math.floor(Date.now() / 1000);
     const header = { alg: "none" };
     const payload = { sub: "1", iss: "auth-service", aud: "jobs", exp: nowSeconds + 120, iat: nowSeconds, roles: ["user"], realm: "r", platform: "p", tenant_id: "t" };
@@ -117,27 +146,24 @@ describe("UserService refresh scheduling", () => {
 
     await UserService.Instance.setToken(fakeJwt);
 
-    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
-    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
 
     await vi.advanceTimersByTimeAsync(61_000);
 
-    expect(refreshSpy).toHaveBeenCalledTimes(1);
-    expect(refreshSpy).toHaveBeenCalledWith({ refreshToken: "a-refresh-token" });
-
-    document.cookie = "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith("/api/auth/refresh", expect.objectContaining({ method: "POST" }));
+    expect(getAuthJWTCookie()).toBe("new-token");
   });
 
   it("retries once after a failed refresh while the access token is still valid, and succeeds without logging out", async () => {
     vi.spyOn(HttpService, "client", "get").mockReturnValue({
       getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
-      refreshWithIdentityPlatform: vi.fn()
-        .mockRejectedValueOnce(new Error("network blip"))
-        .mockResolvedValueOnce({
-          state: "success",
-          data: { accessToken: "new-token", refreshToken: "new-refresh", expiresIn: 3600 },
-        }),
     } as any);
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({})) // /api/auth/session from login()
+      .mockRejectedValueOnce(new Error("network blip")) // first /api/auth/refresh attempt
+      .mockResolvedValueOnce(jsonResponse({ accessToken: "new-token", expiresIn: 3600 })); // retry succeeds
+    vi.stubGlobal("fetch", fetchMock);
 
     const nowSeconds = Math.floor(Date.now() / 1000);
     const header = { alg: "none" };
@@ -146,23 +172,21 @@ describe("UserService refresh scheduling", () => {
     const fakeJwt = `${b64(header)}.${b64(payload)}.sig`;
 
     await UserService.Instance.login(fakeJwt, "a-refresh-token");
-
-    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
-    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
 
     // First attempt fires at ~60s and fails (network blip). The access token
     // still has ~60s of life left, so this must NOT trigger a logout -- it
     // should instead schedule a retry.
     await vi.advanceTimersByTimeAsync(61_000);
 
-    expect(refreshSpy).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(UserService.Instance.authInfo).toBeDefined();
     expect(UserService.Instance.authInfo?.claims?.exp).toBe(payload.exp);
 
     // Retry fires 3s later and succeeds.
     await vi.advanceTimersByTimeAsync(3_000);
 
-    expect(refreshSpy).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(UserService.Instance.authInfo).toBeDefined();
     expect(getAuthJWTCookie()).toBe("new-token");
   });
@@ -171,8 +195,11 @@ describe("UserService refresh scheduling", () => {
     vi.spyOn(HttpService, "client", "get").mockReturnValue({
       getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
       logout: vi.fn().mockResolvedValue({ state: "success" }),
-      refreshWithIdentityPlatform: vi.fn().mockRejectedValue(new Error("network blip")),
     } as any);
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({})) // /api/auth/session from login()
+      .mockRejectedValue(new Error("network blip")); // every /api/auth/refresh attempt
+    vi.stubGlobal("fetch", fetchMock);
 
     const nowSeconds = Math.floor(Date.now() / 1000);
     const header = { alg: "none" };
@@ -181,47 +208,46 @@ describe("UserService refresh scheduling", () => {
     const fakeJwt = `${b64(header)}.${b64(payload)}.sig`;
 
     await UserService.Instance.login(fakeJwt, "a-refresh-token");
-
-    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
-    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
 
     // Original attempt at ~60s fails.
     await vi.advanceTimersByTimeAsync(61_000);
 
-    expect(refreshSpy).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(UserService.Instance.authInfo).toBeDefined();
 
     // First retry (+3s) also fails. retryCount was 0, still < MAX_REFRESH_RETRIES=2,
     // so another retry is scheduled instead of giving up.
     await vi.advanceTimersByTimeAsync(3_000);
 
-    expect(refreshSpy).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(UserService.Instance.authInfo).toBeDefined();
 
     // Second retry (+3s) also fails. retryCount was 1, now == MAX_REFRESH_RETRIES=2,
-    // so retries are exhausted and logout() is called.
+    // so retries are exhausted and logout() is called -- one more fetch call
+    // (DELETE /api/auth/session) on top of the 3 refresh attempts.
     await vi.advanceTimersByTimeAsync(3_000);
 
-    expect(refreshSpy).toHaveBeenCalledTimes(3);
+    expect(fetchMock).toHaveBeenCalledTimes(5);
+    expect(fetchMock).toHaveBeenLastCalledWith("/api/auth/session", expect.objectContaining({ method: "DELETE" }));
     expect(UserService.Instance.authInfo).toBeUndefined();
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it("detects a sibling tab's already-rotated refresh token and retries immediately instead of waiting", async () => {
+  it("adopts a sibling tab's already-rotated JWT cookie on retry instead of hitting the network again", async () => {
     vi.spyOn(HttpService, "client", "get").mockReturnValue({
       getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
-      refreshWithIdentityPlatform: vi.fn()
-        .mockImplementationOnce(async () => {
-          // Simulates a sibling tab's rotation landing in the shared cookie
-          // at roughly the same moment this tab's own request is rejected.
-          document.cookie = "refresh_token=rt-from-sibling; path=/;";
-          throw new Error("refresh_token_reuse");
-        })
-        .mockResolvedValueOnce({
-          state: "success",
-          data: { accessToken: "sibling-rotated-token", refreshToken: "sibling-rotated-refresh", expiresIn: 3600 },
-        }),
     } as any);
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({})) // /api/auth/session from login()
+      .mockImplementationOnce(async () => {
+        // Simulates a sibling tab completing its own rotation (and writing
+        // the shared, still-readable JWT cookie) at roughly the same moment
+        // this tab's own refresh call is rejected.
+        setAuthJWTCookie(makeFreshJwtCookie());
+        throw new Error("refresh_token_reuse");
+      });
+    vi.stubGlobal("fetch", fetchMock);
 
     const nowSeconds = Math.floor(Date.now() / 1000);
     const header = { alg: "none" };
@@ -229,24 +255,24 @@ describe("UserService refresh scheduling", () => {
     const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString("base64url");
     const fakeJwt = `${b64(header)}.${b64(payload)}.sig`;
 
+    function makeFreshJwtCookie() {
+      const freshPayload = { ...payload, exp: nowSeconds + 10_000 };
+      return `${b64(header)}.${b64(freshPayload)}.sig`;
+    }
+
     await UserService.Instance.login(fakeJwt, "rt-original");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
 
-    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
-
-    // Token expires in 120s; REFRESH_MARGIN_MS is 60s, so the initial refresh
-    // fires at ~60s. Its failure handler detects the sibling-rotated cookie
-    // and schedules the retry with a 0ms delay, so the retry runs within this
-    // same advance (a 0ms timer gets no separate time budget to wait out) --
-    // the sequence of calls, rather than an intermediate call count, is what
-    // proves the retry fired immediately rather than after the fixed delay.
+    // Initial refresh fires at ~60s, fails, and a sibling's fresh JWT cookie
+    // lands during that failure. The 3s-later retry must adopt it via
+    // #adoptCookieIfFresh() instead of calling /api/auth/refresh again.
     await vi.advanceTimersByTimeAsync(61_000);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
 
-    expect(refreshSpy).toHaveBeenCalledTimes(2);
-    expect(refreshSpy).toHaveBeenNthCalledWith(1, { refreshToken: "rt-original" });
-    expect(refreshSpy).toHaveBeenNthCalledWith(2, { refreshToken: "rt-from-sibling" });
-    expect(UserService.Instance.authInfo).toBeDefined();
+    await vi.advanceTimersByTimeAsync(3_000);
 
-    document.cookie = "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    expect(fetchMock).toHaveBeenCalledTimes(2); // no third call -- adopted instead
+    expect(UserService.Instance.authInfo?.claims?.exp).toBe(nowSeconds + 10_000);
   });
 });
 
@@ -266,6 +292,7 @@ describe("UserService refresh scheduling with Web Locks", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
     // @ts-expect-error -- test-only stub; real jsdom has no `locks` property
     delete navigator.locks;
   });
@@ -273,8 +300,9 @@ describe("UserService refresh scheduling with Web Locks", () => {
   it("adopts an already-fresh cookie without calling the network", async () => {
     vi.spyOn(HttpService, "client", "get").mockReturnValue({
       getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
-      refreshWithIdentityPlatform: vi.fn(),
     } as any);
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({}));
+    vi.stubGlobal("fetch", fetchMock);
 
     const nowSeconds = Math.floor(Date.now() / 1000);
     const header = { alg: "none" };
@@ -287,29 +315,28 @@ describe("UserService refresh scheduling with Web Locks", () => {
     // Schedules a refresh at ~60s (exp is 120s out, REFRESH_MARGIN_MS is 60s).
     const staleJwt = makeJwt(nowSeconds + 120);
     await UserService.Instance.login(staleJwt, "a-refresh-token");
+    expect(fetchMock).toHaveBeenCalledTimes(1); // just the /api/auth/session call from login()
 
     // Simulate a sibling tab completing a refresh in the meantime: overwrite
     // the access-token cookie with a fresh one, well outside REFRESH_MARGIN_MS.
     const freshJwt = makeJwt(nowSeconds + 10_000);
     setAuthJWTCookie(freshJwt);
 
-    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
-
     await vi.advanceTimersByTimeAsync(61_000);
 
     expect(mockLocksRequest).toHaveBeenCalled();
-    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1); // no /api/auth/refresh call
     expect(UserService.Instance.authInfo?.claims?.exp).toBe(nowSeconds + 10_000);
   });
 
   it("performs the real refresh under the lock when the cookie is still near-expiry, invoking the Locks API with the expected name", async () => {
     vi.spyOn(HttpService, "client", "get").mockReturnValue({
       getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
-      refreshWithIdentityPlatform: vi.fn().mockResolvedValue({
-        state: "success",
-        data: { accessToken: "new-token", refreshToken: "new-refresh", expiresIn: 3600 },
-      }),
     } as any);
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({})) // /api/auth/session from login()
+      .mockResolvedValueOnce(jsonResponse({ accessToken: "new-token", expiresIn: 3600 }));
+    vi.stubGlobal("fetch", fetchMock);
 
     const nowSeconds = Math.floor(Date.now() / 1000);
     const header = { alg: "none" };
@@ -318,28 +345,25 @@ describe("UserService refresh scheduling with Web Locks", () => {
     const fakeJwt = `${b64(header)}.${b64(payload)}.sig`;
 
     await UserService.Instance.login(fakeJwt, "a-refresh-token");
-
-    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
-    expect(refreshSpy).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
 
     await vi.advanceTimersByTimeAsync(61_000);
 
     expect(mockLocksRequest).toHaveBeenCalledTimes(1);
     expect(mockLocksRequest).toHaveBeenCalledWith("108jobs-refresh-token-lock", expect.any(Function));
-    expect(refreshSpy).toHaveBeenCalledTimes(1);
-    expect(refreshSpy).toHaveBeenCalledWith({ refreshToken: "a-refresh-token" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenNthCalledWith(2, "/api/auth/refresh", expect.objectContaining({ method: "POST" }));
   });
 
   it("routes the retry back through the lock instead of calling #refreshAccessToken directly", async () => {
     vi.spyOn(HttpService, "client", "get").mockReturnValue({
       getMyUser: vi.fn().mockResolvedValue({ state: "failed" }),
-      refreshWithIdentityPlatform: vi.fn()
-        .mockRejectedValueOnce(new Error("network blip"))
-        .mockResolvedValueOnce({
-          state: "success",
-          data: { accessToken: "new-token", refreshToken: "new-refresh", expiresIn: 3600 },
-        }),
     } as any);
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({})) // /api/auth/session from login()
+      .mockRejectedValueOnce(new Error("network blip"))
+      .mockResolvedValueOnce(jsonResponse({ accessToken: "new-token", expiresIn: 3600 }));
+    vi.stubGlobal("fetch", fetchMock);
 
     const nowSeconds = Math.floor(Date.now() / 1000);
     const header = { alg: "none" };
@@ -349,13 +373,11 @@ describe("UserService refresh scheduling with Web Locks", () => {
 
     await UserService.Instance.login(fakeJwt, "a-refresh-token");
 
-    const refreshSpy = HttpService.client.refreshWithIdentityPlatform as ReturnType<typeof vi.fn>;
-
     // Initial attempt at ~60s fails (network blip), acquiring the lock once.
     await vi.advanceTimersByTimeAsync(61_000);
 
     expect(mockLocksRequest).toHaveBeenCalledTimes(1);
-    expect(refreshSpy).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
 
     // Retry fires 3s later. It must ALSO acquire the lock -- not call
     // #refreshAccessToken directly, unlocked -- which is exactly the bug
@@ -363,7 +385,7 @@ describe("UserService refresh scheduling with Web Locks", () => {
     await vi.advanceTimersByTimeAsync(3_000);
 
     expect(mockLocksRequest).toHaveBeenCalledTimes(2);
-    expect(refreshSpy).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(UserService.Instance.authInfo).toBeDefined();
   });
 });
