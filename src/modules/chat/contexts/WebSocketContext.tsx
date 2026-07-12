@@ -13,6 +13,10 @@ import {PhoenixSenderAdapter} from '@/modules/chat/adapters/PhoenixSenderAdapter
 // ========================= Context Layer =======================
 interface WebSocketContextValue extends WebSocketAPI {
   sender: PhoenixSenderAdapter | null;
+  // The raw phoenix.js Channel (adapter.channel) surfaced at top level so
+  // consumers like PhoenixChatBridgeProvider's pickChannel() can find it
+  // via ws.channel without reaching into ws.adapter.channel themselves.
+  channel?: any;
 }
 
 const WebSocketContext = createContext<WebSocketContextValue | undefined>(undefined);
@@ -27,6 +31,11 @@ export const WebSocketProvider: React.FC<React.PropsWithChildren<{ options?: Use
   const value = React.useMemo(() => {
     const anyWs: any = ws as any;
     const adapter: any = anyWs?.adapter ?? null;
+    // Raw phoenix.js Channel (has real .on()/.off()/.push()), as opposed to
+    // `adapter` itself which is the WebSocket-style wrapper built by
+    // getChannelAdapter (single-slot onopen/onmessage/... callbacks plus
+    // fire-and-forget send/emit -- no .on()).
+    const channel: any = adapter?.channel ?? null;
 
     // Normalized readiness: prefer adapter.isReady, fall back to legacy ws.isReady
     const isReady: boolean = Boolean(adapter?.isReady ?? anyWs?.isReady);
@@ -56,6 +65,7 @@ export const WebSocketProvider: React.FC<React.PropsWithChildren<{ options?: Use
     return {
       ...anyWs,
       adapter,
+      channel,
       sender,
       isReady,
       addMessageListener,

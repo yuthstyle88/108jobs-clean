@@ -49,6 +49,15 @@ export interface WebSocketAPI {
     isReady: boolean;
     topic?: string;
 
+    // The channel adapter currently built for this connection (see
+    // PhoenixSocketService.getChannelAdapter), or null when not connected.
+    // Reflects the current adapterRef.current across reconnects: it's
+    // re-read from the return statement below on every render, and adapter
+    // changes are always accompanied by a status/topic state update (see
+    // connect()/scheduleReconnect()), so it stays current the same way
+    // status/topic already do.
+    adapter?: any;
+
     // ควบคุมการเชื่อมต่อ/เข้าช่อง
     connect: () => void;
     disconnect: () => void;
@@ -577,6 +586,7 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
         status,
         isReady: status === 'connected',
         topic,
+        adapter: adapterRef.current,
         connect,
         disconnect,
         join,
