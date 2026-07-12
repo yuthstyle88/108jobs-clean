@@ -48,7 +48,14 @@ export class PhoenixSenderAdapter implements ChatSenderAdapter {
         // phoenix.js มาตรฐาน: push(event, payload).receive('ok'|'error'...)
         return await new Promise<string | false>((resolve) => {
           try {
-            ch.push(event, safePayload)
+            // Push exactly ONCE and reuse the single result both to chain
+            // .receive(...) and to check whether .receive exists. Calling
+            // ch.push() a second time here would send the message over the
+            // wire again -- it's a real network send, not an idempotent
+            // getter (see Bug B regression test).
+            const pushResult = ch.push(event, safePayload);
+
+            pushResult
               ?.receive?.('ok', (resp: any) => {
                 // If backend returns {id: "..."} or {message: {id: "..."}}
                 const serverId = resp?.id ?? resp?.message?.id ?? resp?.msgRefId ?? clientId;
@@ -56,9 +63,9 @@ export class PhoenixSenderAdapter implements ChatSenderAdapter {
               })
               ?.receive?.('error', (_err: any) => resolve(false))
               ?.receive?.('timeout', () => resolve(false));
-            
+
             // If no receive method (unlikely for PhoenixChannel, but for safety)
-            if (typeof ch.push(event, safePayload).receive !== 'function') {
+            if (typeof pushResult?.receive !== 'function') {
                 setTimeout(() => resolve(String(clientId ?? '')), 0);
             }
           } catch (_e) {

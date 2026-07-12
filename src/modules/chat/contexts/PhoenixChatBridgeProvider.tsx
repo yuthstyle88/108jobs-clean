@@ -222,6 +222,12 @@ export const PhoenixChatBridgeProvider: React.FC<WebSocketProviderProps> = ({chi
     useEffect(() => {
         if(!ws) return;
         const ch = pickChannel(ws, roomId);
+        // No dead ws.on(...) fallback here: `ws` (the WebSocketContext
+        // value) never has an `.on` method -- only the real channel
+        // resolved by pickChannel does -- so a fallback branch trying
+        // ws.on?.(...) can never attach a listener. Bail out instead of
+        // leaving code that can never work.
+        if(!ch || typeof ch.on !== "function") return;
 
         const toAck = (raw: any) => {
             try {
@@ -238,45 +244,24 @@ export const PhoenixChatBridgeProvider: React.FC<WebSocketProviderProps> = ({chi
             }
         };
 
-        if(ch && typeof ch.on === "function") {
-            try {
-                ch.on("chat:message", toAck);
-            } catch {
-            }
-            try {
-                ch.on("forward", toAck);
-            } catch {
-            }
-            return () => {
-                try {
-                    ch.off?.("chat:message", toAck);
-                } catch {
-                }
-                try {
-                    ch.off?.("forward", toAck);
-                } catch {
-                }
-            };
-        } else {
-            try {
-                ws.on?.("chat:message", toAck);
-            } catch {
-            }
-            try {
-                ws.on?.("forward", toAck);
-            } catch {
-            }
-            return () => {
-                try {
-                    ws.off?.("chat:message", toAck);
-                } catch {
-                }
-                try {
-                    ws.off?.("forward", toAck);
-                } catch {
-                }
-            };
+        try {
+            ch.on("chat:message", toAck);
+        } catch {
         }
+        try {
+            ch.on("forward", toAck);
+        } catch {
+        }
+        return () => {
+            try {
+                ch.off?.("chat:message", toAck);
+            } catch {
+            }
+            try {
+                ch.off?.("forward", toAck);
+            } catch {
+            }
+        };
     }, [ws, roomId]);
 
     // Inbound: messageNack -> mark the message failed and arm ResendManager's
@@ -288,6 +273,12 @@ export const PhoenixChatBridgeProvider: React.FC<WebSocketProviderProps> = ({chi
     useEffect(() => {
         if(!ws) return;
         const ch = pickChannel(ws, roomId);
+        // No dead ws.on(...) fallback here: `ws` (the WebSocketContext
+        // value) never has an `.on` method -- only the real channel
+        // resolved by pickChannel does -- so a fallback branch trying
+        // ws.on?.(...) can never attach a listener. Bail out instead of
+        // leaving code that can never work.
+        if(!ch || typeof ch.on !== "function") return;
 
         const toNack = (raw: any) => {
             try {
@@ -299,29 +290,16 @@ export const PhoenixChatBridgeProvider: React.FC<WebSocketProviderProps> = ({chi
             }
         };
 
-        if(ch && typeof ch.on === "function") {
-            try {
-                ch.on(WS_EVENT.MessageNack, toNack);
-            } catch {
-            }
-            return () => {
-                try {
-                    ch.off?.(WS_EVENT.MessageNack, toNack);
-                } catch {
-                }
-            };
-        } else {
-            try {
-                ws.on?.(WS_EVENT.MessageNack, toNack);
-            } catch {
-            }
-            return () => {
-                try {
-                    ws.off?.(WS_EVENT.MessageNack, toNack);
-                } catch {
-                }
-            };
+        try {
+            ch.on(WS_EVENT.MessageNack, toNack);
+        } catch {
         }
+        return () => {
+            try {
+                ch.off?.(WS_EVENT.MessageNack, toNack);
+            } catch {
+            }
+        };
     }, [ws, roomId, store]);
 
     // Promote in store when AckMatcher confirms a clientId

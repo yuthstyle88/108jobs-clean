@@ -5,6 +5,7 @@
  * - Just connect → join → forward → push/emit/close
  */
 import {Socket as PhoenixSocket} from "phoenix";
+import type {Channel as PhoenixRawChannel} from "phoenix";
 import {buildActixWsUrl} from "@/modules/chat/utils/chatSocketUtils";
 import { WS_EVENT } from "@/modules/chat/protocol/wireEvents";
 
@@ -23,6 +24,15 @@ export interface RealtimeChannelAdapter {
     startHeartbeat?: (intervalMs: number) => void;
     stopHeartbeat?: () => void;
     close: () => void;
+    /**
+     * The underlying real phoenix.js Channel instance backing this adapter.
+     * Exposed so consumers that need real channel-level event subscription
+     * (`.on()`/`.off()`) and ack-aware pushes (`.push()` returning a
+     * chainable Push) -- e.g. PhoenixChatBridgeProvider's pickChannel --
+     * can reach it. This adapter's own `send`/`emit` are fire-and-forget
+     * (no ack), so they are not a substitute for this field.
+     */
+    channel?: PhoenixRawChannel;
 }
 
 const DEV = typeof process !== "undefined" && process.env.NODE_ENV !== "production";
@@ -57,6 +67,7 @@ export function getChannelAdapter(token: string, topic: string, roomId: string, 
         onmessage: undefined,
         onclose: undefined,
         onerror: undefined,
+        channel: ch,
         send(data: string | Record<string, any>) {
             try {
                 const payload = typeof data === "string" ? JSON.parse(data) : data;
