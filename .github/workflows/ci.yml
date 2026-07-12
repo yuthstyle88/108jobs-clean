@@ -38,10 +38,16 @@ jobs:
       # which isn't declared as one of its dependencies -- tsc still emits
       # working dist/ output despite that one error (confirmed directly),
       # so this doesn't block anything the root app actually needs.
+      # This sub-package pins its OWN pnpm version (10.13.1, vs. the root's
+      # 8.15.4) via its package.json's packageManager field -- its lockfile
+      # (lockfileVersion '9.0') is unreadable by the job-wide pnpm 8.15.4
+      # from pnpm/action-setup above, which silently discards it as "not
+      # compatible" and then fails as if no lockfile existed at all. Invoke
+      # its own pinned version via corepack instead of the job's pnpm on PATH.
       - name: Install 108jobs-client sub-package dependencies
         working-directory: src/lib/108jobs-client
         continue-on-error: true
-        run: pnpm install --frozen-lockfile
+        run: corepack pnpm@10.13.1 install --frozen-lockfile
 
       - run: pnpm install --frozen-lockfile
 
@@ -80,7 +86,7 @@ jobs:
       - name: Install 108jobs-client sub-package dependencies
         working-directory: src/lib/108jobs-client
         continue-on-error: true
-        run: pnpm install --frozen-lockfile
+        run: corepack pnpm@10.13.1 install --frozen-lockfile
 
       - run: pnpm install --frozen-lockfile
 
