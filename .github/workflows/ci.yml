@@ -26,6 +26,23 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      # src/lib/108jobs-client is a standalone package (own package.json/
+      # pnpm-lock.yaml/node_modules, not a pnpm workspace member) that the
+      # root install links via a file: dependency but does NOT install the
+      # dependencies of. Its own `prepare` script (triggered by the root
+      # install below) needs those already in place to build successfully --
+      # confirmed directly: without this step, the root install's dist/
+      # output for 108jobs-client never gets produced on a fresh checkout,
+      # and every file importing it fails with "Cannot find module".
+      # continue-on-error: its own src/http.test.ts references `vitest`,
+      # which isn't declared as one of its dependencies -- tsc still emits
+      # working dist/ output despite that one error (confirmed directly),
+      # so this doesn't block anything the root app actually needs.
+      - name: Install 108jobs-client sub-package dependencies
+        working-directory: src/lib/108jobs-client
+        continue-on-error: true
+        run: pnpm install --frozen-lockfile
+
       - run: pnpm install --frozen-lockfile
 
       # Non-blocking: 122 pre-existing errors exist (mostly react-hooks/react-compiler
@@ -58,6 +75,12 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+
+      # See the equivalent step in the lint-typecheck-test job -- same reason.
+      - name: Install 108jobs-client sub-package dependencies
+        working-directory: src/lib/108jobs-client
+        continue-on-error: true
+        run: pnpm install --frozen-lockfile
 
       - run: pnpm install --frozen-lockfile
 
