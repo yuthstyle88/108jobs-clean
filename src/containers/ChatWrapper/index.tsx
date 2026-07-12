@@ -64,7 +64,7 @@ const ChatWrapper: React.FC = () => {
         debouncedSetSearchQuery(e.target.value);
     };
 
-    const {data: moreRoomsRes, state: moreRoomsState, execute: fetchMore} = useHttpGet("listChatRooms", [{
+    const {execute: fetchMore} = useHttpGet("listChatRooms", [{
         pageCursor: nextPage || undefined,
         limit: 20
     }], {
@@ -75,25 +75,14 @@ const ChatWrapper: React.FC = () => {
     const handleLoadMore = async () => {
         if (isFetchingMore || !nextPage) return;
         setIsFetchingMore(true);
-        await fetchMore();
-    };
-
-    const lastProcessedCursorRef = useRef<string | null>(null);
-
-    useEffect(() => {
-        if (moreRoomsState.state === REQUEST_STATE.SUCCESS && moreRoomsRes) {
-            const currentCursor = nextPage || "initial";
-            if (lastProcessedCursorRef.current === currentCursor) return;
-            lastProcessedCursorRef.current = currentCursor;
-
-            const mappedRooms = (moreRoomsRes.rooms || []).map(r => ({...r, isActive: false}));
+        const result = await fetchMore();
+        if (result?.state === REQUEST_STATE.SUCCESS) {
+            const mappedRooms = (result.data.rooms || []).map(r => ({...r, isActive: false}));
             appendRooms(mappedRooms as RoomView[]);
-            setPagination(moreRoomsRes.nextPage || null);
-            setIsFetchingMore(false);
-        } else if (moreRoomsState.state === REQUEST_STATE.FAILED) {
-            setIsFetchingMore(false);
+            setPagination(result.data.nextPage || null);
         }
-    }, [moreRoomsRes, moreRoomsState.state, appendRooms, setPagination, nextPage]);
+        setIsFetchingMore(false);
+    };
 
     // Automatic load more on scroll
     useEffect(() => {

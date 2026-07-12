@@ -32,11 +32,20 @@ export default function TotpModal({
     const [pending, setPending] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // Reset & focus input when modal opens
-    useEffect(() => {
+    // Reset form state synchronously during render when the modal transitions
+    // from closed to open (React docs: "Adjusting some state when a prop changes").
+    const [prevShow, setPrevShow] = useState(show);
+    if (show !== prevShow) {
+        setPrevShow(show);
         if (show) {
             setTotp("");
             setAgreeChecked(false);
+        }
+    }
+
+    // Focus input when modal opens
+    useEffect(() => {
+        if (show) {
             setTimeout(() => inputRef.current?.focus(), 150);
         }
     }, [show]);

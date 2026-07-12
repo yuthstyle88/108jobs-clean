@@ -145,49 +145,49 @@ export const usePortfolioImagesForm = ({
     );
 
     // Save portfolio images to server
-    const savePortfolioImages = useCallback(
-        async (portfolioImages: PortfolioPic[], action: 'addImage' | 'updateImage' | 'deleteImage') => {
-            try {
-                if (!person) return false;
+    const savePortfolioImages = async (
+        portfolioImages: PortfolioPic[],
+        action: 'addImage' | 'updateImage' | 'deleteImage',
+    ) => {
+        try {
+            if (!person) return false;
 
-                const payload: SaveUserSettings = {
-                    workSamples: person.workSamples ?? [],
-                    displayName: person.displayName ?? '',
-                    bio: person.bio ?? '',
-                    skills: person.skills ?? '',
-                    contacts: person.contacts ?? '',
-                    portfolioPics: portfolioImages.filter((item) => item.imageUrl && z.string().url().safeParse(item.imageUrl).success),
-                };
+            const payload: SaveUserSettings = {
+                workSamples: person.workSamples ?? [],
+                displayName: person.displayName ?? '',
+                bio: person.bio ?? '',
+                skills: person.skills ?? '',
+                contacts: person.contacts ?? '',
+                portfolioPics: portfolioImages.filter((item) => item.imageUrl && z.string().url().safeParse(item.imageUrl).success),
+            };
 
-                const response = await saveUserSettings(payload);
+            const response = await saveUserSettings(payload);
 
-                if (response.state === REQUEST_STATE.FAILED) {
-                    const messageError = t('error.title');
-                    errorMessage(null, null, messageError);
-                    return false;
-                }
-
-                // Since response is { success: true }, rely on local portfolioImages
-                setValue('portfolioImages', portfolioImages, {shouldValidate: true});
-                const prevPerson = person ?? null;
-
-                // optimistic update to the store so all pages reflect immediately
-                if (prevPerson) {
-                    setPerson({ ...prevPerson, portfolioPics: payload.portfolioPics });
-                }
-                successMessage(null, null, t(`profileInfo.${action}`) ?? 'Success!');
-                return true;
-            } catch (error) {
-                console.error('Save portfolio images error:', error); // Debug
-                errorMessage(null, null, t('error.title') ?? 'Submission failed!');
+            if (response.state === REQUEST_STATE.FAILED) {
+                const messageError = t('error.title');
+                errorMessage(null, null, messageError);
                 return false;
             }
-        },
-        [saveUserSettings, successMessage, errorMessage, t, setValue],
-    );
+
+            // Since response is { success: true }, rely on local portfolioImages
+            setValue('portfolioImages', portfolioImages, {shouldValidate: true});
+            const prevPerson = person ?? null;
+
+            // optimistic update to the store so all pages reflect immediately
+            if (prevPerson) {
+                setPerson({ ...prevPerson, portfolioPics: payload.portfolioPics });
+            }
+            successMessage(null, null, t(`profileInfo.${action}`) ?? 'Success!');
+            return true;
+        } catch (error) {
+            console.error('Save portfolio images error:', error); // Debug
+            errorMessage(null, null, t('error.title') ?? 'Submission failed!');
+            return false;
+        }
+    };
 
     // Confirm adding a new image
-    const confirmAddImage = useCallback(async (): Promise<void> => {
+    const confirmAddImage = async (): Promise<void> => {
         if (!selectedFile?.fileUrl || !newImage.title) {
             setUploadError(t('profileInfo.imageRequired') || 'Image and title are required');
             return;
@@ -221,7 +221,7 @@ export const usePortfolioImagesForm = ({
             console.error('Add image error:', error); // Debug
             setUploadError(t('profileInfo.errorUploadImage') || 'Failed to add image');
         }
-    }, [newImage, selectedFile, fields, append, savePortfolioImages, setSelectedFile, closePortfolioImageModal, t, getValues]);
+    };
 
     // Confirm updating an existing image
     const confirmUpdateImage = useCallback(async (): Promise<void> => {
@@ -267,34 +267,31 @@ export const usePortfolioImagesForm = ({
     }, [editingImage, newImage, selectedFile, fields, update, savePortfolioImages, setSelectedFile, closePortfolioImageModal, t, getValues]);
 
     // Handle deleting an image
-    const handleDeleteImage = useCallback(
-        async (id: string) => {
-            const index = fields.findIndex((field) => field.id === id);
-            if (index === -1) return;
+    const handleDeleteImage = async (id: string) => {
+        const index = fields.findIndex((field) => field.id === id);
+        if (index === -1) return;
 
-            const previousPortfolioImages = [...getValues('portfolioImages')];
-            const image = fields[index];
-            const newPortfolioImages = fields.filter((field) => field.id !== id);
+        const previousPortfolioImages = [...getValues('portfolioImages')];
+        const image = fields[index];
+        const newPortfolioImages = fields.filter((field) => field.id !== id);
 
-            remove(index);
+        remove(index);
 
-            if (image.imageUrl) {
-                await handleRemoveSelectedFile();
-                if (uploadError) {
-                    update(index, image); // Revert on upload error
-                    setUploadError(t('profileInfo.errorDeleteImage') || 'Failed to delete image');
-                    return;
-                }
-            }
-
-            const success = await savePortfolioImages(newPortfolioImages, 'deleteImage');
-            if (!success) {
-                setValue('portfolioImages', previousPortfolioImages, {shouldValidate: true}); // Revert on failure
+        if (image.imageUrl) {
+            await handleRemoveSelectedFile();
+            if (uploadError) {
+                update(index, image); // Revert on upload error
                 setUploadError(t('profileInfo.errorDeleteImage') || 'Failed to delete image');
+                return;
             }
-        },
-        [fields, remove, setValue, handleRemoveSelectedFile, uploadError, savePortfolioImages, t, getValues],
-    );
+        }
+
+        const success = await savePortfolioImages(newPortfolioImages, 'deleteImage');
+        if (!success) {
+            setValue('portfolioImages', previousPortfolioImages, {shouldValidate: true}); // Revert on failure
+            setUploadError(t('profileInfo.errorDeleteImage') || 'Failed to delete image');
+        }
+    };
 
     // Handle editing an existing image
     const handleEditImage = useCallback(

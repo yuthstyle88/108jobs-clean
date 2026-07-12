@@ -7,7 +7,7 @@ import {CategoriesImage} from "@/constants/images";
 import {RegisterDataProps} from "@/types/register-data";
 import Image from "next/image";
 import {useSearchParams} from "next/navigation";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {useTranslation} from "react-i18next";
 
 
@@ -22,14 +22,6 @@ export default function PasswordManagePage() {
   const params = useSearchParams();
   const viewParam = params.get("view") as ViewState | null;
   const tokenPassword = params.get("token");
-  // Set currentView from viewParam only once on mount
-  useEffect(() => {
-      if (viewParam) {
-        setCurrentView(viewParam);
-      }
-    },
-    []);
-
   const [currentView, setCurrentView] = useState<ViewState>(
     viewParam ?? "forgot-password"
   );

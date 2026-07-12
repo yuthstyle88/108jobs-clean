@@ -140,8 +140,8 @@ const JobBoard = () => {
     );
 
 
-    const debouncedHandleBudgetInput = useCallback(
-        debounce((type: 'min' | 'max', value: string) => {
+    const debouncedHandleBudgetInput = useMemo(
+        () => debounce((type: 'min' | 'max', value: string) => {
             const numValue = value ? parseInt(value) : undefined;
             if (numValue !== undefined && numValue < 0) {
                 setBudgetError(t("profileJob.budgetNegativeError"));
@@ -150,7 +150,7 @@ const JobBoard = () => {
             setBudgetError(null);
             handleFilterChange(type === 'min' ? 'budgetMin' : 'budgetMax', numValue);
         }, 50),
-        [handleFilterChange, filters.budgetMin]
+        [handleFilterChange, filters.budgetMin, t]
     );
 
     const handleNextPage = useCallback(() => {

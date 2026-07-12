@@ -3,7 +3,7 @@ import {faInfoCircle, faSync} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useTranslation} from "react-i18next";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
-import {useCallback, useMemo, useState} from "react";
+import {useMemo, useState} from "react";
 import {CategoryNodeView, ListTopUpRequestQuery, TopUpRequestView} from "108jobs-client";
 import {format} from "date-fns";
 
@@ -40,20 +40,20 @@ const TopUpHistory = () => {
         refetch();
     };
 
-    const handleNextPage = useCallback(() => {
+    const handleNextPage = () => {
         if (data?.nextPage) {
             setCursorHistory((prev) => [...prev, currentCursor || ""]);
             setCurrentCursor(data.nextPage);
         }
-    }, [data?.nextPage, currentCursor]);
+    };
 
-    const handlePrevPage = useCallback(() => {
+    const handlePrevPage = () => {
         if (cursorHistory.length > 0) {
             const prevCursor = cursorHistory[cursorHistory.length - 1];
             setCursorHistory((prev) => prev.slice(0, -1));
             setCurrentCursor(prevCursor || undefined);
         }
-    }, [cursorHistory]);
+    };
 
     // Helper: Get status badge style
     const getStatusStyle = (status: string) => {

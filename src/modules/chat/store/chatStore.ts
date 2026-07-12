@@ -3,6 +3,7 @@ import {create} from 'zustand'
 import {ChatMessage, ChatStatus} from '108jobs-client'
 import {normRoom} from "@/utils/helpers";
 import {useReadLastIdStore} from "@/modules/chat/store/readStore";
+import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 import {isBrowser} from "@/utils";
 
 // Utility function for read-last-id store interaction
@@ -105,7 +106,6 @@ export const useChatStore = create<ChatStoreState & ChatStoreActions>((set, get)
 
                 // Update room list's last message time to allow sorting by newest
                 try {
-                    const { useRoomsStore } = require('@/modules/chat/store/roomsStore');
                     const roomsStore = useRoomsStore.getState();
                     const isRoomActive = String(roomsStore.activeRoomId) === String(roomId);
                     // Explicitly pass true for shouldBump if not active, or if it's our own message being added

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 
@@ -14,18 +14,13 @@ import {useUserStore} from "@/store/useUserStore";
 export default function AccountManagePage() {
     const { t } = useTranslation();
     const { user, setUser } = useUserStore();
-    const [totpEnabled, setTotpEnabled] = useState(false);
+    const [totpEnabled, setTotpEnabled] = useState(() => !!user?.totp2faEnabled);
     const [error, setError] = useState<string | null>(null);
     const [showTotpModal, setShowTotpModal] = useState(false);
     const [modalType, setModalType] = useState<"generate" | "remove">("generate");
     const [secretUrl, setSecretUrl] = useState<string>();
 
     const [showPasswordModal, setShowPasswordModal] = useState(false);
-
-    useEffect(() => {
-        const enabled = !!user?.totp2faEnabled;
-        setTotpEnabled(enabled);
-    }, []);
 
     const { execute: generateTotpSecret } = useHttpPost("generateTotpSecret");
     const { execute: updateTotp } = useHttpPost("updateTotp");

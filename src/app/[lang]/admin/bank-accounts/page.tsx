@@ -10,7 +10,7 @@ import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useTranslation} from "react-i18next";
 import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
 import {PaginationControls} from "@/components/PaginationControls";
-import {useCallback, useState} from "react";
+import {useState} from "react";
 import {cn} from "@/lib/utils";
 import {BankAccountId} from "108jobs-client";
 
@@ -37,22 +37,22 @@ export default function AdminBankVerificationList() {
 
     const {execute: verify, isMutating: verifying} = useHttpPost("adminVerifyBankAccount");
 
-    const handleNextPage = useCallback(() => {
+    const handleNextPage = () => {
         if (data?.nextPage) {
             setCursorHistory((prev) => [...prev, currentCursor ?? ""]);
             setCurrentCursor(data.nextPage);
             setIsGoingBack(false);
         }
-    }, [data?.nextPage, currentCursor]);
+    };
 
-    const handlePrevPage = useCallback(() => {
+    const handlePrevPage = () => {
         if (cursorHistory.length > 0) {
             const prevCursor = cursorHistory[cursorHistory.length - 1];
             setCursorHistory((prev) => prev.slice(0, -1));
             setCurrentCursor(prevCursor || undefined);
             setIsGoingBack(true);
         }
-    }, [cursorHistory]);
+    };
 
     const handleVerify = async (bankAccountId: BankAccountId) => {
         try {

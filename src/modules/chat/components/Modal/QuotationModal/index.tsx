@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {z} from 'zod';
 import {addDaysYMD, isBeforeToday} from '@/utils/helpers';
@@ -106,13 +106,15 @@ const QuotationModal: React.FC<QuotationModalProps> = ({
 
     const [errors, setErrors] = useState<Record<string, string>>({});
 
-    useEffect(() => {
-        setForm((prev) => ({...prev, postId: postId ?? 0}));
-    }, [postId]);
-
-    useEffect(() => {
-        setForm((prev) => ({...prev, proposalId: proposalId}));
-    }, [proposalId]);
+    // postId/proposalId can change while this modal instance stays mounted
+    // (the parent may reuse the same modal for a different post/proposal),
+    // so derive the effective values directly during render instead of
+    // mirroring them into `form` state via an effect.
+    const effectiveForm: ProposedQuotePayload = {
+        ...form,
+        postId: postId ?? 0,
+        proposalId,
+    };
 
     const updateField = <K extends keyof ProposedQuotePayload>(key: K, value: ProposedQuotePayload[K]) => {
         setForm((prev) => {
@@ -147,7 +149,7 @@ const QuotationModal: React.FC<QuotationModalProps> = ({
     };
 
     const validateField = async <K extends keyof ProposedQuotePayload>(key: K, value: ProposedQuotePayload[K]) => {
-        const tempForm = {...form, [key]: value};
+        const tempForm = {...effectiveForm, [key]: value};
         const result = await ProposedQuoteSchema.safeParseAsync(tempForm);
         if (!result.success) {
             const error = result.error.issues.find((issue) => issue.path[0] === key);
@@ -165,7 +167,7 @@ const QuotationModal: React.FC<QuotationModalProps> = ({
     };
 
     const validateDeliverable = async (index: number) => {
-        const result = await ProposedQuoteSchema.safeParseAsync(form);
+        const result = await ProposedQuoteSchema.safeParseAsync(effectiveForm);
         if (!result.success) {
             const path = `deliverables.${index}`;
             const error = result.error.issues.find((issue) => issue.path.join('.') === path);
@@ -186,7 +188,7 @@ const QuotationModal: React.FC<QuotationModalProps> = ({
         e.preventDefault();
         setErrors({});
 
-        const result = await ProposedQuoteSchema.safeParseAsync(form);
+        const result = await ProposedQuoteSchema.safeParseAsync(effectiveForm);
         if (!result.success) {
             const newErrors: Record<string, string> = {};
             result.error.issues.forEach((issue) => {

@@ -39,41 +39,6 @@ export const useWorkflowStatus = ({
         }
     }, []);
 
-    const tryUpdateStatusFromItems = useCallback(
-        (items: WsChatMessage[]) => {
-            for (const it of items) {
-                const target = extractStatusFromContent((it as any)?.content);
-                if (target && target !== currentStatus) {
-                    const prevStatus = target === 'Cancelled' ? currentStatus : undefined;
-                    console.log('tryUpdateStatusFromItems:', {
-                        target,
-                        prevStatus,
-                        currentStatus,
-                        statusBeforeCancel,
-                    });
-                    goToStatus(target, prevStatus);
-                    lastRealtimeStatusAtRef.current = Date.now();
-                    return true;
-                }
-            }
-            return false;
-        },
-        [extractStatusFromContent, currentStatus, statusBeforeCancel]
-    );
-
-    const scanMessagesForStatus = useCallback(
-        (msgs: any[], windowSize = 20): StatusKey | undefined => {
-            const len = Math.min(msgs.length, windowSize);
-            for (let i = 0; i < len; i++) {
-                const m = msgs[i];
-                const target = extractStatusFromContent(m?.content);
-                if (target) return target;
-            }
-            return undefined;
-        },
-        [extractStatusFromContent]
-    );
-
     const goToStatus = useCallback(
         (target: StatusKey, prevStatus?: StatusKey) => {
             if (target === currentStatus) {
@@ -104,6 +69,41 @@ export const useWorkflowStatus = ({
             }
         },
         [ORDER, currentStatus, hasStarted, send, setHasStarted, setWorkflowState, statusBeforeCancel]
+    );
+
+    const tryUpdateStatusFromItems = useCallback(
+        (items: WsChatMessage[]) => {
+            for (const it of items) {
+                const target = extractStatusFromContent((it as any)?.content);
+                if (target && target !== currentStatus) {
+                    const prevStatus = target === 'Cancelled' ? currentStatus : undefined;
+                    console.log('tryUpdateStatusFromItems:', {
+                        target,
+                        prevStatus,
+                        currentStatus,
+                        statusBeforeCancel,
+                    });
+                    goToStatus(target, prevStatus);
+                    lastRealtimeStatusAtRef.current = Date.now();
+                    return true;
+                }
+            }
+            return false;
+        },
+        [extractStatusFromContent, currentStatus, goToStatus, statusBeforeCancel]
+    );
+
+    const scanMessagesForStatus = useCallback(
+        (msgs: any[], windowSize = 20): StatusKey | undefined => {
+            const len = Math.min(msgs.length, windowSize);
+            for (let i = 0; i < len; i++) {
+                const m = msgs[i];
+                const target = extractStatusFromContent(m?.content);
+                if (target) return target;
+            }
+            return undefined;
+        },
+        [extractStatusFromContent]
     );
 
     const handleChangeStatus = useCallback(

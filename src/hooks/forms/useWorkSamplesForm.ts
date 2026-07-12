@@ -4,7 +4,7 @@ import useNotification from '@/hooks/ui/useNotification';
 import { useHttpPost } from '@/hooks/api/http/useHttpPost';
 import { REQUEST_STATE } from '@/services/HttpService';
 import { Person, PortfolioPic, SaveUserSettings, WorkSample } from '108jobs-client';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuidv4 } from 'uuid';
@@ -76,23 +76,26 @@ export const useWorkSamplesForm =  ({ person, setPerson }: WorkSamplesFormProps)
     const [editingSampleId, setEditingSampleId] = useState<string | null>(null);
     const [errors, setErrors] = useState<Partial<Record<keyof FormValues['newSample'], string>>>({});
 
-    useEffect(() => {
-        if (person) {
-            setForm((prev) => {
-                const newForm = {
-                    ...prev,
-                    workSamples: person.workSamples ?? initialWorkSamples,
-                    displayName: person.displayName ?? prev.displayName,
-                    bio: person.bio ?? prev.bio,
-                    skills: person.skills ?? prev.skills,
-                    contacts: person.contacts ?? prev.contacts,
-                    portfolioPics: person.portfolioPics ?? prev.portfolioPics,
-                };
-                if (!isEqual(newForm, prev)) return newForm;
-                return prev;
-            });
+    // Keep `form` in sync with `person` whenever the person reference changes (e.g. loaded
+    // asynchronously, or updated elsewhere in the store). Adjusting state directly during
+    // render (instead of in an effect) avoids the extra render pass a post-commit effect would
+    // cause. See https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+    const [prevPerson, setPrevPerson] = useState(person);
+    if (person && person !== prevPerson) {
+        setPrevPerson(person);
+        const newForm = {
+            ...form,
+            workSamples: person.workSamples ?? initialWorkSamples,
+            displayName: person.displayName ?? form.displayName,
+            bio: person.bio ?? form.bio,
+            skills: person.skills ?? form.skills,
+            contacts: person.contacts ?? form.contacts,
+            portfolioPics: person.portfolioPics ?? form.portfolioPics,
+        };
+        if (!isEqual(newForm, form)) {
+            setForm(newForm);
         }
-    }, [person]);
+    }
 
     const validateField = async <K extends keyof FormValues['newSample']>(
         key: K,
@@ -115,44 +118,41 @@ export const useWorkSamplesForm =  ({ person, setPerson }: WorkSamplesFormProps)
         }
     };
 
-    const onSubmit = useCallback(
-        async (
-            action: 'addSample' | 'editSample' | 'deleteSample' | 'update',
-            workSamples: WorkSample[],
-            sampleId?: string,
-        ) => {
-            try {
-                const payload: SaveUserSettings = {
-                    workSamples,
-                    displayName: form.displayName,
-                    bio: form.bio,
-                    skills: form.skills,
-                    contacts: form.contacts,
-                    portfolioPics: form.portfolioPics,
-                };
+    const onSubmit = async (
+        action: 'addSample' | 'editSample' | 'deleteSample' | 'update',
+        workSamples: WorkSample[],
+        sampleId?: string,
+    ) => {
+        try {
+            const payload: SaveUserSettings = {
+                workSamples,
+                displayName: form.displayName,
+                bio: form.bio,
+                skills: form.skills,
+                contacts: form.contacts,
+                portfolioPics: form.portfolioPics,
+            };
 
-                const response = await saveUserSettings(payload);
+            const response = await saveUserSettings(payload);
 
-                if (response.state === REQUEST_STATE.FAILED) {
-                    const messageError = t('error.title');
-                    errorMessage(null, null, messageError);
-                    return false;
-                }
-                const prevPerson = person ?? null;
-
-                // optimistic update to the store so all pages reflect immediately
-                if (prevPerson) {
-                    setPerson({ ...prevPerson, workSamples: payload.workSamples });
-                }
-                successMessage(null, null, t(`profileInfo.${action}`) ?? 'Success!');
-                return true;
-            } catch (error) {
-                errorMessage(null, null, t('error.title') ?? 'Submission failed!');
+            if (response.state === REQUEST_STATE.FAILED) {
+                const messageError = t('error.title');
+                errorMessage(null, null, messageError);
                 return false;
             }
-        },
-        [saveUserSettings, successMessage, errorMessage, form, t],
-    );
+            const currentPerson = person ?? null;
+
+            // optimistic update to the store so all pages reflect immediately
+            if (currentPerson) {
+                setPerson({ ...currentPerson, workSamples: payload.workSamples });
+            }
+            successMessage(null, null, t(`profileInfo.${action}`) ?? 'Success!');
+            return true;
+        } catch (error) {
+            errorMessage(null, null, t('error.title') ?? 'Submission failed!');
+            return false;
+        }
+    };
 
     const addSample = async () => {
         const result = await FormSchema.safeParseAsync(form.newSample);

@@ -12,6 +12,7 @@ export default function WorkSamples() {
     const {person, setPerson} = useUserStore();
     const {
         form,
+        setForm,
         errors,
         editingSampleId,
         addSample,
@@ -69,7 +70,10 @@ export default function WorkSamples() {
                             placeholder={t('profileInfo.sampleTitle') || 'Enter title'}
                             value={form.newSample.title}
                             onChange={(e) => {
-                                form.newSample.title = e.target.value;
+                                setForm((prev) => ({
+                                    ...prev,
+                                    newSample: {...prev.newSample, title: e.target.value},
+                                }));
                                 validateField('title', e.target.value);
                             }}
                             error={errors.title}
@@ -84,7 +88,10 @@ export default function WorkSamples() {
                             placeholder={t('profileInfo.sampleUrl') || 'Enter URL'}
                             value={form.newSample.sampleUrl}
                             onChange={(e) => {
-                                form.newSample.sampleUrl = e.target.value;
+                                setForm((prev) => ({
+                                    ...prev,
+                                    newSample: {...prev.newSample, sampleUrl: e.target.value},
+                                }));
                                 validateField('sampleUrl', e.target.value);
                             }}
                             error={errors.sampleUrl}
@@ -100,7 +107,10 @@ export default function WorkSamples() {
                         placeholder={t('profileInfo.sampleDescription') || 'Enter description'}
                         value={form.newSample.description}
                         onChange={(e) => {
-                            form.newSample.description = e.target.value;
+                            setForm((prev) => ({
+                                ...prev,
+                                newSample: {...prev.newSample, description: e.target.value},
+                            }));
                             validateField('description', e.target.value);
                         }}
                         error={errors.description}
