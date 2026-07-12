@@ -24,7 +24,7 @@ function fakeStore() {
     markFailed,
     promoteToSent,
   };
-  return { store, upsertRetryMeta, dropRetryMeta, markFailed, failedMessages };
+  return { store, upsertRetryMeta, dropRetryMeta, markFailed, promoteToSent, failedMessages };
 }
 
 function fakeSender(sendMessage: ReturnType<typeof vi.fn>) {
@@ -136,5 +136,62 @@ describe("ResendManager.onSendFailure", () => {
 
     expect(sendMessage).toHaveBeenCalledTimes(1);
     expect(sendMessage.mock.calls[0][1]).toMatchObject({ id: "msg-1" });
+  });
+});
+
+describe("ResendManager retry re-arming after a failed resend attempt (P1 regression)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  /**
+   * Regression coverage for the P1 bug: onSendFailure's own self-scheduled
+   * setTimeout only ever fires the FIRST automatic retry. When that retry
+   * attempt itself fails inside flush() (server rejects, or sendMessage
+   * throws), retryMeta is correctly advanced (retry count bumped, new
+   * `next` computed) but nothing re-arms a timer to actually revisit the
+   * message at that new `next` time -- so a message that fails its first
+   * retry silently stops retrying forever, even though the count < 3 cap
+   * implies up to 3 automatic attempts were intended.
+   *
+   * This test scripts sendMessage to fail on its first two calls and
+   * succeed on the third, then advances fake timers far enough to cover
+   * all 3 scheduled attempts. It only passes if the fix re-arms a new
+   * setTimeout after each failed retry below the cap.
+   */
+  it("keeps auto-retrying a message through its full 3-attempt cap and promotes it to sent once one attempt succeeds", async () => {
+    const { store, failedMessages, markFailed, promoteToSent } = fakeStore();
+    failedMessages.push({
+      id: "msg-1",
+      roomId: "room-1",
+      senderId: 1,
+      secure: false,
+      content: "hello",
+      status: "failed",
+      createdAt: new Date().toISOString(),
+      isOwner: true,
+    });
+
+    const sendMessage = vi
+      .fn()
+      .mockResolvedValueOnce(false) // attempt 1 (the original scheduled retry) fails
+      .mockResolvedValueOnce(false) // attempt 2 fails
+      .mockResolvedValueOnce("server-id-1"); // attempt 3 succeeds
+    const mgr = new ResendManager(store, fakeSender(sendMessage));
+
+    mgr.onSendFailure("msg-1", "room-1");
+    expect(sendMessage).not.toHaveBeenCalled();
+
+    // Jittered backoff ceilings: retry 0 -> ~1150ms, retry 1 -> ~2300ms,
+    // retry 2 -> ~5750ms. Advance well past the sum (9200ms) so all three
+    // scheduled attempts have a chance to fire.
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(sendMessage).toHaveBeenCalledTimes(3);
+    expect(promoteToSent).toHaveBeenCalledWith("room-1", "msg-1");
+    expect(markFailed).not.toHaveBeenCalled();
   });
 });

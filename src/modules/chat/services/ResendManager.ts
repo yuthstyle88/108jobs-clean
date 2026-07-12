@@ -59,8 +59,21 @@ export class ResendManager {
         const {retryMeta} = this.store.getState()
         const prev = retryMeta[messageId]
         const retry = (prev?.retry ?? 0)
-        const delay = this.backoffDelay(retry)
-        this.store.upsertRetryMeta(messageId, {retry, next: Date.now() + delay})
+        this.scheduleRetry(messageId, roomId, retry)
+    }
+
+    /**
+     * อัปเดต retryMeta ให้ข้อความ messageId แล้วตั้ง setTimeout เพื่อปลุก
+     * flushActive(roomId) อีกครั้งเมื่อครบ backoff delay ของ retryCount นั้น
+     *
+     * เป็น logic ร่วมระหว่าง onSendFailure (ความล้มเหลวครั้งแรก) และ
+     * flush()'s สองจุดที่ resend attempt ล้มเหลว (server ปฏิเสธ หรือ
+     * sendMessage throw) -- ถ้าไม่มี setTimeout นี้ retryMeta จะถูกอัปเดต
+     * ว่าให้ลองใหม่ที่เวลา X แต่ไม่มีอะไรมาปลุกที่เวลา X จริง ๆ
+     */
+    private scheduleRetry(messageId: string, roomId: string, retryCount: number) {
+        const delay = this.backoffDelay(retryCount)
+        this.store.upsertRetryMeta(messageId, {retry: retryCount, next: Date.now() + delay})
         setTimeout(() => {
             this.flushActive(roomId).catch(() => {
             })
@@ -144,7 +157,9 @@ export class ResendManager {
                         this.store.markFailed(msg.roomId, msg.id)
                         this.store.upsertRetryMeta(msg.id, {retry: nextRetry, next: now + this.backoffDelay(nextRetry)})
                     } else {
-                        this.store.upsertRetryMeta(msg.id, {retry: nextRetry, next: now + this.backoffDelay(nextRetry)})
+                        // ยังไม่เกินลิมิต → ตั้ง timer ปลุก flushActive ใหม่ที่ next นี้
+                        // ไม่งั้น retryMeta จะถูกอัปเดตแต่ไม่มีอะไรมาปลุกที่เวลานั้นจริง ๆ
+                        this.scheduleRetry(msg.id, msg.roomId, nextRetry)
                     }
                 }
             } catch {
@@ -154,8 +169,11 @@ export class ResendManager {
                 const nextRetry = prev.retry + 1
                 if (nextRetry >= 3) {
                     this.store.markFailed(msg.roomId, msg.id)
+                    this.store.upsertRetryMeta(msg.id, {retry: nextRetry, next: now + this.backoffDelay(nextRetry)})
+                } else {
+                    // ยังไม่เกินลิมิต → ตั้ง timer ปลุก flushActive ใหม่ที่ next นี้
+                    this.scheduleRetry(msg.id, msg.roomId, nextRetry)
                 }
-                this.store.upsertRetryMeta(msg.id, {retry: nextRetry, next: now + this.backoffDelay(nextRetry)})
             } finally {
                 this.inFlight.delete(msg.id)
             }
