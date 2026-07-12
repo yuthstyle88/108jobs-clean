@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: {}
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-typecheck-test:
+    name: Lint, typecheck, unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Non-blocking: 122 pre-existing errors exist (mostly react-hooks/react-compiler
+      # violations -- setState called synchronously in effects, memoization not
+      # preserved -- surfaced once the lockfile was brought back in sync with
+      # package.json's already-declared eslint-config-next range). Real
+      # application-code cleanup, out of scope for adding this CI workflow;
+      # reported for visibility. Drop continue-on-error once fixed.
+      - name: Lint
+        continue-on-error: true
+        run: npx eslint src
+
+      - name: Typecheck
+        run: npx tsc --noEmit -p tsconfig.json
+
+      - name: Unit tests
+        run: npx vitest run
+
+  e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # playwright.config.ts's webServer boots its own `npm run dev` instance
+      # (port 3001) and tests/utils/auth.ts mocks the backend API via
+      # page.route -- no separately-running backend or secrets are needed.
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E tests
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14

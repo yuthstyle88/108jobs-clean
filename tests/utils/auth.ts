@@ -12,6 +12,30 @@ export type MockAuthOptions = {
  *  - GET  /api/session (returns authenticated session payload)
  *  - GET  /api/v4/site (returns minimal site info to avoid dev warning banners)
  */
+// A structurally-valid (but unsigned) fake JWT: LoginForm/handlers.ts decodes
+// the login response's accessToken via jwt-decode immediately on success
+// (jwtDecode throws on anything that isn't three base64url segments), so a
+// plain placeholder string like the old 'mock-jwt' value crashes the app
+// before this mock's job (letting the UI render as authenticated) is done.
+function fakeJwt(): string {
+  const b64url = (obj: object) =>
+    Buffer.from(JSON.stringify(obj)).toString('base64url');
+  const header = b64url({ alg: 'none', typ: 'JWT' });
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  const payload = b64url({
+    sub: 'mock-user',
+    iss: 'mock-issuer',
+    aud: 'jobs',
+    exp: nowSeconds + 3600,
+    iat: nowSeconds,
+    roles: ['user'],
+    realm: 'mock',
+    platform: 'jobs',
+    tenant_id: 'mock-tenant',
+  });
+  return `${header}.${payload}.mock-signature`;
+}
+
 export async function enableMockAuth(page: Page, opts: MockAuthOptions = {}) {
   const { success = true, user = { id: 1, name: 'Test User', email: 'test@example.com' } } = opts;
 
@@ -26,7 +50,12 @@ export async function enableMockAuth(page: Page, opts: MockAuthOptions = {}) {
         return route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ token: 'mock-jwt', user }),
+          body: JSON.stringify({
+            accessToken: fakeJwt(),
+            refreshToken: fakeJwt(),
+            expiresIn: 3600,
+            user,
+          }),
         });
       }
       return route.fulfill({
@@ -43,7 +72,7 @@ export async function enableMockAuth(page: Page, opts: MockAuthOptions = {}) {
         contentType: 'application/json',
         body: JSON.stringify({
           authenticated: success,
-          token: success ? 'mock-jwt' : null,
+          token: success ? fakeJwt() : null,
           user: success ? user : null,
         }),
       });
