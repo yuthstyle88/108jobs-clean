@@ -131,9 +131,16 @@ const nextConfig: NextConfig = {
                 return '';
             }
         })();
+        // Next.js dev mode (Fast Refresh / React's dev-only debugging) uses
+        // eval() to reconstruct call stacks -- blocked without 'unsafe-eval',
+        // which breaks every page in dev (confirmed: React itself states it
+        // "will never use eval() in production mode"), so this is dev-only.
+        const scriptSrc = process.env.NODE_ENV === 'production'
+            ? "script-src 'self' 'unsafe-inline'"
+            : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
         const csp = [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline'",
+            scriptSrc,
             "style-src 'self' 'unsafe-inline'",
             "img-src 'self' data: https://cdn.108jobs.com",
             "font-src 'self' data:",

@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch: {}
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-typecheck-test:
+    name: Lint, typecheck, unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # src/lib/108jobs-client is a standalone package (own package.json/
+      # pnpm-lock.yaml/node_modules, not a pnpm workspace member) that the
+      # root install links via a file: dependency but does NOT install the
+      # dependencies of. Its own `prepare` script (triggered by the root
+      # install below) needs those already in place to build successfully --
+      # confirmed directly: without this step, the root install's dist/
+      # output for 108jobs-client never gets produced on a fresh checkout,
+      # and every file importing it fails with "Cannot find module".
+      # continue-on-error: its own src/http.test.ts references `vitest`,
+      # which isn't declared as one of its dependencies -- tsc still emits
+      # working dist/ output despite that one error (confirmed directly),
+      # so this doesn't block anything the root app actually needs.
+      # This sub-package pins its OWN pnpm version (10.13.1, vs. the root's
+      # 8.15.4) via its package.json's packageManager field -- its lockfile
+      # (lockfileVersion '9.0') is unreadable by the job-wide pnpm 8.15.4
+      # from pnpm/action-setup above, which silently discards it as "not
+      # compatible" and then fails as if no lockfile existed at all. Invoke
+      # its own pinned version via corepack instead of the job's pnpm on PATH.
+      - name: Install 108jobs-client sub-package dependencies
+        working-directory: src/lib/108jobs-client
+        continue-on-error: true
+        run: corepack pnpm@10.13.1 install --frozen-lockfile
+
+      - run: pnpm install --frozen-lockfile
+
+      # Non-blocking: 122 pre-existing errors exist (mostly react-hooks/react-compiler
+      # violations -- setState called synchronously in effects, memoization not
+      # preserved -- surfaced once the lockfile was brought back in sync with
+      # package.json's already-declared eslint-config-next range). Real
+      # application-code cleanup, out of scope for adding this CI workflow;
+      # reported for visibility. Drop continue-on-error once fixed.
+      - name: Lint
+        continue-on-error: true
+        run: npx eslint src
+
+      - name: Typecheck
+        run: npx tsc --noEmit -p tsconfig.json
+
+      - name: Unit tests
+        run: npx vitest run
+
+  e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # See the equivalent step in the lint-typecheck-test job -- same reason.
+      - name: Install 108jobs-client sub-package dependencies
+        working-directory: src/lib/108jobs-client
+        continue-on-error: true
+        run: corepack pnpm@10.13.1 install --frozen-lockfile
+
+      - run: pnpm install --frozen-lockfile
+
+      # playwright.config.ts's webServer boots its own `npm run dev` instance
+      # (port 3001) and tests/utils/auth.ts mocks the backend API via
+      # page.route -- no separately-running backend or secrets are needed.
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E tests
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
