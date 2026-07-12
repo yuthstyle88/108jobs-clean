@@ -5,7 +5,7 @@ import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 import {useHttpPut} from "@/hooks/api/http/useHttpPut";
 import {Pencil, Plus, Star, Trash2, Shield, ShieldOff, CheckCircle2} from "lucide-react";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import BankAccountModal, {BankAccountFormValues} from "@/components/Common/Modal/AddBankAccountModal";
 import ConfirmDeleteModal from "@/components/Common/Modal/DeleteBankModal";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
@@ -24,7 +24,6 @@ const BankAccount = () => {
         upsertBankAccount
     } = useBankAccountsStore();
 
-    const [bankAccountList, setBankAccountList] = useState<Array<any>>([]);
     const [error, setError] = useState<string | null>(null);
 
     const {data: bankListRes, isMutating: isBankListLoading} = useHttpGet("listBanks");
@@ -33,13 +32,9 @@ const BankAccount = () => {
     const {execute: setDefaultBankAccount} = useHttpPut("setDefaultBankAccount");
     const {execute: deleteBankAccount, isMutating: isDeleting} = useHttpDelete("deleteBankAccount");
 
-    useEffect(() => {
-        setBankAccountList(bankAccounts ?? []);
-    }, [bankAccounts]);
-
     const bankList = bankListRes?.banks || [];
 
-    const normalizedAccounts = bankAccountList
+    const normalizedAccounts = (bankAccounts ?? [])
         .map((acc: any) => {
             const userBank = acc?.userBankAccount ?? acc?.userBankAccount;
             const bank = acc?.bank ?? acc?.Bank ?? undefined;

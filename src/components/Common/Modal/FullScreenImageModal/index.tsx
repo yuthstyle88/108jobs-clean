@@ -16,10 +16,16 @@ export default function FullScreenImageModal({ isOpen, imageUrl, onClose }: Full
     const [headerHeight, setHeaderHeight] = useState(80); // Fallback height
 
     useEffect(() => {
-        const header = document.querySelector('header') || document.querySelector('nav');
-        if (header) {
-            setHeaderHeight(header.offsetHeight);
-        }
+        // Defer the DOM measurement to a callback that fires after the effect commits,
+        // so the setState call isn't synchronous within the effect body itself.
+        const frame = requestAnimationFrame(() => {
+            const header = document.querySelector('header') || document.querySelector('nav');
+            if (header) {
+                setHeaderHeight(header.offsetHeight);
+            }
+        });
+
+        return () => cancelAnimationFrame(frame);
     }, []);
 
     const handleKeyDown = useCallback(

@@ -3,6 +3,7 @@ import LoadingCircle from "@/components/Common/Loading/LoadingCircle";
 import {CustomInput} from "@/components/ui/InputField";
 import {ERROR_CONSTANTS} from "@/constants/error";
 import {zodResolver} from "@hookform/resolvers/zod";
+import {useRouter} from "next/navigation";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
 import * as z from "zod";
@@ -15,6 +16,7 @@ type ChangePasswordProps = { token: string };
 
 export const ChangePasswordAfterReset = ({token}: ChangePasswordProps) => {
     const {t} = useTranslation();
+    const router = useRouter();
 
     /* ---------- schema & form ------------------------------------ */
     const schema = z
@@ -71,7 +73,7 @@ export const ChangePasswordAfterReset = ({token}: ChangePasswordProps) => {
             successMessage(null,
                 null,
                 t("notification.changePasswordSuccess"));
-            window.location.href = "/login";
+            router.push("/login");
         }
     };
 

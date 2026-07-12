@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useState, useEffect} from "react";
+import React, {useState} from "react";
 import {AdminLayout} from "@/modules/admin/components/layout/AdminLayout";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";
@@ -19,18 +19,16 @@ export default function SiteAppearancePage() {
 
     const [iconFile, setIconFile] = useState<File | null>(null);
     const [bannerFile, setBannerFile] = useState<File | null>(null);
-    const [iconPreview, setIconPreview] = useState<string | null>(null);
-    const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+    const [iconPreviewOverride, setIconPreviewOverride] = useState<string | null>(null);
+    const [bannerPreviewOverride, setBannerPreviewOverride] = useState<string | null>(null);
 
     const siteName = siteData?.siteView?.site?.name || "Your Site";
 
-    useEffect(() => {
-        if (!siteData?.siteView?.site) return;
-
-        const { icon, banner } = siteData.siteView.site;
-        if (icon) setIconPreview(icon);
-        if (banner) setBannerPreview(banner);
-    }, [siteData]);
+    // The locally-selected file preview (if any) takes priority over the
+    // image currently stored on the site; once uploaded, the override is
+    // cleared and this falls back to the freshly-fetched site data.
+    const iconPreview = iconPreviewOverride ?? siteData?.siteView?.site?.icon ?? null;
+    const bannerPreview = bannerPreviewOverride ?? siteData?.siteView?.site?.banner ?? null;
 
     const handleFileChange = (
         type: "icon" | "banner",
@@ -81,8 +79,8 @@ export default function SiteAppearancePage() {
         const reader = new FileReader();
         reader.onloadend = () => {
             const result = reader.result as string;
-            if (type === "icon") setIconPreview(result);
-            else setBannerPreview(result);
+            if (type === "icon") setIconPreviewOverride(result);
+            else setBannerPreviewOverride(result);
         };
         reader.readAsDataURL(file);
     };
@@ -102,8 +100,13 @@ export default function SiteAppearancePage() {
             toast.success(`${type === "icon" ? "Logo" : "Banner"} updated successfully!`);
             await refetch();
             setSiteRes(siteData);
-            if (type === "icon") setIconFile(null);
-            else setBannerFile(null);
+            if (type === "icon") {
+                setIconFile(null);
+                setIconPreviewOverride(null);
+            } else {
+                setBannerFile(null);
+                setBannerPreviewOverride(null);
+            }
         } else if (isFailed(res)) {
             toast.error(`Failed to upload ${type === "icon" ? "logo" : "banner"}`);
         }
@@ -130,7 +133,7 @@ export default function SiteAppearancePage() {
                         </div>
 
                         <p className="text-gray-600 mb-10">
-                            Update your site's logo and hero banner. These will appear on the homepage and across the
+                            Update your site&apos;s logo and hero banner. These will appear on the homepage and across the
                             platform.
                         </p>
 

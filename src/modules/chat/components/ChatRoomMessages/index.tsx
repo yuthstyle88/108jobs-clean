@@ -141,25 +141,36 @@ const ChatRoomMessages: React.FC<ChatRoomMessagesProps> = ({
         onAtBottomChangeRef.current?.(isAtBottom);
     }, [isAtBottom]);
 
-    const FooterComponent = React.useMemo(() => () => <div className="h-4 sm:h-6"/>, []);
+    const FooterComponent = React.useMemo(() => {
+        function Footer() {
+            return <div className="h-4 sm:h-6"/>;
+        }
+
+        return Footer;
+    }, []);
     const HeaderComponent = React.useMemo(() => {
         if (!hasMore) return undefined;
-        return () => (
-            <div className="w-full flex justify-center my-2 sm:my-3">
-                <div
-                    className={`inline-block px-4 sm:px-5 py-2 text-gray-800 bg-gradient-to-r from-gray-100 to-gray-200 text-xs sm:text-sm font-medium text-center rounded-full min-w-[100px] sm:min-w-[120px] shadow-sm hover:shadow-lg transition-all duration-300 border border-transparent ${isFetching ? 'border-blue-300' : ''}`}>
-                    {isFetching ? (
-                        <div className="flex space-x-1.5 justify-center items-center">
-                            <span className="dot-flashing w-2.5 h-2.5 rounded-full"></span>
-                            <span className="dot-flashing w-2.5 h-2.5 rounded-full"></span>
-                            <span className="dot-flashing w-2.5 h-2.5 rounded-full"></span>
-                        </div>
-                    ) : (
-                        t("profileChat.previousMessages")
-                    )}
+
+        function Header() {
+            return (
+                <div className="w-full flex justify-center my-2 sm:my-3">
+                    <div
+                        className={`inline-block px-4 sm:px-5 py-2 text-gray-800 bg-gradient-to-r from-gray-100 to-gray-200 text-xs sm:text-sm font-medium text-center rounded-full min-w-[100px] sm:min-w-[120px] shadow-sm hover:shadow-lg transition-all duration-300 border border-transparent ${isFetching ? 'border-blue-300' : ''}`}>
+                        {isFetching ? (
+                            <div className="flex space-x-1.5 justify-center items-center">
+                                <span className="dot-flashing w-2.5 h-2.5 rounded-full"></span>
+                                <span className="dot-flashing w-2.5 h-2.5 rounded-full"></span>
+                                <span className="dot-flashing w-2.5 h-2.5 rounded-full"></span>
+                            </div>
+                        ) : (
+                            t("profileChat.previousMessages")
+                        )}
+                    </div>
                 </div>
-            </div>
-        );
+            );
+        }
+
+        return Header;
     }, [hasMore, isFetching, t]);
 
     const itemContent = React.useCallback((index: number, msg: ChatMessage) => {

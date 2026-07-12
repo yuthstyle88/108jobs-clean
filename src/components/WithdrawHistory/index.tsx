@@ -4,7 +4,7 @@ import {faCoins, faInfoCircle, faSync} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {useTranslation} from "react-i18next";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
-import {useCallback, useMemo, useState} from "react";
+import {useMemo, useState} from "react";
 import {format} from "date-fns";
 import type {
     BankId,
@@ -59,22 +59,22 @@ const WithdrawHistory = () => {
         refetch();
     };
 
-    const handleNextPage = useCallback(() => {
+    const handleNextPage = () => {
         if (data?.nextPage) {
             setCursorHistory((prev) => [...prev, currentCursor || ""]);
             setCurrentCursor(data.nextPage);
             setIsGoingBack(false);
         }
-    }, [data?.nextPage, currentCursor]);
+    };
 
-    const handlePrevPage = useCallback(() => {
+    const handlePrevPage = () => {
         if (cursorHistory.length > 0) {
             const prevCursor = cursorHistory[cursorHistory.length - 1];
             setCursorHistory((prev) => prev.slice(0, -1));
             setCurrentCursor(prevCursor || undefined);
             setIsGoingBack(true);
         }
-    }, [cursorHistory]);
+    };
 
     // === UI Helpers ===
     const getStatusStyle = (status: WithdrawStatus) => {

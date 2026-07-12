@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useState, useEffect} from "react";
+import React, {useState, useMemo} from "react";
 import {buildCategoriesTree} from "@/utils/helpers";
 import {CategoryNodeView} from "108jobs-client";
 import {toast} from "sonner";
@@ -26,7 +26,6 @@ interface CategoryFormData {
 }
 
 export default function AdminCategoriesPage() {
-    const [tree, setTree] = useState<CategoryNodeView[]>([]);
     const [editingCategory, setEditingCategory] = useState<CategoryNodeView | null>(null);
     const [isAddingNew, setIsAddingNew] = useState(false);
     const [parentIdForNew, setParentIdForNew] = useState<number | null>(null);
@@ -43,7 +42,6 @@ export default function AdminCategoriesPage() {
     const [uploadedBanner, setUploadedBanner] = useState<string | null>(null);
     const [iconFile, setIconFile] = useState<File | null>(null);
     const [bannerFile, setBannerFile] = useState<File | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Lightbox
     const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -58,11 +56,11 @@ export default function AdminCategoriesPage() {
     const {execute: uploadIcon} = useHttpPost("uploadCategoryIcon");
     const {execute: uploadBanner} = useHttpPost("uploadCategoryBanner");
 
-    useEffect(() => {
+    const tree = useMemo<CategoryNodeView[]>(() => {
         if (categories) {
-            const builtTree = buildCategoriesTree(categories);
-            setTree(builtTree || []);
+            return buildCategoriesTree(categories) || [];
         }
+        return [];
     }, [categories]);
 
     const openImageLightbox = (src: string, alt: string) => {
@@ -161,7 +159,6 @@ export default function AdminCategoriesPage() {
         setBannerMode("url");
         setIconFile(null);
         setBannerFile(null);
-        setIsModalOpen(false);
     };
 
     const openAddModal = (parentId: number | null = null) => {
@@ -185,9 +182,7 @@ export default function AdminCategoriesPage() {
         setBannerMode(node.category.banner?.startsWith("http") ? "url" : "upload");
     };
 
-    useEffect(() => {
-        setIsModalOpen(isAddingNew || !!editingCategory);
-    }, [isAddingNew, editingCategory]);
+    const isModalOpen = isAddingNew || !!editingCategory;
 
     return (
         <AdminLayout>

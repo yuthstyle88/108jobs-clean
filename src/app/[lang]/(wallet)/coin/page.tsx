@@ -2,7 +2,7 @@
 import TopUpHistory from "@/components/TopUpHistory";
 import {faCoins} from "@fortawesome/free-solid-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {useTranslation} from "react-i18next";
 import TopUpModal from "@/components/Common/Modal/TopUpModal";
 import {useUserStore} from "@/store/useUserStore";
@@ -26,19 +26,15 @@ const Coins108Jobs = () => {
     const [isIsWithdrawOpen, setIsWithdrawOpen] = useState<boolean>(false);
     const [withdrawAmount, setWithdrawAmount] = useState<string>("");
     const [withdrawReason, setWithdrawReason] = useState<string>("");
-    const [selectedBank, setSelectedBank] = useState<BankAccountId>(0);
 
     const {execute: submitWithdraw} = useHttpPost("submitWithdraw");
 
     const wallet = userInfo?.wallet;
     const banks = bankAccounts || [];
 
-    // Set default bank (first one if exists)
-    useEffect(() => {
-        if (banks.length > 0 && !selectedBank) {
-            setSelectedBank(banks[0].userBankAccount.id);
-        }
-    }, [banks, selectedBank]);
+    // Default bank (first one if exists). Not stored in state since nothing
+    // in this component lets the user pick a different bank independently.
+    const selectedBank: BankAccountId = banks[0]?.userBankAccount.id ?? 0;
 
     // Check if amount is valid
     const isValidAmount = !isNaN(parseFloat(amount)) && amount.trim() !== "";

@@ -9,12 +9,14 @@ import {useState} from "react";
 import {useForm} from "react-hook-form";
 import * as z from "zod";
 import {useTranslation} from "react-i18next";
+import {useRouter} from "next/navigation";
 import {REQUEST_STATE} from "@/services/HttpService"; // ★ เพิ่ม
 
 type ChangePasswordProps = {token: string};
 
 export const ChangePassword = ({token}: ChangePasswordProps) => {
   const {t} = useTranslation();
+  const router = useRouter();
 
   /* -------- schema & form -------------------------------------- */
   const changePasswordSchema = z
@@ -71,7 +73,7 @@ export const ChangePassword = ({token}: ChangePasswordProps) => {
       successMessage(null,
         null,
         t("authen.changePasswordSuccess"));
-      window.location.href = "/login";
+      router.push("/login");
     }
   };
 

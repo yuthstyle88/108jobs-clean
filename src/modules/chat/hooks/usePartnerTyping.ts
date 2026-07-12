@@ -42,7 +42,7 @@ export function usePartnerTyping(opts: Options) {
   const roomKey = String(roomId);
 
   // Unified handler used by both Channel and DOM
-  const handleTyping = useCallback((p: any) => {
+  const handleTyping = (p: any) => {
     const evt: TypingEvent = {
       roomId: p?.roomId as ChatRoomId,
       senderId: Number(p?.senderId) as LocalUserId,
@@ -71,7 +71,7 @@ export function usePartnerTyping(opts: Options) {
     dispatchDomEvent?.('chat:partner-typing', { roomId, senderId: Number(evt.senderId) || 0, typing: true });
     armDecay(Number(evt.senderId) || 0);
     onRemoteTyping?.(evt);
-  }, [roomKey, me, clearDecay, dispatchDomEvent, onRemoteTyping, armDecay]);
+  };
 
   // Primary: listen to adapter/channel if available
   useEffect(() => {

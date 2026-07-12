@@ -1,6 +1,6 @@
 "use client";
 
-import {useCallback, useState} from "react";
+import {useState} from "react";
 import {Card, CardContent} from "@/components/ui/Card";
 import {Button} from "@/components/ui/Button";
 import {Badge} from "@/components/ui/Badge";
@@ -49,22 +49,22 @@ const WithdrawCoins = () => {
     const {execute: approve, isMutating: approving} = useHttpPost("adminWithdrawWallet");
     const {execute: reject, isMutating: rejecting} = useHttpPost("adminRejectWithdrawRequest");
 
-    const handleNextPage = useCallback(() => {
+    const handleNextPage = () => {
         if (data?.nextPage) {
             setCursorHistory((prev) => [...prev, currentCursor || ""]);
             setCurrentCursor(data.nextPage);
             setIsGoingBack(false);
         }
-    }, [data?.nextPage, currentCursor]);
+    };
 
-    const handlePrevPage = useCallback(() => {
+    const handlePrevPage = () => {
         if (cursorHistory.length > 0) {
             const prevCursor = cursorHistory[cursorHistory.length - 1];
             setCursorHistory((prev) => prev.slice(0, -1));
             setCurrentCursor(prevCursor || undefined);
             setIsGoingBack(true);
         }
-    }, [cursorHistory]);
+    };
 
     const handleApprove = async (request: WithdrawRequestView) => {
         if (!adminNote.trim()) {
@@ -520,7 +520,7 @@ const WithdrawCoins = () => {
                                             <div className="space-y-2">
                                                 <h5 className="font-semibold text-sm">{t("admin.withdraw.reason")}:</h5>
                                                 <p className="text-sm p-3 bg-muted/30 rounded-xl text-muted-foreground italic">
-                                                    "{selectedRequest.withdrawRequest.reason}"
+                                                    &quot;{selectedRequest.withdrawRequest.reason}&quot;
                                                 </p>
                                             </div>
                                         )}

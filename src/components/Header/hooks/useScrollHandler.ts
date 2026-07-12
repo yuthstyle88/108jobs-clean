@@ -5,13 +5,13 @@ import {usePathname} from "next/navigation";
 export const useScrollHandler = (forceShowSearch: boolean = false) => {
     const pathname = usePathname();
     const [scrollY, setScrollY] = useState(0);
-    const [showSearch, setShowSearch] = useState(false);
+    const [scrollShowSearch, setScrollShowSearch] = useState(false);
 
     const isHomePage = pathname === "/" || /^\/[a-z]{2}(-[a-z]{2})?\/?$/.test(pathname);
+    const forceVisible = !isHomePage || forceShowSearch;
 
     useEffect(() => {
-            if (!isHomePage || forceShowSearch) {
-                setShowSearch(true);
+            if (forceVisible) {
                 return;
             }
 
@@ -21,9 +21,9 @@ export const useScrollHandler = (forceShowSearch: boolean = false) => {
                 setScrollY(currentScrollY);
 
                 if (isSmallScreen) {
-                    setShowSearch(true);
+                    setScrollShowSearch(true);
                 } else {
-                    setShowSearch(currentScrollY > window.innerHeight / 2);
+                    setScrollShowSearch(currentScrollY > window.innerHeight / 2);
                 }
             };
 
@@ -40,7 +40,7 @@ export const useScrollHandler = (forceShowSearch: boolean = false) => {
                     updateState);
             };
         },
-        [forceShowSearch]);
+        [forceVisible]);
 
-    return {scrollY, showSearch};
+    return {scrollY, showSearch: forceVisible || scrollShowSearch};
 };

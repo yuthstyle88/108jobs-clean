@@ -3,7 +3,7 @@
 import { faCoins, faUniversity, faPlus, faShieldAlt, faShield } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useTranslation } from "react-i18next";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { BankAccountId, BankAccountView } from "108jobs-client";
 import { useRouter } from "next/navigation";
 
@@ -37,14 +37,15 @@ const WithdrawalModal = ({
     const verifiedBanks = banks.filter(b => b.userBankAccount.isVerified);
     const hasVerifiedBank = verifiedBanks.length > 0;
 
-    const [bankId, setBankId] = useState<BankAccountId>(0);
+    const [selectedBankId, setSelectedBankId] = useState<BankAccountId | null>(null);
 
-    // Auto-select first verified bank when banks change
-    useEffect(() => {
-        if (hasVerifiedBank && (!bankId || !verifiedBanks.find(b => b.userBankAccount.id === bankId))) {
-            setBankId(verifiedBanks[0].userBankAccount.id);
-        }
-    }, [banks, hasVerifiedBank, verifiedBanks, bankId]);
+    // Auto-select first verified bank when banks change: use the user's explicit
+    // selection if it's still a valid verified bank, otherwise fall back to the
+    // first verified bank. Computed during render instead of via an effect.
+    const bankId: BankAccountId =
+        (selectedBankId !== null && verifiedBanks.some(b => b.userBankAccount.id === selectedBankId)
+            ? selectedBankId
+            : verifiedBanks[0]?.userBankAccount.id) ?? 0;
 
     // ---- Validation ---------------------------------------------------------
     const amountNum = parseFloat(withdrawAmount) || 0;
@@ -122,7 +123,7 @@ const WithdrawalModal = ({
                         <div className="relative">
                             <select
                                 value={bankId}
-                                onChange={(e) => setBankId(Number(e.target.value))}
+                                onChange={(e) => setSelectedBankId(Number(e.target.value))}
                                 className="w-full pl-12 pr-12 py-4 bg-gray-50 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-gray-800 appearance-none font-medium"
                             >
                                 {verifiedBanks.map((b) => (

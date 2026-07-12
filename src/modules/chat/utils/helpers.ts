@@ -8,6 +8,8 @@ import {RoomView} from "@/modules/chat/types";
 import {usePresenceStore} from "@/modules/chat/store/presenceStore";
 import {PresenceStatus} from "108jobs-client";
 import { WS_EVENT } from "@/modules/chat/protocol/wireEvents";
+import {useRoomsStore} from "@/modules/chat/store/roomsStore";
+import {useReadLastIdStore} from "@/modules/chat/store/readStore";
 
 // Type guard: narrow a NormalizedEnvelope to the typing envelope (explicit interface)
 export type TypingEnv = {
@@ -54,8 +56,7 @@ export async function maybeHandleStatusChange(env: any, roomId: string): Promise
         }
 
         // Load room store
-        const api = require("@/modules/chat/store/roomsStore");
-        const {upsertRoom} = api.useRoomsStore.getState();
+        const {upsertRoom} = useRoomsStore.getState();
 
         const now = new Date().toISOString();
         const chatRoomRes = await HttpService.client.getChatRoom(`${roomId}?date=${encodeURIComponent(now)}`);
@@ -91,8 +92,7 @@ export function maybeHandleReadReceipt(env: any, fallbackRoomId: string): boolea
 
         // Emit event for internal WS listeners
         emitReadReceipt(roomId, lastReadMessageId, readerId);
-        const api = require('@/modules/chat/store/readStore');
-        const {setPeerLastReadAt} = api.useReadLastIdStore.getState?.() || {};
+        const {setPeerLastReadAt} = useReadLastIdStore.getState?.() || {};
         if (typeof setPeerLastReadAt === 'function' && updatedAt) {
             setPeerLastReadAt(roomId, readerId, updatedAt);
         }

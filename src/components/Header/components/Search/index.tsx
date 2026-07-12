@@ -20,17 +20,28 @@ const Search = ({ showSearch = false, className = "" }: Props) => {
     const { t, i18n } = useTranslation();
     const searchParams = useSearchParams();
     const titleSearch = searchParams.get("titleSearch") || "";
-    const [isSearchOpen, setIsSearchOpen] = useState(showSearch);
+    const [isSearchOpen, setIsSearchOpen] = useState(
+        () => showSearch || Boolean(titleSearch)
+    );
+    // Tracks the titleSearch value we've already reacted to, so the dropdown
+    // re-opens whenever the URL's titleSearch param changes (not just on mount).
+    const [prevTitleSearch, setPrevTitleSearch] = useState(titleSearch);
     const dropdownRef = useRef<HTMLDivElement | null>(null);
 
     const { register, handleSubmit, setValue } = useForm<SearchForm>({
         defaultValues: { query: "" },
     });
 
+    if (titleSearch !== prevTitleSearch) {
+        setPrevTitleSearch(titleSearch);
+        if (titleSearch) {
+            setIsSearchOpen(true);
+        }
+    }
+
     useEffect(() => {
         if (titleSearch) {
             setValue("query", titleSearch);
-            setIsSearchOpen(true);
         }
     }, [titleSearch, setValue]);
 

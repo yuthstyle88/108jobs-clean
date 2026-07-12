@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import {useTranslation} from 'react-i18next';
-import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
+import React, {ChangeEvent, useRef, useState} from 'react';
 import {X} from 'lucide-react';
 
 interface PortfolioImageModalProps {
@@ -32,17 +32,20 @@ export default function PortfolioImageModal({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [previewImage, setPreviewImage] = useState<string | null>(initialImage || null);
 
-    // Local validation state
-    const [titleError, setTitleError] = useState<string | null>(null);
+    // Reset the preview whenever the initial image prop changes (e.g. modal reopened
+    // with a different image), while still allowing the user to change it independently
+    // via file selection/drag-drop below. Adjusted during render instead of in an effect
+    // to avoid an extra render pass.
+    const [prevInitialImage, setPrevInitialImage] = useState(initialImage);
+    if (initialImage !== prevInitialImage) {
+        setPrevInitialImage(initialImage);
+        setPreviewImage(initialImage || null);
+    }
 
-    // Validate title
-    useEffect(() => {
-        if (imageTitle.trim() === '') {
-            setTitleError(t('profileInfo.imageTitleRequired') || 'Image title is required');
-        } else {
-            setTitleError(null);
-        }
-    }, [imageTitle, t]);
+    // Local validation state - derived directly from imageTitle, no need to store separately
+    const titleError = imageTitle.trim() === ''
+        ? (t('profileInfo.imageTitleRequired') || 'Image title is required')
+        : null;
 
     const isConfirmDisabled = !!error || !!titleError || !previewImage;
 
@@ -79,13 +82,8 @@ export default function PortfolioImageModal({
     const handleClose = () => {
         setPreviewImage(initialImage || null);
         fileInputRef.current!.value = '';
-        setTitleError(null);
         onClose();
     };
-
-    useEffect(() => {
-        setPreviewImage(initialImage || null);
-    }, [initialImage]);
 
     if (!isOpen) return null;
 

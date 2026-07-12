@@ -29,12 +29,38 @@ const Modal: React.FC<ModalProps> = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   const modalRef = useRef<HTMLDivElement>(null);
+
+  // React to `isOpen` prop transitions synchronously during render (React's
+  // documented "adjust state while rendering" pattern) instead of in an
+  // effect, so opening/closing doesn't cost an extra render pass. `isVisible`
+  // and `isLeaving` still need to be real state (not just derived) because
+  // they also persist across the delayed close animation handled by the
+  // timer effect below.
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setIsVisible(true);
+    } else if (isVisible) {
+      setIsLeaving(true);
+    }
+  }
 
   const handleClose = useCallback(() => {
       if (!isVisible) return;
-
       setIsLeaving(true);
+    },
+    [isVisible]);
+
+  // Runs the close animation timer and finalizes the close once `isLeaving`
+  // is set, regardless of whether it was triggered by the `isOpen` prop
+  // flipping to false or by a manual close (button/outside click/Escape).
+  // The setState calls here happen inside the timeout callback, not
+  // synchronously in the effect body.
+  useEffect(() => {
+      if (!isLeaving) return;
+
       const timer = setTimeout(() => {
           setIsVisible(false);
           setIsLeaving(false);
@@ -44,21 +70,18 @@ const Modal: React.FC<ModalProps> = ({
 
       return () => clearTimeout(timer);
     },
-    [isVisible, onClose]);
+    [isLeaving, onClose]);
 
   useEffect(() => {
       if (isOpen) {
         document.body.style.overflow = "hidden";
-        setIsVisible(true);
-      } else {
-        handleClose();
       }
 
       return () => {
         document.body.style.overflow = "";
       };
     },
-    [isOpen, handleClose]);
+    [isOpen]);
 
 
   const handleOutsideClick = (e: React.MouseEvent<HTMLDivElement>) => {

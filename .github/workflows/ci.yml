@@ -51,14 +51,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Non-blocking: 122 pre-existing errors exist (mostly react-hooks/react-compiler
-      # violations -- setState called synchronously in effects, memoization not
-      # preserved -- surfaced once the lockfile was brought back in sync with
-      # package.json's already-declared eslint-config-next range). Real
-      # application-code cleanup, out of scope for adding this CI workflow;
-      # reported for visibility. Drop continue-on-error once fixed.
       - name: Lint
-        continue-on-error: true
         run: npx eslint src
 
       - name: Typecheck

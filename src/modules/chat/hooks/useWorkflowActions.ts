@@ -1,4 +1,3 @@
-import {useCallback} from 'react';
 import {HttpService, REQUEST_STATE} from '@/services/HttpService';
 import {useWorkflow} from '@/modules/chat/hooks/useWorkflow';
 import {getLatestProposedQuoteSeq} from '@/modules/chat/utils/message';
@@ -77,21 +76,18 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
         currentStatus,
     } = deps;
 
-    const goToStatusAndBroadcast = useCallback(
-        (target: StatusKey, prevStatus?: StatusKey) => {
-            // local UI transition
-            goToStatus?.(target, prevStatus);
+    const goToStatusAndBroadcast = (target: StatusKey, prevStatus?: StatusKey) => {
+        // local UI transition
+        goToStatus?.(target, prevStatus);
 
-            // broadcast to partner
-            sendRoomUpdate({roomId: roomId, senderId: localUser.id}, {
-                senderId: localUser.id,
-                updateType: 'status-change',
-                statusTarget: target,
-                prevStatus: prevStatus,
-            });
-        },
-        [goToStatus, sendRoomUpdate, roomId]
-    );
+        // broadcast to partner
+        sendRoomUpdate({roomId: roomId, senderId: localUser.id}, {
+            senderId: localUser.id,
+            updateType: 'status-change',
+            statusTarget: target,
+            prevStatus: prevStatus,
+        });
+    };
 
     // Use the new workflow id hook which hydrates from room payload
     const {
@@ -102,7 +98,7 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
     } = useWorkflow(roomId, roomData, {resetBillingOnRoomChange: true});
 
     // Helper function to validate workflow ID
-    const validateWorkflowId = useCallback((caller?: string): number | null => {
+    const validateWorkflowId = (caller?: string): number | null => {
         if (!workflowId) {
             setError(
                 ((t('profileChat.missingWorkflow') || 'Missing workflow. Start workflow before proceeding.')
@@ -112,10 +108,10 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             return null;
         }
         return workflowId;
-    }, [workflowId, setError, t]);
+    };
 
 
-    const startWorkflowAction = useCallback(async () => {
+    const startWorkflowAction = async () => {
         setError(null);
         try {
             const pid = postId;
@@ -151,9 +147,9 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(t('profileChat.startWorkflowFailed') || `Failed to start workflow: ${msg}`);
             return false;
         }
-    }, [postId, startWorkflow, roomId, setHasStarted, goToStatusAndBroadcast, t, sendMessage, localUser.id, roomData]);
+    };
 
-    const quotationSubmit = useCallback(async (data: any) => {
+    const quotationSubmit = async (data: any) => {
         setError(null);
         try {
             const validWorkflowId = validateWorkflowId('createInvoice');
@@ -199,9 +195,9 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(t('profileChat.quotationError') || 'Failed to send quotation. Please try again.');
             return false;
         }
-    }, [createInvoice, goToStatusAndBroadcast, localUser.id, roomId, setShowQuotationModal, t, sendMessage, roomData]);
+    };
 
-    const approveQuotation = useCallback(async () => {
+    const approveQuotation = async () => {
         try {
             setError(null);
             // Use billingId from local state only
@@ -245,9 +241,9 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [approveQuotationApi, localUser.id, roomId, t, sendMessage, walletId, validateWorkflowId, goToStatusAndBroadcast, billingId, messages, roomData]);
+    };
 
-    const startWork = useCallback(async () => {
+    const startWork = async () => {
         try {
             setError(null);
             const workflowId = validateWorkflowId('startWork');
@@ -277,9 +273,9 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [messages, submitStartWorkApi, t, roomId, localUser.id, sendMessage, goToStatusAndBroadcast, validateWorkflowId, roomData]);
+    };
 
-    const submitDelivery = useCallback(async () => {
+    const submitDelivery = async () => {
         try {
             setError(null);
             if (!selectedFile || !selectedFile.fileUrl) {
@@ -321,9 +317,9 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [messages, selectedFile, localUser?.id, roomId, t, setSelectedFile, sendMessage, goToStatusAndBroadcast, validateWorkflowId, roomData]);
+    };
 
-    const requestRevision = useCallback(async () => {
+    const requestRevision = async () => {
         try {
             setError(null);
             const workflowId = validateWorkflowId('requestRevision');
@@ -349,9 +345,9 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [messages, t, roomId, localUser?.id, sendMessage, goToStatusAndBroadcast, validateWorkflowId, roomData]);
+    };
 
-    const approveWork = useCallback(async () => {
+    const approveWork = async () => {
         try {
             setError(null);
             const workflowId = validateWorkflowId('approveWork');
@@ -382,9 +378,9 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [messages, approveWorkApi, t, roomId, localUser?.id, sendMessage, goToStatusAndBroadcast, validateWorkflowId, billingId, roomData]);
+    };
 
-    const cancelJob = useCallback(async () => {
+    const cancelJob = async () => {
         try {
             const workflowId = validateWorkflowId('cancelJob');
             if (!workflowId) return false;
@@ -408,7 +404,7 @@ export const useWorkflowActions = (deps: UseWorkflowActionsDeps) => {
             setError(msg);
             return false;
         }
-    }, [messages, roomId, localUser?.id, t, sendMessage, goToStatusAndBroadcast, validateWorkflowId, currentStatus, roomData]);
+    };
 
     return {
         startWorkflowAction,
