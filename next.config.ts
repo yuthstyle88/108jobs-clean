@@ -131,6 +131,13 @@ const nextConfig: NextConfig = {
                 return '';
             }
         })();
+        // buildActixWsUrl() (chatSocketUtils.ts) opens the chat WebSocket against
+        // this same host/port, just over ws:/wss: instead of http:/https: -- a
+        // CSP source with an http(s) scheme does NOT also permit a ws(s)
+        // connection to the same origin, so without this the browser blocks the
+        // socket with "violates ... connect-src" even though the API origin
+        // itself is already allowed.
+        const apiWsOrigin = apiOrigin.replace(/^http/, 'ws');
         // Next.js dev mode (Fast Refresh / React's dev-only debugging) uses
         // eval() to reconstruct call stacks -- blocked without 'unsafe-eval',
         // which breaks every page in dev (confirmed: React itself states it
@@ -144,7 +151,7 @@ const nextConfig: NextConfig = {
             "style-src 'self' 'unsafe-inline'",
             "img-src 'self' data: https://cdn.108jobs.com",
             "font-src 'self' data:",
-            `connect-src ${["'self'", apiOrigin].filter(Boolean).join(' ')}`,
+            `connect-src ${["'self'", apiOrigin, apiWsOrigin].filter(Boolean).join(' ')}`,
             "frame-ancestors 'none'",
             "base-uri 'self'",
             "form-action 'self'",
