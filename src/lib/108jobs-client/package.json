@@ -13,6 +13,7 @@
     "docs": "typedoc src/index.ts",
     "lint": "tsc --noEmit && eslint --report-unused-disable-directives && prettier --check src",
     "prepare": "pnpm run build",
+    "test": "vitest run",
     "tsoa": "tsoa spec-and-routes && tsc && redocly build-docs tsoa_build/swagger.json"
   },
   "repository": {
@@ -41,7 +42,8 @@
     "tsoa": "^6.6.0",
     "typedoc": "^0.28.0",
     "typescript": "^5.5.4",
-    "typescript-eslint": "^8.7.0"
+    "typescript-eslint": "^8.7.0",
+    "vitest": "^3.2.4"
   },
   "packageManager": "pnpm@10.13.1",
   "types": "./dist/index.d.ts",

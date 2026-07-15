@@ -51,6 +51,15 @@ jobs:
         working-directory: src/lib/108jobs-client
         run: corepack pnpm@10.13.1 install --frozen-lockfile
 
+      # The sub-package owns a vitest suite (src/http.test.ts) asserting the
+      # generated client's identity-platform method surface. The root vitest
+      # run below deliberately excludes src/lib/108jobs-client/**, so this is
+      # the only place that suite runs -- invoke it with the sub-package's own
+      # pinned pnpm/vitest (installed by the step above).
+      - name: Test 108jobs-client sub-package
+        working-directory: src/lib/108jobs-client
+        run: corepack pnpm@10.13.1 run test
+
       - run: pnpm install --frozen-lockfile
 
       - name: Lint
