@@ -34,10 +34,13 @@ jobs:
       # confirmed directly: without this step, the root install's dist/
       # output for 108jobs-client never gets produced on a fresh checkout,
       # and every file importing it fails with "Cannot find module".
-      # continue-on-error: its own src/http.test.ts references `vitest`,
-      # which isn't declared as one of its dependencies -- tsc still emits
-      # working dist/ output despite that one error (confirmed directly),
-      # so this doesn't block anything the root app actually needs.
+      # This is a real gate (no continue-on-error): a genuine failure of the
+      # generated client to install or build must fail CI. It used to be
+      # non-blocking only because `prepare`'s tsc build compiled the package's
+      # own src/http.test.ts, which imports `vitest` (not a declared dep of
+      # this package) -- that build error is now avoided at the source by
+      # excluding test files from the package's build tsconfig, so nothing
+      # here needs vitest.
       # This sub-package pins its OWN pnpm version (10.13.1, vs. the root's
       # 8.15.4) via its package.json's packageManager field -- its lockfile
       # (lockfileVersion '9.0') is unreadable by the job-wide pnpm 8.15.4
@@ -46,7 +49,6 @@ jobs:
       # its own pinned version via corepack instead of the job's pnpm on PATH.
       - name: Install 108jobs-client sub-package dependencies
         working-directory: src/lib/108jobs-client
-        continue-on-error: true
         run: corepack pnpm@10.13.1 install --frozen-lockfile
 
       - run: pnpm install --frozen-lockfile
@@ -75,10 +77,10 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      # See the equivalent step in the lint-typecheck-test job -- same reason.
+      # See the equivalent step in the lint-typecheck-test job -- same reason,
+      # and likewise a real gate (no continue-on-error).
       - name: Install 108jobs-client sub-package dependencies
         working-directory: src/lib/108jobs-client
-        continue-on-error: true
         run: corepack pnpm@10.13.1 install --frozen-lockfile
 
       - run: pnpm install --frozen-lockfile
