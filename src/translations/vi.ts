@@ -744,7 +744,6 @@ export const vi = {
             submitButton: "Gửi",
             postNameAlreadyExists: "Tên công việc đã tồn tại",
             interfaceLanguageLabel: "Vui lòng chọn ngôn ngữ",
-            languageRequiredLabel: "Ngôn ngữ cần thiết cho bài đăng này",
         },
         employeeRegister: {
             howDidYouHearAboutUs:
@@ -2329,8 +2328,6 @@ export const vi = {
             tableHeaderActionCloseJob: "Đóng công việc",
             budgetNegativeError: "Ngân sách không được âm",
             loadingJobs: "Đang tải công việc của bạn...",
-            dropdownLanguage: "Ngôn ngữ công việc",
-            allLanguages: "Tất cả ngôn ngữ",
         },
         profileNavbar: {
             accountInfo: "Thông tin tài khoản",

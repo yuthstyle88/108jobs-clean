@@ -57,7 +57,6 @@ export interface PostFormParams {
     url?: string;
     body?: string;
     nsfw?: boolean;
-    languageId?: number;
     categoryId?: number;
     customThumbnail?: string;
     altText?: string;
@@ -156,7 +155,6 @@ export interface CrossPostParams {
     body?: string;
     altText?: string;
     nsfw?: StringBoolean;
-    languageId?: number;
     customThumbnailUrl?: string;
 }
 

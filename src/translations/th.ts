@@ -740,7 +740,6 @@ export const th = {
             submitButton: "ส่ง",
             postNameAlreadyExists: "ชื่องานมีอยู่แล้ว",
             interfaceLanguageLabel: "กรุณาเลือกภาษา",
-            languageRequiredLabel: "ภาษาที่จำเป็นสำหรับโพสต์นี้",
         },
         employeeRegister: {
             howDidYouHearAboutUs:
@@ -2278,8 +2277,6 @@ export const th = {
             noJobsDescriptionNoFilters: "กลับมาตรวจสอบอีกครั้งในภายหลังเพื่อโอกาสใหม่ ๆ",
             budgetNegativeError: "งบประมาณต้องไม่เป็นค่าติดลบ",
             loadingJobs: "กำลังโหลดงานของคุณ...",
-            dropdownLanguage: "ภาษาของงาน",
-            allLanguages: "ทุกภาษา",
         },
         profileNavbar: {
             accountInfo: "ข้อมูลบัญชี",

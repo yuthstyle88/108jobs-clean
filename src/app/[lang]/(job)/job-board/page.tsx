@@ -5,7 +5,7 @@ import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {debounce} from "lodash";
-import {CategoryId, IntendedUse, JobType, LanguageId, PostSortType, SearchCombinedView,} from "108jobs-client";
+import {CategoryId, IntendedUse, JobType, PostSortType, SearchCombinedView,} from "108jobs-client";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import JobBoardTab from "@/components/JobBoardTab";
 import {useTranslation} from "react-i18next";
@@ -20,9 +20,6 @@ import ErrorState from "@/components/ErrorState";
 import {REQUEST_STATE} from "@/services/HttpService";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 import {useCategories} from "@/hooks/api/categories/useCategories";
-import {useUserStore} from "@/store/useUserStore";
-import {getNumericCode} from "@/utils/getClientCurrentLanguage";
-import {toLanguageArray} from "@/constants/language";
 import {useDebounce} from "@/hooks/utils/useDebounce";
 import {PaginationControls} from "@/components/PaginationControls";
 import {faCoins} from "@fortawesome/free-solid-svg-icons";
@@ -33,7 +30,6 @@ const ITEMS_PER_PAGE = 20;
 
 interface FilterState {
     category: CategoryId | undefined;
-    languageId: LanguageId | undefined;
     jobType: JobType | undefined;
     intendedUse: IntendedUse | undefined;
     budgetMin: number | undefined;
@@ -43,18 +39,14 @@ interface FilterState {
 
 const JobBoard = () => {
     const {t, i18n} = useTranslation();
-    const {user} = useUserStore();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const languages = toLanguageArray();
 
     const encoded = searchParams.get("q");
     const sanitizedQuery = encoded ? encoded.trim() : "";
-    const defaultLanguageId = getNumericCode(user?.interfaceLanguage ?? "en");
 
     const [filters, setFilters] = useState<FilterState>({
         category: undefined,
-        languageId: defaultLanguageId,
         jobType: undefined,
         intendedUse: undefined,
         budgetMin: undefined,
@@ -79,7 +71,6 @@ const JobBoard = () => {
         type: "Posts",
         q: sanitizedQuery,
         categoryId: debouncedFilters.category,
-        languageId: debouncedFilters.languageId,
         pageCursor: currentCursor,
         budgetMin: debouncedFilters.budgetMin,
         budgetMax: debouncedFilters.budgetMax,
@@ -111,10 +102,6 @@ const JobBoard = () => {
             if (newFilters.category)
                 params.set("category", newFilters.category.toString());
             else params.delete("category");
-
-            if (newFilters.languageId)
-                params.set("languageId", newFilters.languageId.toString());
-            else params.delete("languageId");
 
             if (newFilters.jobType)
                 params.set("jobType", newFilters.jobType);
@@ -178,7 +165,6 @@ const JobBoard = () => {
     const clearFilters = useCallback(() => {
         setFilters({
             category: undefined,
-            languageId: defaultLanguageId ?? undefined,
             jobType: undefined,
             intendedUse: undefined,
             budgetMin: undefined,
@@ -187,7 +173,7 @@ const JobBoard = () => {
         });
 
         router.push(`?q=${sanitizedQuery}`, {scroll: false});
-    }, [router, sanitizedQuery, defaultLanguageId]);
+    }, [router, sanitizedQuery]);
 
 
     const hasActiveFilters = useMemo(
@@ -207,9 +193,6 @@ const JobBoard = () => {
             category: searchParams.get("category")
                 ? parseInt(searchParams.get("category")!)
                 : undefined,
-            languageId: searchParams.get("languageId") !== null
-                ? Number(searchParams.get("languageId"))
-                : prev.languageId,
             jobType: (searchParams.get("jobType") as JobType) ?? undefined,
             intendedUse: (searchParams.get("intendedUse") as IntendedUse) ?? undefined,
             budgetMin: searchParams.get("budgetMin")
@@ -348,62 +331,6 @@ const JobBoard = () => {
                                         value={IntendedUse.Business}>{t("profileJob.tableBusinessSelection")}</option>
                                     <option value={IntendedUse.Unknown}>{t("profileJob.tableUnknownSelection")}</option>
                                 </select>
-                                <div
-                                    className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-500 top-7">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                              d="M19 9l-7 7-7-7"/>
-                                    </svg>
-                                </div>
-                            </div>
-
-                            <div className="relative group">
-                                <label
-                                    htmlFor="language-filter"
-                                    className="block text-sm font-semibold text-gray-700 mb-1.5 transition-colors group-hover:text-primary"
-                                >
-                                    {t("profileJob.dropdownLanguage") || "Language"}
-                                </label>
-
-                                <select
-                                    id="language-filter"
-                                    className="w-full appearance-none bg-white border border-gray-200 rounded-lg py-3 pl-11 pr-12 text-sm text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 hover:border-blue-300"
-                                    value={filters.languageId ?? ""}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        handleFilterChange("languageId", value === "" ? undefined : Number(value));
-                                    }}
-                                >
-                                    <option value="">
-                                        {t("profileJob.allLanguages")}
-                                    </option>
-                                    {languages.map((lang) => (
-                                        <option key={lang.code} value={lang.numericCode}>
-                                            {t(`global.${lang.label}`)} ({lang.code.toUpperCase()})
-                                        </option>
-                                    ))}
-                                </select>
-
-                                {/* Selected Flag Preview (Visual Enhancement) */}
-                                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none top-7">
-                                    {filters.languageId ? (
-                                        <Image
-                                            src={languages.find(l => l.numericCode === filters.languageId)?.flag}
-                                            alt="Selected language"
-                                            width={28}
-                                            height={20}
-                                            className="rounded-sm shadow-sm"
-                                        />
-                                    ) : (
-                                        <svg className="w-7 h-7 text-gray-400" fill="none" stroke="currentColor"
-                                             viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                                  d="M3 5h18M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                        </svg>
-                                    )}
-                                </div>
-
-                                {/* Dropdown Arrow */}
                                 <div
                                     className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-500 top-7">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

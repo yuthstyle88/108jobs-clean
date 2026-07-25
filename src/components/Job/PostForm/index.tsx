@@ -14,10 +14,6 @@ import {REQUEST_STATE} from "@/services/HttpService";
 import {useHttpPost} from "@/hooks/api/http/useHttpPost";
 import {useCategories} from "@/hooks/api/categories/useCategories";
 import {useUserStore} from "@/store/useUserStore";
-import {Globe} from "lucide-react";
-import Image from "next/image";
-import {getNumericCode} from "@/utils/getClientCurrentLanguage";
-import {toLanguageArray} from "@/constants/language";
 
 
 interface PostFormProps {
@@ -45,7 +41,6 @@ const postJobSchema = (t: (key: string) => string) => z.object({
     intendedUse: z.nativeEnum(IntendedUse),
     url: z.preprocess((v) => (typeof v === "string" && v.trim() === "" ? undefined : v), z.string().url(t("validation.urlInvalid")).optional()),
     isEnglishRequired: z.boolean().optional(),
-    languageId: z.number().optional() ?? undefined,
     deadline: z
         .string()
         .optional()
@@ -69,7 +64,7 @@ export const PostForm: React.FC<PostFormProps> = ({
                                                       postView,
                                                       mode
                                                   }) => {
-    const {person, user} = useUserStore();
+    const {person} = useUserStore();
     const {t} = useTranslation();
     if (mode === "edit") {
         const isOwner = postView?.creator.id === person?.id;
@@ -79,7 +74,6 @@ export const PostForm: React.FC<PostFormProps> = ({
     }
 
     const router = useRouter();
-    const languages = toLanguageArray();
     const {execute: createPost} = useHttpPost("createPost");
     const {execute: editPost} = useHttpPost("editPost");
     const title = mode === "create"
@@ -92,8 +86,6 @@ export const PostForm: React.FC<PostFormProps> = ({
     const catalogData = getCategoriesAtLevel(categoriesResponse.categories ?? undefined, 3);
     // Create schema with translations
     const jobSchema = postJobSchema(t);
-
-    const defaultLanguage = getNumericCode(user?.interfaceLanguage ?? "en");
 
     const formMethods = useForm<z.input<typeof jobSchema>, never, z.output<typeof jobSchema>>({
         resolver: zodResolver(jobSchema),
@@ -109,7 +101,6 @@ export const PostForm: React.FC<PostFormProps> = ({
             deadline: "",
             url: "",
             isEnglishRequired: false,
-            languageId: defaultLanguage,
         },
     });
 
@@ -135,7 +126,6 @@ export const PostForm: React.FC<PostFormProps> = ({
                     deadline: post.deadline ? post.deadline.split("T")[0] : "",
                     workingFrom: post.jobType,
                     intendedUse: post.intendedUse,
-                    languageId: post?.languageId
                 });
                 setPostId(post.id);
             }
@@ -160,7 +150,6 @@ export const PostForm: React.FC<PostFormProps> = ({
                     url: data.url,
                     intendedUse: data.intendedUse,
                     budget: data.budget,
-                    languageId: data.languageId,
                 };
 
                 const response = postId
@@ -198,63 +187,6 @@ export const PostForm: React.FC<PostFormProps> = ({
                         <h1 className="text-4xl font-bold text-gray-900 bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent">
                             {title}
                         </h1>
-
-
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                            {/* Label + Required Indicator */}
-                            <div className="flex items-center gap-2 text-gray-700 font-medium whitespace-nowrap">
-                                <Globe className="w-5 h-5 text-gray-500"/>
-                                <span>
-            {t("createJob.languageRequiredLabel") || "Language required for this post"}
-                                    <span className="text-red-500 ml-1">*</span>
-        </span>
-                            </div>
-
-                            {/* Select Dropdown */}
-                            <div className="relative min-w-[220px]">
-                                <select
-                                    value={watch("languageId") ?? ""}
-                                    onChange={(e) => {
-                                        const value = e.target.value;
-                                        setValue("languageId", value === "" ? undefined : Number(value));
-                                    }}
-                                    className="appearance-none w-full bg-white border-2 border-gray-200 rounded-xl pl-12 pr-10 py-3 text-gray-700 font-medium hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer text-sm sm:text-base"
-                                >
-                                    {languages.map((lang) => (
-                                        <option key={lang.numericCode} value={lang.numericCode}>
-                                            {lang.label} ({lang.code.toUpperCase()})
-                                        </option>
-                                    ))}
-                                </select>
-
-                                {/* Flag Icon */}
-                                <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-                                    {watch("languageId") ? (
-                                        <div
-                                            className="w-8 h-6 rounded overflow-hidden">
-                                            <Image
-                                                src={languages.find(l => l.numericCode === watch("languageId"))?.flag || "/flags/en.svg"}
-                                                alt="Selected language flag"
-                                                width={32}
-                                                height={24}
-                                                className="w-full h-full"
-                                            />
-                                        </div>
-                                    ) : (
-                                        <Globe className="w-6 h-6 text-gray-400"/>
-                                    )}
-                                </div>
-
-                                {/* Dropdown Arrow */}
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-                                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor"
-                                         viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                              d="M19 9l-7 7-7-7"/>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
 

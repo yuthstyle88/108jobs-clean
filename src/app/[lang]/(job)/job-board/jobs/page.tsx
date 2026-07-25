@@ -10,7 +10,6 @@ import JobBoardTab from "@/components/JobBoardTab";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useTranslation} from "react-i18next";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
-import {toLanguageArray} from "@/constants/language";
 import {getJobTypeLabel} from "@/utils/helpers";
 import {JobType} from "108jobs-client";
 import {PaginationControls} from "@/components/PaginationControls";
@@ -22,18 +21,15 @@ const ITEMS_PER_PAGE = 20;
 const MyJobs = () => {
     const {t, i18n} = useTranslation();
     const router = useRouter();
-    const languages = toLanguageArray();
 
     const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined);
     const [cursorHistory, setCursorHistory] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedLanguage, setSelectedLanguage] = useState<number | undefined>(undefined);
 
     const {
         data: response,
         isMutating: isJobsLoading,
     } = useHttpGet("listPersonCreated", {
-        languageId: selectedLanguage,
         pageCursor: currentCursor,
         limit: ITEMS_PER_PAGE,
     });
@@ -97,32 +93,6 @@ const MyJobs = () => {
                     <div className="border-1 border-borderPrimary bg-white p-4 rounded-lg">
                         <div className="border-b">
                             <JobBoardTab/>
-                        </div>
-
-                        {/* Language Filter */}
-                        <div className="px-6 pt-6 pb-4">
-                            <div className="max-w-xs">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    {t("profileJob.dropdownLanguage")}
-                                </label>
-                                <select
-                                    value={selectedLanguage ?? ""}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        setSelectedLanguage(val === "" ? undefined : Number(val));
-                                        setCurrentCursor(undefined);
-                                        setCursorHistory([]);
-                                    }}
-                                    className="w-full px-4 py-3 pr-10 bg-white border border-gray-300 rounded-lg text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
-                                >
-                                    <option value="">{t("profileJob.allLanguages")}</option>
-                                    {languages.map((lang) => (
-                                        <option key={lang.numericCode} value={lang.numericCode}>
-                                            {t(`global.${lang.label}`)} ({lang.code.toUpperCase()})
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
                         </div>
 
                         {/* Desktop Table */}

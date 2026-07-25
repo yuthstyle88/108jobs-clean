@@ -1,13 +1,11 @@
 import { create } from "zustand";
-import type { GetSiteResponse, PublicOAuthProvider, SiteView, PersonView, Language, LanguageId, Tagline, OAuthProvider, LocalSiteUrlBlocklist, PluginMetadata } from "108jobs-client";
+import type { GetSiteResponse, PublicOAuthProvider, SiteView, PersonView, Tagline, OAuthProvider, LocalSiteUrlBlocklist, PluginMetadata } from "108jobs-client";
 
 export type SiteStore = {
   siteRes: GetSiteResponse | null;
   siteView: SiteView | null;
   admins: PersonView[];
   version: string;
-  allLanguages: Language[];
-  discussionLanguages: LanguageId[];
   tagline?: Tagline;
   oauthProviders: PublicOAuthProvider[];
   adminOauthProviders: OAuthProvider[];
@@ -23,8 +21,6 @@ export const useSiteStore = create<SiteStore>((set) => ({
   siteView: null,
   admins: [],
   version: "",
-  allLanguages: [],
-  discussionLanguages: [],
   tagline: undefined,
   oauthProviders: [],
   adminOauthProviders: [],
@@ -36,8 +32,6 @@ export const useSiteStore = create<SiteStore>((set) => ({
     siteView: site?.siteView ?? null,
     admins: site?.admins ?? [],
     version: site?.version ?? "",
-    allLanguages: site?.allLanguages ?? [],
-    discussionLanguages: site?.discussionLanguages ?? [],
     tagline: site?.tagline,
     oauthProviders: site?.oauthProviders ?? [],
     adminOauthProviders: site?.adminOauthProviders ?? [],
@@ -50,8 +44,6 @@ export const useSiteStore = create<SiteStore>((set) => ({
     siteView: null,
     admins: [],
     version: "",
-    allLanguages: [],
-    discussionLanguages: [],
     tagline: undefined,
     oauthProviders: [],
     adminOauthProviders: [],

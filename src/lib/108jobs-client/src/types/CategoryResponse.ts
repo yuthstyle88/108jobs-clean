@@ -7,5 +7,4 @@ import type {LanguageId} from "./LanguageId";
  */
 export type CategoryResponse = {
   categoryView: LanguageId;
-  discussionLanguages: Array<LanguageId>;
 };

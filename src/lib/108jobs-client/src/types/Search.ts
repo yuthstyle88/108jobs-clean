@@ -7,7 +7,6 @@ import type {SearchSortType} from "./SearchSortType";
 import type {SearchType} from "./SearchType";
 import {IntendedUse} from "./IntendedUse";
 import {JobType} from "./JobType";
-import {LanguageId} from "./LanguageId";
 
 /**
  * Searches the site, given a search term, and some optional filters.
@@ -15,7 +14,6 @@ import {LanguageId} from "./LanguageId";
 export type Search = {
     q?: string;
     categoryId?: CategoryId;
-    languageId?: LanguageId;
     categoryName?: string;
     creatorId?: PersonId;
     type?: SearchType;
