@@ -48,7 +48,6 @@ const JobApplication = () => {
                 const payload: CreateComment = {
                     postId,
                     content: data.whyHireYou,
-                    languageId: 1
                 };
 
                 const response = await createComment(payload);

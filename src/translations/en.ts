@@ -751,7 +751,6 @@ export const en = {
             submitButton: "Submit",
             postNameAlreadyExists: "Job name already exists",
             interfaceLanguageLabel: "Please select a language",
-            languageRequiredLabel: "Language required for this post",
         },
         employeeRegister: {
             howDidYouHearAboutUs:
@@ -2338,8 +2337,6 @@ export const en = {
             noJobsDescriptionNoFilters: "Check back later for new opportunities",
             budgetNegativeError: "Budget cannot be negative.",
             loadingJobs: "Loading your jobs...",
-            dropdownLanguage: "Job Language",
-            allLanguages: "All Languages",
         },
         profileNavbar: {
             accountInfo: "Account Information",
