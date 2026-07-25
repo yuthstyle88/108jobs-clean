@@ -1,8 +1,7 @@
 'use client'
-import {LANGUAGE_COOKIE, LANGUAGES, VALID_LANGUAGES} from "@/constants/language";
+import {LANGUAGE_COOKIE, VALID_LANGUAGES} from "@/constants/language";
 import {SupportedLang} from "@/lib/metadata";
 import {isBrowser} from "@/utils/browser";
-import {LanguageId} from "108jobs-client";
 
 // Micro-cache keyed only by meaningful bits (URL prefix, cookie lang, LS lang, navigator hint)
 let cachedClientLang: SupportedLang | undefined;
@@ -88,18 +87,5 @@ export function buildLangRedirectTarget(newLang: string, href: string): string |
     } catch {
         return null;
     }
-}
-
-export function getNumericCode(langCode: string): number | undefined {
-    const language = LANGUAGES[langCode as keyof typeof LANGUAGES];
-    return language && "numericCode" in language ? language.numericCode : undefined;
-}
-
-export function getLangCodeByNumericCode(numericCode: LanguageId): string | undefined {
-    const entry = Object.values(LANGUAGES).find(
-        (lang) => lang.numericCode === numericCode
-    );
-
-    return entry ? entry.code : undefined;
 }
 
