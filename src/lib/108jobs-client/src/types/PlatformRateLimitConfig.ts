@@ -4,8 +4,8 @@ import type {LocalSiteId} from "./LocalSiteId";
 /**
  * Rate limits for your site. Given in count / length of time.
  */
-export type LocalSiteRateLimit = {
-  localSiteId: LocalSiteId;
+export type PlatformRateLimitConfig = {
+  platformConfigId: LocalSiteId;
   messageMaxRequests: number;
   messageIntervalSeconds: number;
   postMaxRequests: number;
@@ -14,8 +14,8 @@ export type LocalSiteRateLimit = {
   registerIntervalSeconds: number;
   imageMaxRequests: number;
   imageIntervalSeconds: number;
-  commentMaxRequests: number;
-  commentIntervalSeconds: number;
+  proposalMaxRequests: number;
+  proposalIntervalSeconds: number;
   searchMaxRequests: number;
   searchIntervalSeconds: number;
   publishedAt: string;

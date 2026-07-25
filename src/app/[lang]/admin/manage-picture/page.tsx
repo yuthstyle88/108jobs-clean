@@ -22,13 +22,13 @@ export default function SiteAppearancePage() {
     const [iconPreviewOverride, setIconPreviewOverride] = useState<string | null>(null);
     const [bannerPreviewOverride, setBannerPreviewOverride] = useState<string | null>(null);
 
-    const siteName = siteData?.siteView?.site?.name || "Your Site";
+    const siteName = siteData?.siteView?.localSite?.name || "Your Site";
 
     // The locally-selected file preview (if any) takes priority over the
     // image currently stored on the site; once uploaded, the override is
     // cleared and this falls back to the freshly-fetched site data.
-    const iconPreview = iconPreviewOverride ?? siteData?.siteView?.site?.icon ?? null;
-    const bannerPreview = bannerPreviewOverride ?? siteData?.siteView?.site?.banner ?? null;
+    const iconPreview = iconPreviewOverride ?? siteData?.siteView?.localSite?.icon ?? null;
+    const bannerPreview = bannerPreviewOverride ?? siteData?.siteView?.localSite?.banner ?? null;
 
     const handleFileChange = (
         type: "icon" | "banner",

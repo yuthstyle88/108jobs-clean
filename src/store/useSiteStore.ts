@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { GetSiteResponse, PublicOAuthProvider, SiteView, PersonView, Tagline, OAuthProvider, LocalSiteUrlBlocklist, PluginMetadata } from "108jobs-client";
+import type { GetSiteResponse, PublicOAuthProvider, SiteView, PersonView, Tagline, OAuthProvider, PluginMetadata } from "108jobs-client";
 
 export type SiteStore = {
   siteRes: GetSiteResponse | null;
@@ -9,7 +9,6 @@ export type SiteStore = {
   tagline?: Tagline;
   oauthProviders: PublicOAuthProvider[];
   adminOauthProviders: OAuthProvider[];
-  blockedUrls: LocalSiteUrlBlocklist[];
   imageUploadDisabled: boolean;
   activePlugins: PluginMetadata[];
   setSiteRes: (site: GetSiteResponse | null) => void;
@@ -24,7 +23,6 @@ export const useSiteStore = create<SiteStore>((set) => ({
   tagline: undefined,
   oauthProviders: [],
   adminOauthProviders: [],
-  blockedUrls: [],
   imageUploadDisabled: false,
   activePlugins: [],
   setSiteRes: (site) => set(() => ({
@@ -35,7 +33,6 @@ export const useSiteStore = create<SiteStore>((set) => ({
     tagline: site?.tagline,
     oauthProviders: site?.oauthProviders ?? [],
     adminOauthProviders: site?.adminOauthProviders ?? [],
-    blockedUrls: site?.blockedUrls ?? [],
     imageUploadDisabled: site?.imageUploadDisabled ?? false,
     activePlugins: site?.activePlugins ?? [],
   })),
@@ -47,7 +44,6 @@ export const useSiteStore = create<SiteStore>((set) => ({
     tagline: undefined,
     oauthProviders: [],
     adminOauthProviders: [],
-    blockedUrls: [],
     imageUploadDisabled: false,
     activePlugins: [],
   }),

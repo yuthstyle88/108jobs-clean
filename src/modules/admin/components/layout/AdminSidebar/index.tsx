@@ -89,7 +89,7 @@ export function AdminSidebar() {
     const collapsed = state === "collapsed";
     const pathname = usePathname();
     const pathWithoutLocale = "/" + pathname.split("/").slice(2).join("/");
-    const logoUrl = siteView?.site?.icon || AssetIcon.logo.src;
+    const logoUrl = siteView?.localSite?.icon || AssetIcon.logo.src;
     return (
         <Sidebar collapsible="icon">
             <SidebarContent className="bg-gradient-card ">
