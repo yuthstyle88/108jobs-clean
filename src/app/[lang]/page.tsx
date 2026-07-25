@@ -57,7 +57,7 @@ export default function Home() {
                         <section
                             className="hidden sm:block h-auto bg-cover bg-center relative pt-[6.5rem] md:pt-[4.5rem]"
                             style={{
-                                backgroundImage: `url(${siteView?.site.banner})`,
+                                backgroundImage: `url(${siteView?.localSite.banner})`,
                             }}
                         >
                             <div className="absolute inset-0 bg-black/50"/>

@@ -18,7 +18,7 @@ const Header = ({type, forceShowSearch = false}: { type: string; forceShowSearch
     const {scrollY, showSearch} = useScrollHandler(forceShowSearch);
     const bg = scrollY > 0 ? "bg-primary" : type === "transparent" ? "bg-transparent" : "bg-primary";
 
-    const logoUrl = siteView?.site?.icon || AssetIcon.logo.src;
+    const logoUrl = siteView?.localSite?.icon || AssetIcon.logo.src;
 
     return (
         <header className={`fixed top-0 z-[999] w-full transition-all duration-300 ${bg}`}>

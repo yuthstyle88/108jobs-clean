@@ -12,13 +12,12 @@ const DashboardPage = () => {
     const {t} = useTranslation();
     const {siteRes} = useSiteStore();
 
-    const site = siteRes?.siteView?.site;
     const localSite = siteRes?.siteView?.localSite;
     const rateLimit = siteRes?.siteView?.localSiteRateLimit;
     const admins = siteRes?.admins || [];
     const version = siteRes?.version;
 
-    const siteName = site?.name ?? "108Jobs";
+    const siteName = localSite?.name ?? "108Jobs";
 
     const stats = [
         {
@@ -35,7 +34,7 @@ const DashboardPage = () => {
         },
         {
             title: t("dashboard.stats.totalProposals"),
-            value: localSite?.comments?.toLocaleString() ?? "0",
+            value: localSite?.proposals?.toLocaleString() ?? "0",
             icon: MessageSquare,
             description: t("dashboard.stats.descriptionProposals"),
         },
@@ -66,7 +65,7 @@ const DashboardPage = () => {
                         <div className="flex items-center gap-2">
                             <Globe className="w-4 h-4"/>
                             <span
-                                className="font-medium tex">{t("dashboard.siteInfo.instance")}:</span> {site?.name ?? "108jobs"}
+                                className="font-medium tex">{t("dashboard.siteInfo.instance")}:</span> {localSite?.name ?? "108jobs"}
                         </div>
                         <div className="flex items-center gap-2">
                             <Settings className="w-4 h-4"/>
@@ -185,26 +184,13 @@ const DashboardPage = () => {
                     <CardContent>
                         <div className="space-y-3 text-sm">
                             <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                                <div className="w-2 h-2 bg-success rounded-full"></div>
-                                <div className="flex-1">
-                                    <p className="font-medium">
-                                        {t("dashboard.events.siteRefreshed")}
-                                    </p>
-                                    <p className="text-xs">
-                                        {site?.lastRefreshedAt
-                                            ? format(new Date(site.lastRefreshedAt), "PPp")
-                                            : t("dashboard.events.never")}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
                                 <div className="w-2 h-2 bg-blue rounded-full"></div>
                                 <div className="flex-1">
                                     <p className="font-medium">
                                         {t("dashboard.events.adminActive", {name: admins[0]?.person?.name ?? "admin"})}
                                     </p>
                                     <p className="text-xs">
-                                        {t("dashboard.events.instanceId", {id: site?.instanceId ?? "1"})}
+                                        {t("dashboard.events.instanceId", {id: siteRes?.siteView?.instance?.id ?? "1"})}
                                     </p>
                                 </div>
                             </div>
@@ -214,11 +200,11 @@ const DashboardPage = () => {
                                     <div className="w-2 h-2 bg-blue rounded-full"></div>
                                     <div className="flex-1">
                                         <p className="font-medium">
-                                            {t("dashboard.events.postsPublished", {count: localSite.posts})}
+                                            {t("dashboard.events.postsPublished", {count: Number(localSite.posts)})}
                                         </p>
                                         <p className="text-xs">
                                             {t("dashboard.events.sinceLaunch", {
-                                                date: site?.publishedAt ? format(new Date(site.publishedAt), "PPP") : t("common.launch")
+                                                date: localSite?.publishedAt ? format(new Date(localSite.publishedAt), "PPP") : t("common.launch")
                                             })}
                                         </p>
                                     </div>
