@@ -1,20 +1,44 @@
 "use client";
 
+import {useEffect} from "react";
 import ChatRoomView from "@/modules/chat/components/ChatRoomView";
 import {UserService} from "@/services";
 import {RoomNotFound} from "@/components/RoomNotFound";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
 import {PhoenixChatBridgeProvider} from "@/modules/chat/contexts/PhoenixChatBridgeProvider";
 import {useUserStore} from "@/store/useUserStore";
+import {useHttpGet} from "@/hooks/api/http/useHttpGet";
+import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
+import {RoomView} from "@/modules/chat/types";
 
 export default function MessageClient({roomId}: { roomId: string }) {
     const isLoggedIn = UserService.Instance.isLoggedIn;
     const {user} = useUserStore();
-    const getRoom = useRoomsStore(s => s.getRoom);
+    const rooms = useRoomsStore(s => s.rooms);
     const findPartner = useRoomsStore(s => s.findPartner);
-    const room = getRoom(roomId);
+    const upsertRoom = useRoomsStore(s => s.upsertRoom);
+    const room = rooms.find(r => r.room.id === roomId);
+
+    // Zustand's rooms store resets on hard refresh / direct navigation, so when
+    // the room isn't already in the store, fetch it directly instead of
+    // assuming it doesn't exist.
+    const {data, isLoading} = useHttpGet("getChatRoom", [roomId]);
+
+    useEffect(() => {
+        if (data?.room) {
+            upsertRoom({...data.room, isActive: false} as RoomView, false);
+        }
+    }, [data, upsertRoom]);
+
+    if (!room) {
+        if (isLoading) {
+            return <LoadingBlur text=""/>;
+        }
+        return <RoomNotFound/>;
+    }
+
     const partner = findPartner(roomId, user?.id);
-    if (!room || !partner) {
+    if (!partner) {
         return <RoomNotFound/>;
     }
 
