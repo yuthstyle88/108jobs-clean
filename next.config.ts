@@ -33,8 +33,14 @@ const nextConfig: NextConfig = {
         ignoreBuildErrors: process.env.NODE_ENV !== 'production',
     },
 
-    // Help Next.js tree-shake and dedupe by transpiling local packages if needed
-    transpilePackages: ['108jobs-client'],
+    // 108jobs-client ships prebuilt CommonJS (tsc output, requiring @tsoa/runtime at module
+    // eval time), not raw ESM/TS source -- transpilePackages forces it through Turbopack's
+    // ESM transform pipeline, which drops the CJS interop shim and leaves bare require()
+    // calls in the RSC/SSR bundle where no `require` global exists ("require is not defined"
+    // crashing every server-rendered page that imports it, e.g. /profile/[username]).
+    // serverExternalPackages instead leaves it as a real external CJS dependency resolved by
+    // Node's native require() at runtime, which is what its prebuilt output actually needs.
+    serverExternalPackages: ['108jobs-client'],
 
     images: {
         // Using Next/Image without on-the-fly optimization to keep server lean
