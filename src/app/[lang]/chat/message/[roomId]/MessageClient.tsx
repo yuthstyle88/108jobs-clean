@@ -11,12 +11,19 @@ import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
 import {RoomView} from "@/modules/chat/types";
 
-export default function MessageClient({roomId}: { roomId: string }) {
+export default function MessageClient({roomId: rawRoomId}: { roomId: string }) {
     const isLoggedIn = UserService.Instance.isLoggedIn;
     const {user} = useUserStore();
     const rooms = useRoomsStore(s => s.rooms);
     const findPartner = useRoomsStore(s => s.findPartner);
     const upsertRoom = useRoomsStore(s => s.upsertRoom);
+
+    // Next.js does not decode dynamic route segments, and room ids contain
+    // colons (e.g. "dm:4233:4238"), which the browser percent-encodes on
+    // navigation (both a <Link> click and a hard refresh/direct URL). Every
+    // room id elsewhere (the rooms store, API responses) is the decoded
+    // form, so comparing against the raw param here always failed to match.
+    const roomId = decodeURIComponent(rawRoomId);
     const room = rooms.find(r => r.room.id === roomId);
 
     // Zustand's rooms store resets on hard refresh / direct navigation, so when
