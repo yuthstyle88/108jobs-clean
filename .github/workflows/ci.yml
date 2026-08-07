@@ -127,31 +127,38 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install chromium
 
-      # The runner is a persistent machine, so a crashed or cancelled earlier
-      # run can leave the Playwright webServer holding port 3001 and this run
-      # aborts with "http://localhost:3001 is already used". Free it first.
-      # (concurrency: above only cancels runs on the SAME ref -- two different
-      # PRs land on the same box and would otherwise collide.)
-      - name: Free port 3001
+      # playwright.config.ts defaults the webServer to port 3001, and on this
+      # runner 3001 is permanently taken: something owned by another user holds
+      # 127.0.0.1:3001, so the bind fails with EADDRINUSE. Killing it is not an
+      # option and not even diagnosable from here -- an unprivileged `lsof`/
+      # `fuser` cannot see another user's socket, so a "free the port" step
+      # reports the port idle and the bind fails two seconds later anyway.
+      #
+      # So do not compete for a fixed port. Ask the kernel for a free one and
+      # hand it to Playwright. This also removes the collision between two runs
+      # on different refs landing on the same box -- `concurrency:` above only
+      # cancels runs on the SAME ref, so it never protected against that.
+      - name: Pick a free port for the dev server
         run: |
-          (command -v fuser >/dev/null 2>&1 && fuser -k 3001/tcp) || true
-          (command -v lsof  >/dev/null 2>&1 && lsof -ti tcp:3001 | xargs -r kill -9) || true
-          npx --yes kill-port 3001 || true
+          set -euo pipefail
+          port=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1]); s.close()')
+          echo "E2E_PORT=$port" >> "$GITHUB_ENV"
+          echo "dev server will listen on $port"
 
-      # playwright.config.ts's webServer boots its own `npm run dev` instance
-      # (port 3001) and tests/utils/auth.ts mocks the backend API via
-      # page.route -- no separately-running backend or secrets are needed.
+      # playwright.config.ts's webServer boots its own `npm run dev` instance on
+      # $E2E_PORT and tests/utils/auth.ts mocks the backend API via page.route
+      # -- no separately-running backend or secrets are needed.
       - name: E2E tests
         run: npx playwright test
 
-      # Leave the box clean even when the suite failed or was cancelled, so the
-      # next run does not inherit a stuck webServer.
-      - name: Free port 3001 (cleanup)
+      # Playwright shuts its webServer down itself on a normal exit, but a
+      # cancelled job is killed mid-suite and would otherwise leave a `next dev`
+      # running on this persistent box forever -- one orphan per cancelled run.
+      - name: Stop the dev server
         if: ${{ always() }}
         run: |
-          (command -v fuser >/dev/null 2>&1 && fuser -k 3001/tcp) || true
-          (command -v lsof  >/dev/null 2>&1 && lsof -ti tcp:3001 | xargs -r kill -9) || true
-          npx --yes kill-port 3001 || true
+          (command -v fuser >/dev/null 2>&1 && fuser -k "${E2E_PORT}/tcp") || true
+          (command -v lsof  >/dev/null 2>&1 && lsof -ti "tcp:${E2E_PORT}" | xargs -r kill -9) || true
 
       - name: Upload Playwright report
         if: failure()
