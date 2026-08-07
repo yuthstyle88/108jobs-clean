@@ -6,9 +6,19 @@ on:
   pull_request:
   workflow_dispatch: {}
 
+# Keyed on the source BRANCH rather than `github.ref`. On a pull_request
+# `github.ref` is `refs/pull/N/merge`, on a push it is `refs/heads/<branch>`, so
+# the old key put the same branch in different groups depending on the trigger.
+# `github.head_ref` is set only on pull_request events and holds the branch
+# name; `github.ref_name` is the branch name everywhere else.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  # Never cancel a run on main. That run is the record of whether the default
+  # branch is green, and cancelling it on a rapid second merge leaves a commit
+  # with no verdict -- precisely the "red check nobody trusts" problem this
+  # workflow's other comments are about, in a different costume. PR runs are
+  # superseded freely.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   # ---------------------------------------------------------------------------
