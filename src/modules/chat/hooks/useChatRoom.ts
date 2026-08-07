@@ -16,7 +16,7 @@ import {useChatStore} from "@/modules/chat/store/chatStore"
 import {makeReadAckEmitter} from "@/modules/chat/utils/socket-emitter";
 import {emitWsReconnected} from "@/modules/chat/events";
 import {MessagePayload} from "@/modules/chat/types";
-import {PhoenixSenderAdapter} from '@/modules/chat/adapters/PhoenixSenderAdapter';
+import {ChatSenderAdapter} from '@/modules/chat/adapters/ChatSenderAdapter';
 import {usePresenceStore} from '@/modules/chat/store/presenceStore';
 import {useReadLastIdStore} from "@/modules/chat/store/readStore";
 import {usePartnerTyping} from '@/modules/chat/hooks/usePartnerTyping';
@@ -318,7 +318,7 @@ export function useChatRoom({
             // Lazily create a local sender bound to the adapter (one-time)
             if (!localSenderRef.current) {
                 try {
-                    localSenderRef.current = new PhoenixSenderAdapter(adapter);
+                    localSenderRef.current = new ChatSenderAdapter(adapter);
                 } catch {
                 }
             }

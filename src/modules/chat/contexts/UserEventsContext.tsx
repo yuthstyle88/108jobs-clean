@@ -10,6 +10,7 @@ import {hydrateUnread} from '@/modules/chat/store/unreadStore';
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {maybeHandlePresenceUpdate} from "@/modules/chat/utils";
 import {usePresenceStore} from "@/modules/chat/store/presenceStore";
+import {WS_EVENT} from "@/modules/chat/protocol/wireEvents";
 import {PresenceSnapshotItem, PresenceStatus} from "108jobs-client";
 
 interface UserEventsContextValue {
@@ -30,8 +31,17 @@ export const UserEventsProvider: React.FC<React.PropsWithChildren> = ({children}
         return {
             token,
             senderId: Number(userId),
-            roomId: String(userId), // roomId isn't used by our custom topicBuilder but required by type
-            topicBuilder: (uid: string) => `user:${uid}:events`,
+            // This channel is addressed by a namespace of its own rather than
+            // a chat room id, so it overrides roomBuilder; roomId is still
+            // required by the type and rides along in event payloads.
+            roomId: String(userId),
+            roomBuilder: (uid: string) => `user:${uid}:events`,
+            // No join for this channel. The server keeps no join registry --
+            // it decides whether a user-scoped frame is for this session by
+            // parsing the id out of the topic and comparing it to the
+            // session's authenticated user (PhoenixSession::should_deliver in
+            // api-108jobs). A join here would be a frame nobody reads.
+            joinOnConnect: false,
             autoConnect: true,
             debug: process.env.NODE_ENV === 'development',
         };
@@ -84,8 +94,8 @@ export const UserEventsProvider: React.FC<React.PropsWithChildren> = ({children}
             return ws.addMessageListener((data: any) => {
                 console.log('[UserEvents] Received message:', data);
 
-                // Handle chats:signal
-                if (data?.event === 'chats:signal') {
+                // Handle the chatsSignal fan-out
+                if (data?.event === WS_EVENT.ChatsSignal) {
                     const payload = data?.payload;
                     const meId = Number(userId);
 

@@ -1,17 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
-import { PhoenixSenderAdapter } from "@/modules/chat/adapters/PhoenixSenderAdapter";
+import { ChatSenderAdapter } from "@/modules/chat/adapters/ChatSenderAdapter";
 
 /**
- * Minimal fake of a real phoenix.js `Channel`: `push()` returns a chainable
+ * Minimal fake of a ChatChannel: `push()` returns a chainable
  * "Push" object whose `.receive(status, cb)` registers a callback and
  * returns itself (so `.receive('ok', ..).receive('error', ..)` chaining
- * works exactly like the real library). Every call to `push()` returns the
+ * works exactly like ChatChannel's own ChatPush). Every call to `push()` returns the
  * *same* Push instance, mirroring how a real channel would behave for a
  * given logical send -- so if `sendMessage` calls `channel.push()` more
  * than once for one logical send, that's a real *second* network push,
  * not just a second look at the same result.
  */
-function makeFakePhoenixChannel() {
+function makeFakeChatChannel() {
   const pushObj: any = {};
   pushObj.receive = vi.fn((status: string, cb: (resp?: any) => void) => {
     if (status === "ok") {
@@ -25,12 +25,12 @@ function makeFakePhoenixChannel() {
   return { push, pushObj };
 }
 
-describe("PhoenixSenderAdapter.sendMessage (Bug B: duplicate channel.push)", () => {
+describe("ChatSenderAdapter.sendMessage (Bug B: duplicate channel.push)", () => {
   it("calls channel.push exactly once per logical send (regression: previously pushed twice)", async () => {
-    const channel = makeFakePhoenixChannel();
-    const adapter = new PhoenixSenderAdapter(channel as any);
+    const channel = makeFakeChatChannel();
+    const adapter = new ChatSenderAdapter(channel as any);
 
-    const result = await adapter.sendMessage("chat:message", {
+    const result = await adapter.sendMessage("message", {
       id: "client-1",
       roomId: "room-1",
       senderId: 1,
@@ -42,7 +42,7 @@ describe("PhoenixSenderAdapter.sendMessage (Bug B: duplicate channel.push)", () 
 
     // The real bug: sendMessage called ch.push(event, payload) a second,
     // separate time purely to type-check `.receive`, which on a real
-    // Phoenix channel sends the message over the wire again. Once the chat
+    // channel sends the message over the wire again. Once the chat
     // bridge is actually connected (Bug A), this would double-send every
     // outbound chat message.
     expect(channel.push).toHaveBeenCalledTimes(1);
@@ -58,9 +58,9 @@ describe("PhoenixSenderAdapter.sendMessage (Bug B: duplicate channel.push)", () 
       return pushObj;
     });
     const push = vi.fn(() => pushObj);
-    const adapter = new PhoenixSenderAdapter({ push } as any);
+    const adapter = new ChatSenderAdapter({ push } as any);
 
-    const result = await adapter.sendMessage("chat:message", {
+    const result = await adapter.sendMessage("message", {
       id: "client-2",
       roomId: "room-1",
       senderId: 1,
@@ -76,9 +76,9 @@ describe("PhoenixSenderAdapter.sendMessage (Bug B: duplicate channel.push)", () 
 
   it("falls back to the client id (single push call) when the channel has no .receive method", async () => {
     const push = vi.fn(() => ({} as any)); // push() succeeds but result has no .receive
-    const adapter = new PhoenixSenderAdapter({ push } as any);
+    const adapter = new ChatSenderAdapter({ push } as any);
 
-    const result = await adapter.sendMessage("chat:message", {
+    const result = await adapter.sendMessage("message", {
       id: "client-3",
       roomId: "room-1",
       senderId: 1,

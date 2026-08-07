@@ -1,5 +1,12 @@
 # Wire-Event Naming Alignment (Stage 1) Implementation Plan
 
+> **Completed, and superseded in part (2026-08-07) by
+> [`../specs/2026-08-07-chat-wire-v2.md`](../specs/2026-08-07-chat-wire-v2.md).**
+> Do not execute this plan again. Its event names all still hold, but every
+> step below that names Phoenix is stale: the `phoenix` npm client and the
+> `phx_join`/`phx_leave`/`phx_reply` wire strings are gone, `PhoenixEvent` is
+> now `ChatWireEvent`, and `PhoenixSocketService` is `ChatSocketService`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make every WebSocket wire-protocol event-name string this frontend sends or matches identical to api-108jobs's `ChatEvent::as_str()` canonical values, sourced from one new constant module, with real unit tests proving the contract — not just inspection.

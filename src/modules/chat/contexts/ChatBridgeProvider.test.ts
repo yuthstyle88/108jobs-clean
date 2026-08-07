@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   parseNackPayload,
   selectFailedMessagesForResend,
-} from "@/modules/chat/contexts/PhoenixChatBridgeProvider";
+} from "@/modules/chat/contexts/ChatBridgeProvider";
 
 describe("selectFailedMessagesForResend", () => {
   const validMsg = {

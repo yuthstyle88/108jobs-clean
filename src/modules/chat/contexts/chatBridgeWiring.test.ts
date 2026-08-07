@@ -4,10 +4,10 @@
  * real channel in production.
  *
  * Unlike the existing parseNackPayload/selectFailedMessagesForResend tests
- * in PhoenixChatBridgeProvider.test.ts (which only test pure parsing
+ * in ChatBridgeProvider.test.ts (which only test pure parsing
  * helpers in isolation), this test mounts the REAL hook/provider chain --
  * useWebSocket -> WebSocketProvider (WebSocketContext) ->
- * PhoenixChatBridgeProvider -- with only the network boundary
+ * ChatBridgeProvider -- with only the network boundary
  * (getChannelAdapter) mocked out, and asserts on observable, real behavior:
  *   1. sending a message actually calls the (fake) channel's push()
  *   2. a MessageNack event delivered on the (fake) channel actually reaches
@@ -16,7 +16,7 @@
  *
  * Against the current/broken code, useWebSocket never exposes the adapter
  * it builds, so WebSocketContext's `adapter` is always null, so
- * PhoenixChatBridgeProvider's pickChannel(ws, roomId) never finds a
+ * ChatBridgeProvider's pickChannel(ws, roomId) never finds a
  * channel, so none of this ever wires up -- this test must FAIL against
  * that code (proving it exercises the real bug) before the fix, and PASS
  * after.
@@ -30,24 +30,24 @@ import { WS_EVENT } from "@/modules/chat/protocol/wireEvents";
 import { useChatStore } from "@/modules/chat/store/chatStore";
 import { useNetworkStore } from "@/store/networkStore";
 
-vi.mock("@/modules/chat/services/PhoenixSocketService", () => ({
+vi.mock("@/modules/chat/services/ChatSocketService", () => ({
   getChannelAdapter: vi.fn(),
 }));
 
 // Imports below must come after vi.mock so they pick up the mocked module.
-import { getChannelAdapter } from "@/modules/chat/services/PhoenixSocketService";
+import { getChannelAdapter } from "@/modules/chat/services/ChatSocketService";
 import { WebSocketProvider } from "@/modules/chat/contexts/WebSocketContext";
 import {
-  PhoenixChatBridgeProvider,
+  ChatBridgeProvider,
   useChatServices,
   type ChatServices,
-} from "@/modules/chat/contexts/PhoenixChatBridgeProvider";
+} from "@/modules/chat/contexts/ChatBridgeProvider";
 
 const ROOM_ID = "room-wiring-1";
 const SENDER_ID = 1;
 
-/** A fake "real Phoenix Channel"-shaped object: has .on()/.off() (event
- * subscription, per phoenix.js's real Channel class) and .push() (returns
+/** A fake ChatChannel-shaped object: has .on()/.off() (event
+ * subscription, per ChatSocketService's ChatChannel) and .push() (returns
  * a chainable Push-like object), matching what a correctly-fixed
  * getChannelAdapter would expose. */
 function makeFakeRawChannel() {
@@ -87,7 +87,7 @@ function makeFakeAdapter(rawChannel: ReturnType<typeof makeFakeRawChannel>) {
     send: vi.fn(),
     emit: vi.fn(),
     close: vi.fn(),
-    // Raw Phoenix Channel exposed for real channel-level wiring.
+    // ChatChannel exposed for real channel-level wiring.
     channel: rawChannel,
   };
 }
@@ -166,7 +166,7 @@ describe("Chat bridge channel wiring (Bug A regression)", () => {
             joinInProvider: false,
           },
           React.createElement(
-            PhoenixChatBridgeProvider,
+            ChatBridgeProvider,
             { isLoggedIn: true, roomId: ROOM_ID } as any,
             React.createElement(ServiceProbe, {
               onUpdate: (s: ChatServices) => {
@@ -197,7 +197,7 @@ describe("Chat bridge channel wiring (Bug A regression)", () => {
     expect(latestServices.sender).not.toBeNull();
 
     await act(async () => {
-      await latestServices.sender!.sendMessage("chat:message", {
+      await latestServices.sender!.sendMessage("message", {
         id: "client-send-1",
         roomId: ROOM_ID,
         senderId: SENDER_ID,

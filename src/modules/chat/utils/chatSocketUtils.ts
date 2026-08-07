@@ -17,13 +17,13 @@ import {WS_EVENT} from "@/modules/chat/protocol/wireEvents";
 // ---- Centralized browser/event helpers (reduce duplication across contexts) ----
 
 /**
- * Normalize Phoenix frames/envelopes into a normalized envelope type for chat events.
+ * Normalize wire frames/envelopes into a normalized envelope type for chat events.
  */
 // NormalizedEnvelope type
 export type NormalizedEnvelope =
 // history page event
     { event: 'history_page'; results: ChatMessageView[]; prevPage?: string; nextPage?: string }
-    // single message event (e.g., chat:message)
+    // single message event (e.g., `message`)
     | {
     event: string;
     roomId: string;
@@ -54,8 +54,8 @@ export type ServerMessageModel = ChatMessage & {
 
 interface IncomingEventLike {
     event: string;
-    roomId: string; // Phoenix topic room id (without the `room:` prefix on server side)
-    topic?: string;
+    roomId: string; // the bare room id, as carried by the wire's `room` field
+    room?: string;
     payload?: ServerMessageModel;
 }
 
@@ -69,7 +69,7 @@ function isChatMessagesResponse(v: unknown): v is ChatMessagesResponse {
     return !!(v && typeof v === 'object' && Array.isArray((v as ChatMessagesResponse).results));
 }
 
-export function normalizePhoenixEnvelope(
+export function normalizeChatEnvelope(
     payload: ChatMessagesResponse | IncomingEventLike,
     fallbackRoomId?: string
 ): NormalizedEnvelope {
@@ -85,13 +85,18 @@ export function normalizePhoenixEnvelope(
 
     // 2) If it is an `IncomingEventLike`, normalize events
     if (isIncomingEventLike(payload)) {
+        // Matched exactly, never case-folded. This used to lowercase the
+        // inbound event first, which was harmless only because every v1 name
+        // was already lowercase (`chat:message`, `sync:pending`). Half the v2
+        // names are camelCase (`typingStart`, `syncPending`), so folding case
+        // here would compare "typingstart" against "typingStart" and quietly
+        // match nothing -- a frame silently dropped, with no error anywhere.
         const ev = payload.event;
-        const evLower = ev.toLowerCase();
-        const rid = payload.roomId || fallbackRoomId || '';
+        const rid = payload.roomId || payload.room || fallbackRoomId || '';
         const p: ServerMessageModel | undefined = payload.payload;
 
-        // --- chat:message ---
-        if (evLower === 'chat:message') {
+        // --- message ---
+        if (ev === WS_EVENT.Message) {
             if (!p || !p.content || !p.senderId) {
                 return {event: ev, roomId: rid};
             }
@@ -108,7 +113,7 @@ export function normalizePhoenixEnvelope(
             };
 
             return {
-                event: 'chat:message',
+                event: WS_EVENT.Message,
                 roomId: rid,
                 message: msg,
                 room: {id: rid} as ChatRoom,
@@ -117,7 +122,7 @@ export function normalizePhoenixEnvelope(
         }
 
         // --- typing events ---
-        if (['chat:typing', 'typing:start', 'typing:stop'].includes(evLower)) {
+        if (([WS_EVENT.Typing, WS_EVENT.TypingStart, WS_EVENT.TypingStop] as string[]).includes(ev)) {
             return {
                 event: ev,
                 roomId: rid,
@@ -127,7 +132,7 @@ export function normalizePhoenixEnvelope(
         }
 
         // --- update events ---
-        if (evLower === WS_EVENT.Update) {
+        if (ev === WS_EVENT.Update) {
             return {
                 event: ev,
                 roomId: rid,
@@ -150,8 +155,8 @@ export function normalizePhoenixEnvelope(
         }
     }
 
-    if (isIncomingEventLike(payload) && payload.event === 'phx_reply') {
-        return {event: 'phx_reply', roomId: fallbackRoomId || ''};
+    if (isIncomingEventLike(payload) && payload.event === WS_EVENT.Reply) {
+        return {event: WS_EVENT.Reply, roomId: fallbackRoomId || ''};
     }
 
     // 3) Unknown shape → return empty envelope with generic event
@@ -171,13 +176,21 @@ export function safeParse(val: unknown): unknown {
     }
 }
 
-export function buildActixWsUrl(): string {
-    // Always go through Actix first → Phoenix-compatible endpoint
-    // Do not append token/roomId in the URL. Phoenix client will send auth via params.
+/**
+ * The realtime endpoint: `GET /socket/websocket?token=<jwt>`.
+ *
+ * The path and the auth are unchanged from v1 -- only the frames on the
+ * socket changed -- but the URL is now built in full here. The `phoenix`
+ * client used to append `/websocket` and serialize its `params` into the
+ * query string itself; a plain WebSocket does neither, and the token has to
+ * ride in the query because the browser API has no way to set a header on
+ * the handshake.
+ */
+export function buildChatWsUrl(token?: string | null): string {
     const proto = isHttps() ? 'wss' : 'ws';
     const host = getApiHost();
-    // Actix will handle `/socket/websocket` (either as WS proxy to Phoenix on :4000 or native Phoenix-compatible handler)
-    return `${proto}://${host}/socket`;
+    const base = `${proto}://${host}/socket/websocket`;
+    return token ? `${base}?token=${encodeURIComponent(token)}` : base;
 }
 
 export function isBase64Like(s: string): boolean {
@@ -193,7 +206,16 @@ export function addOnce(set: Set<string>, key: string): boolean {
     return true;
 }
 
-export function unwrapPhoenixFrame(data: unknown): unknown {
+/**
+ * Parse an inbound frame out of whatever the transport handed us.
+ *
+ * Under v1 this also had to recognize the five-element array
+ * `[join_ref, msg_ref, topic, event, payload]` and dig the payload out of
+ * slot 4. Wire v2 has no array form at all: a frame is a JSON object with
+ * named fields, so an unknown field is ignored instead of shifting every
+ * field after it.
+ */
+export function unwrapChatFrame(data: unknown): unknown {
     try {
         // If MessageEvent-like
         const raw = typeof data === 'string' ? data : (typeof (data as any)?.data === 'string' ? (data as any).data : null);
@@ -201,16 +223,7 @@ export function unwrapPhoenixFrame(data: unknown): unknown {
         // Already an object (not a string)? return as-is
         if (raw == null) return data;
 
-        // Phoenix array frame: [join_ref, msg_ref, topic, event, payload]
-        if (raw.startsWith('[')) {
-            const arr: unknown = JSON.parse(raw);
-            if (Array.isArray(arr) && arr.length >= 5) {
-                return arr[4]; // return payload only; let higher-level normalizer handle event/topic
-            }
-            return arr;
-        }
-
-        // JSON object: return parsed object as-is, no merging of topic/event
+        // JSON object: return parsed object as-is, no merging of room/event
         return JSON.parse(raw);
     } catch {
         return data;
@@ -232,8 +245,10 @@ export async function handleIncomingPayload(
     }
 ): Promise<ChatMessage[]> {
     try {
-        const env = normalizePhoenixEnvelope(payload, ctx.roomId);
-        const eventName = String(env.event || '').toLowerCase();
+        const env = normalizeChatEnvelope(payload, ctx.roomId);
+        // Exact match, for the same reason as in normalizeChatEnvelope: half
+        // the v2 event names are camelCase and would not survive case-folding.
+        const eventName = String(env.event || '');
 
         const mapOne = async (raw: any): Promise<ChatMessage | null> => {
             // prefer explicit message node if present
@@ -286,7 +301,7 @@ export async function handleIncomingPayload(
         }
 
         // NEW MESSAGE (canonical)
-        if (eventName === 'chat:message') {
+        if (eventName === WS_EVENT.Message) {
             const mapped = await mapOne(env);
             return mapped ? [mapped] : [];
         }
@@ -324,10 +339,10 @@ export function isValidIncomingChatPayload(p: any): boolean {
 // === Helpers extracted from RealtimeChatContext / shared across contexts ===
 /**
  * Install exactly ONE message listener depending on adapter capability and return a cleanup function.
- * Supports Phoenix EventEmitter-style `.on("message")`, DOM `addEventListener`, or `onmessage` property.
+ * Supports EventEmitter-style `.on("message")`, DOM `addEventListener`, or `onmessage` property.
  */
 export function installBestMessageListener(sock: any, handler: (evt: any) => void): () => void {
-    // Prefer EventEmitter-style `.on("message")` for Phoenix adapters
+    // Prefer EventEmitter-style `.on("message")` for channel-shaped adapters
     if (sock && typeof sock.on === 'function') {
         try {
             const wrapped = (payload: any) => handler({data: JSON.stringify(payload)});
@@ -463,18 +478,17 @@ export function removeRoomListener(key: string) {
 
 function __pickRoomId(payload: any): string | null {
     if (!payload) return null;
+    // v2 carries the bare room id, so there is no `room:` prefix left to strip.
     const norm = (v: any) => {
         if (!v) return null;
-        let s = String(v);
-        if (s.startsWith('room:')) s = s.slice(5);
-        return s || null;
+        return String(v) || null;
     };
     try {
         if (Array.isArray(payload) && payload.length > 0) {
             const h = payload[0];
-            return norm(h?.roomId ?? h?.roomId ?? h?.topic);
+            return norm(h?.roomId ?? h?.room);
         }
-        return norm(payload?.roomId ?? payload?.roomId ?? payload?.topic);
+        return norm(payload?.roomId ?? payload?.room);
     } catch {
         return null;
     }
@@ -594,7 +608,7 @@ export function isChatMessageLike(m: any): m is {
 }
 
 /**
- * Emit-based read acker for sockets that expose `.emit(event, payload)` instead of Phoenix Channel `.push(...)`.
+ * Emit-based read acker for sockets that expose `.emit(event, payload)` instead of ChatChannel `.push(...)`.
  * - Debounced (50ms) to avoid flooding
  * - Monotonic for numeric ids, de-dupe for string/UUID ids
  */

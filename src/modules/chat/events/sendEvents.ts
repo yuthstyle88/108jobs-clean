@@ -2,7 +2,7 @@ import type {ChatMessage, LocalUserId} from "108jobs-client";
 import {UserService} from "@/services";
 import {encrypt} from "@/utils";
 import {dbg} from "@/modules/chat/utils";
-import {MessagePayload, PhoenixEvent, PhoenixPacket, SendMessageDeps} from "@/modules/chat/types";
+import {MessagePayload, ChatWireEvent, ChatPacket, SendMessageDeps} from "@/modules/chat/types";
 import {WS_EVENT} from "@/modules/chat/protocol/wireEvents";
 import {createMessage} from "@/modules/chat/domain/entities/message";
 import {waitForAck, wsSend} from "@/modules/chat/utils/socketSend";
@@ -14,7 +14,7 @@ const ACK_TIMEOUT_MS = Number(process.env.CHAT_ACK_TIMEOUT ?? 8000);
 const ACK_EXTENDS = Number(process.env.CHAT_ACK_EXTENDS ?? 3);
 
 // ---- Packet helpers ----
-export function createEvent<T>(event: PhoenixEvent, payload?: T): PhoenixPacket<T> & {
+export function createEvent<T>(event: ChatWireEvent, payload?: T): ChatPacket<T> & {
     roomId?: string;
     timestamp: string
 } {

@@ -12,8 +12,9 @@
  * - ใช้ mutex ป้องกันการทำงานซ้อน
  */
 
-import type {PhoenixSenderAdapter, SendDraft} from '../adapters/PhoenixSenderAdapter'
+import type {ChatSenderAdapter, SendDraft} from '../adapters/ChatSenderAdapter'
 import {ChatMessageModel} from "@/modules/chat/types";
+import {WS_EVENT} from "@/modules/chat/protocol/wireEvents";
 
 
 export type RetryMeta = Record<string, { retry: number; next: number }>
@@ -41,7 +42,7 @@ export class ResendManager {
 
     constructor(
         private readonly store: ChatStorePort,
-        private readonly sender: PhoenixSenderAdapter,
+        private readonly sender: ChatSenderAdapter,
     ) {
     }
 
@@ -143,7 +144,7 @@ export class ResendManager {
                     id: msg.id, // ใช้ client id เพื่อให้ server ทำ idempotency ได้
                 }
 
-                const serverId = await this.sender.sendMessage("chat:message", draft)
+                const serverId = await this.sender.sendMessage(WS_EVENT.Message, draft)
                 if (typeof serverId === 'string' && serverId.length > 0) {
                     // ส่งสำเร็จ → promote และล้าง retry meta
                     this.store.promoteToSent(msg.roomId, msg.id)

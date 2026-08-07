@@ -13,14 +13,14 @@ import {useReadLastIdStore} from "@/modules/chat/store/readStore";
 
 // Type guard: narrow a NormalizedEnvelope to the typing envelope (explicit interface)
 export type TypingEnv = {
-    event: 'chat:typing';
+    event: typeof WS_EVENT.Typing;
     roomId: string;
     typing: boolean;
     sender?: ChatMessageView['sender'];
 };
 
 function isTypingEnvelope(env: NormalizedEnvelope): env is TypingEnv {
-    return !!env && (env as any).event === 'chat:typing' && typeof (env as any).roomId === 'string';
+    return !!env && (env as any).event === WS_EVENT.Typing && typeof (env as any).roomId === 'string';
 }
 
 export function parseTypingDetail(env: NormalizedEnvelope, _fallbackRoomId: string, localUserId: number): {
@@ -85,7 +85,7 @@ export function maybeHandleReadReceipt(env: any, fallbackRoomId: string): boolea
         const evName = String(env?.event || env?.content || "");
         if (evName !== WS_EVENT.ReadUpTo) return false;
 
-        const roomId = String(env?.roomId || env?.topic || fallbackRoomId);
+        const roomId = String(env?.roomId || env?.room || fallbackRoomId);
         const lastReadMessageId = String(env?.lastReadMessageId || "");
         const readerId = Number(env?.readerId ?? 0);
         const updatedAt = env?.updatedAt || env?.createdAt || null; // <- depending on backend payload
@@ -105,7 +105,7 @@ export function maybeHandleReadReceipt(env: any, fallbackRoomId: string): boolea
 export async function maybeHandlePresenceUpdate(env: any, meId: number): Promise<boolean> {
     try {
         const payload = env?.payload;
-        if (env?.event !== 'chats:signal' || !payload) return false;
+        if (env?.event !== WS_EVENT.ChatsSignal || !payload) return false;
 
         const {kind, joins, leaves, userId, status, at, lastSeen} = payload;
         const {setPeerOnline, setPeerOffline} = usePresenceStore.getState();

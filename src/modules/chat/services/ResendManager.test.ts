@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ResendManager, type ChatStorePort, type RetryMeta } from "@/modules/chat/services/ResendManager";
-import type { PhoenixSenderAdapter } from "@/modules/chat/adapters/PhoenixSenderAdapter";
+import type { ChatSenderAdapter } from "@/modules/chat/adapters/ChatSenderAdapter";
 
 // Minimal in-memory ChatStorePort double -- ResendManager only reads/writes
 // through this narrow interface, so no real zustand store is needed.
@@ -28,7 +28,7 @@ function fakeStore() {
 }
 
 function fakeSender(sendMessage: ReturnType<typeof vi.fn>) {
-  return { sendMessage } as unknown as PhoenixSenderAdapter;
+  return { sendMessage } as unknown as ChatSenderAdapter;
 }
 
 describe("ResendManager.onSendFailure", () => {

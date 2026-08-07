@@ -36,4 +36,46 @@ describe("no stray legacy wire-string literals remain outside wireEvents.ts", ()
     const offenders = files.filter((f) => readFileSync(f, "utf8").includes("'chat:ack'") || readFileSync(f, "utf8").includes('"chat:ack"'));
     expect(offenders).toEqual([]);
   });
+
+  // Same guard, for every name wire v2 retired: the three that were the
+  // `phoenix` npm client's own, and the colon-prefixed spellings that went
+  // with the Phoenix topic namespacing. A literal creeping back would be a
+  // client quietly talking v1 at a server that only answers v2 -- and since
+  // all three clients ship together with no compatibility shim, that is a
+  // silent dead connection rather than a loud error: it connects, it
+  // exchanges frames, and it matches nothing.
+  //
+  // events/chatEvents.ts is exempt. Its CHAT_EVENT registry holds in-browser
+  // DOM CustomEvent names that happen to spell `chat:message` and
+  // `chat:typing` -- an unrelated concern that predates the wire protocol
+  // and is not sent anywhere. Now that the wire no longer uses those
+  // strings, that file is the only place they legitimately appear, which
+  // makes the two registries harder to confuse than they used to be.
+  const wireFiles = files.filter(
+    (f) => !f.endsWith(join("events", "chatEvents.ts"))
+  );
+
+  it.each([
+    "phx_join",
+    "phx_leave",
+    "phx_reply",
+    "phx_error",
+    "chat:message",
+    "chat:typing",
+    "chat:update",
+    "chat:activeRooms",
+    "chats:signal",
+    "sync:pending",
+    "typing:start",
+    "typing:stop",
+  ])(
+    "'%s' does not appear as a string literal anywhere in src/modules/chat/",
+    (legacy) => {
+      const offenders = wireFiles.filter((f) => {
+        const src = readFileSync(f, "utf8");
+        return src.includes(`'${legacy}'`) || src.includes(`"${legacy}"`);
+      });
+      expect(offenders).toEqual([]);
+    }
+  );
 });

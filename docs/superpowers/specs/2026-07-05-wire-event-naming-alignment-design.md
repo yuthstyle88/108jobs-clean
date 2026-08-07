@@ -1,5 +1,18 @@
 # Wire-Event Naming Alignment (Stage 1) Design
 
+> **Superseded in part (2026-08-07) by
+> [`2026-08-07-chat-wire-v2.md`](./2026-08-07-chat-wire-v2.md).** This document
+> is kept as the record of why `WS_EVENT` exists, and the alignment it
+> describes still holds: every event name it pinned is byte-identical today.
+> What it can no longer be trusted on is Phoenix. It describes this frontend
+> as using the real `phoenix` npm client, and documents `WS_EVENT.PhxJoin` /
+> `PhxLeave` as "the real phoenix.js wire format" — that dependency is gone,
+> along with the Elixir relay that made us speak its dialect. The three names
+> that were Phoenix's own are now `join`, `leave` and `reply`, and the
+> five-element array envelope `[join_ref, ref, topic, event, payload]` is a
+> JSON object. Read the v2 spec for the frame shape; read on for the naming
+> history.
+
 ## Context
 
 An investigation into api-108jobs's realtime chat protocol found that this frontend uses the real `phoenix` npm client library (`Channel.join()`/`.leave()` send the wire-protocol-mandated `"phx_join"`/`"phx_leave"`), and that several of this frontend's own outbound event names didn't match the backend's canonical wire strings: `"chat:readUpTo"` (this frontend sends) vs. `"readUpTo"` (backend's canonical outgoing string for the same event), and `"chat:ack"` vs. `"ackConfirm"`. The backend (api-108jobs PR #132) was fixed to accept both forms as aliases, so nothing is currently broken — but the two sides' wire-string tables have drifted, exactly the kind of drift that caused real, silently-dropped-message bugs on the backend side (a join event, a read receipt, and a delivery ack were all silently discarded before that fix).

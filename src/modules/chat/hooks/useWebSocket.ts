@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 // IMPORTANT: Adjust the import path if your service lives elsewhere
-import {getChannelAdapter} from '@/modules/chat/services/PhoenixSocketService';
+import {getChannelAdapter} from '@/modules/chat/services/ChatSocketService';
+import {WS_EVENT} from '@/modules/chat/protocol/wireEvents';
 import {WebSocketStatus} from "@/modules/chat/types";
 import {onReadReceipt} from '@/modules/chat/events/chatEvents';
 import {useReadLastIdStore} from '@/modules/chat/store/readStore';
@@ -25,7 +26,15 @@ export interface UseWebSocketOptions {
     inactivityTimeout?: number;          // default: 300000ms (5 minutes) - disconnect after no typing activity
     disableInactivityTimeout?: boolean;  // default: false - set to true to disable inactivity timeout
 
-    topicBuilder?: (roomId: string) => string;
+    /** Maps a room id to the wire address the socket attaches to. Defaults to
+     * identity (v2 sends the bare room id); the per-user event channel
+     * overrides it with `user:<id>:events`. Was `topicBuilder`. */
+    roomBuilder?: (roomId: string) => string;
+    /** Whether to send a `join` once the socket opens. Default true. The
+     * per-user event channel sets it false: the server keeps no join
+     * registry and gates user-scoped delivery on the id in the topic, so a
+     * join there is a frame nobody reads. */
+    joinOnConnect?: boolean;
 
     // callbacks ระดับ socket (ดิบ)
     onOpen?: () => void;
@@ -39,7 +48,7 @@ export interface UseWebSocketOptions {
     onReconnectFailed?: () => void;
     onInactivityTimeout?: () => void;    // callback when inactivity timeout triggers
     // แผนที่ event → handler (ยืดหยุ่นกว่า onNewMessage/onTyping แบบ fix ชื่อ)
-    eventHandlers?: Record<string, (payload: any) => void>; // e.g. {'chat:message': fn, 'chat:typing': fn}
+    eventHandlers?: Record<string, (payload: any) => void>; // e.g. {message: fn, typing: fn}
 
     debug?: boolean;
 }
@@ -47,15 +56,17 @@ export interface UseWebSocketOptions {
 export interface WebSocketAPI {
     status: 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error';
     isReady: boolean;
-    topic?: string;
+    /** The wire address this connection is attached to -- the bare room id
+     * for chat. Was `topic` while the wire used Phoenix channel topics. */
+    room?: string;
 
     // The channel adapter currently built for this connection (see
-    // PhoenixSocketService.getChannelAdapter), or null when not connected.
+    // ChatSocketService.getChannelAdapter), or null when not connected.
     // Reflects the current adapterRef.current across reconnects: it's
     // re-read from the return statement below on every render, and adapter
-    // changes are always accompanied by a status/topic state update (see
+    // changes are always accompanied by a status/room state update (see
     // connect()/scheduleReconnect()), so it stays current the same way
-    // status/topic already do.
+    // status/room already do.
     adapter?: any;
 
     // ควบคุมการเชื่อมต่อ/เข้าช่อง
@@ -74,7 +85,7 @@ export interface WebSocketAPI {
 }
 
 /**
- * React Hook that bridges to your PhoenixSocketService adapter.
+ * React Hook that bridges to your ChatSocketService adapter.
  * It assumes the adapter behaves like a WebSocket/Channel bridge with
  * optional methods: connect(), disconnect()/close(), join(), leave(), emit().
  */
@@ -91,7 +102,11 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
         reconnectOnVisible = true,
         inactivityTimeout = 300000,        // 5 minutes default
         disableInactivityTimeout = false,
-        topicBuilder = (roomId: string) => `room:${roomId}`,
+        // wire v2 addresses a room by its bare id -- the `room:` topic prefix
+        // went out with the Phoenix channel envelope. Consumers that speak to
+        // a different namespace (the per-user event channel) still override it.
+        roomBuilder = (roomId: string) => roomId,
+        joinOnConnect = true,
         onOpen,
         onClose,
         onError,
@@ -109,7 +124,7 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
     const adapterRef = useRef<any | null>(null);
     const listenersRef = useRef<Set<(data: unknown) => void>>(new Set());
     const [status, setStatus] = useState<WebSocketStatus>('idle');
-    const [topic, setTopic] = useState<string | undefined>(undefined);
+    const [room, setRoom] = useState<string | undefined>(undefined);
 
     // Reconnection state
     const reconnectAttemptsRef = useRef<number>(0);
@@ -215,16 +230,16 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
 
             // Trigger reconnection by calling connect
             if (token && roomId) {
-                const nextTopic = topicBuilder(roomId);
+                const nextRoom = roomBuilder(roomId);
                 setStatus('connecting');
-                if (topic !== nextTopic) setTopic(nextTopic);
+                if (room !== nextRoom) setRoom(nextRoom);
 
-                const adapter = getChannelAdapter(token, nextTopic, roomId, Number(senderId) ?? 0);
+                const adapter = getChannelAdapter(token, nextRoom, roomId, Number(senderId) ?? 0, {joinOnConnect});
                 adapterRef.current = adapter;
                 bindAdapterHandlers(adapter);
             }
         }, delay);
-    }, [autoReconnect, maxReconnectAttempts, reconnectInterval, token, roomId, senderId, topicBuilder, topic, onReconnecting, onReconnectFailed, clearReconnectTimer]);
+    }, [autoReconnect, maxReconnectAttempts, reconnectInterval, token, roomId, senderId, roomBuilder, joinOnConnect, room, onReconnecting, onReconnectFailed, clearReconnectTimer]);
 
     const bindAdapterHandlers = useCallback((adapter: any) => {
         if (!adapter) return;
@@ -327,12 +342,12 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
                     const payload = (parsed && (parsed.payload ?? parsed.data)) as any;
                     if (evName) {
                         // specific convenience callbacks
-                        if (evName === 'chat:message') {
+                        if (evName === WS_EVENT.Message) {
                             try {
                                 onNewMessage?.(payload);
                             } catch {
                             }
-                        } else if (evName === 'chat:typing') {
+                        } else if (evName === WS_EVENT.Typing) {
                             try {
                                 onTyping?.(payload);
                             } catch {
@@ -359,12 +374,12 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
             return;
         }
 
-        const nextTopic = topicBuilder(roomId);
+        const nextRoom = roomBuilder(roomId);
 
-        // Fast path: if current adapter is connected for the same topic, do nothing
+        // Fast path: if current adapter is connected for the same room, do nothing
         const current = adapterRef.current as any;
-        if (current && status === 'connected' && topic === nextTopic) {
-            log('connect skipped (already connected to same topic)');
+        if (current && status === 'connected' && room === nextRoom) {
+            log('connect skipped (already connected to same room)');
             return;
         }
 
@@ -384,11 +399,11 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
         }
 
         setStatus('connecting');
-        if (topic !== nextTopic) setTopic(nextTopic);
-        const adapter = getChannelAdapter(token, nextTopic, roomId, Number(senderId) ?? 0);
+        if (room !== nextRoom) setRoom(nextRoom);
+        const adapter = getChannelAdapter(token, nextRoom, roomId, Number(senderId) ?? 0, {joinOnConnect});
         adapterRef.current = adapter;
         bindAdapterHandlers(adapter);
-    }, [token, roomId, senderId, autoConnect, topicBuilder, bindAdapterHandlers, status, topic]);
+    }, [token, roomId, senderId, autoConnect, roomBuilder, joinOnConnect, bindAdapterHandlers, status, room]);
 
     const disconnect = useCallback(() => {
         const a = adapterRef.current;
@@ -428,36 +443,39 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
         if (!rid) return;
         const sid = params?.senderId ?? senderId;
         if (sid === undefined) return;
-        const t = topicBuilder(rid);
+        const t = roomBuilder(rid);
 
-        // Prevent duplicate join attempts for same topic; delegate actual join to PhoenixSocketService
-        if ((a as any).__joinedTopic === t) {
+        // Prevent duplicate join attempts for same room; delegate actual join to ChatSocketService
+        if ((a as any).__joinedRoom === t) {
             if (debug) console.log('[useWebSocket] join skipped (already marked joined):', t);
             return;
         }
-        (a as any).__joinedTopic = t;
-        if (debug) console.log('[useWebSocket] join delegated to adapter/service for topic:', t, {
+        (a as any).__joinedRoom = t;
+        if (debug) console.log('[useWebSocket] join delegated to adapter/service for room:', t, {
             roomId: rid,
             senderId: sid
         });
 
         // Intentionally no direct join here to avoid double joins.
         return;
-    }, [roomId, topicBuilder, senderId, debug]);
+    }, [roomId, roomBuilder, senderId, debug]);
 
     const leave = useCallback(async () => {
         const a = adapterRef.current;
         if (!a) return;
         const rid = roomId;
         if (!rid) return;
-        const t = topicBuilder(rid);
+        const t = roomBuilder(rid);
         if (typeof a.leave === 'function') {
             return await a.leave(t);
         }
         if (typeof a.emit === 'function') {
-            return await a.emit('phx_leave', {topic: t});
+            // v2: the room rides in the envelope's `room` field, which the
+            // adapter fills in from the channel -- the payload no longer
+            // repeats it under a `topic` key.
+            return await a.emit(WS_EVENT.Leave, {roomId: t});
         }
-    }, [roomId, topicBuilder]);
+    }, [roomId, roomBuilder]);
 
     const emit = useCallback(async (event: string, payload: any) => {
         const a = adapterRef.current;
@@ -585,7 +603,7 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
     return {
         status,
         isReady: status === 'connected',
-        topic,
+        room,
         adapter: adapterRef.current,
         connect,
         disconnect,
