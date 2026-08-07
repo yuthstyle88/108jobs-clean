@@ -10,15 +10,23 @@
  * for cross-component signaling within this frontend, not the WebSocket
  * wire protocol.
  *
- * PhxJoin/PhxLeave's values are the real `phoenix` npm client library's own
- * hardcoded wire format (sent internally by Channel.join()/.leave(), not by
- * this frontend's own code) -- included here for documentation/completeness
- * so any code that needs to recognize these frames references this constant
- * instead of a bare literal.
+ * Wire protocol v2 (see docs/superpowers/specs/2026-08-07-chat-wire-v2.md):
+ * every value below is byte-identical to what it was under v1 EXCEPT the
+ * three that were never ours to name. `phx_join`/`phx_leave`/`phx_reply`
+ * were the `phoenix` npm client's own hardcoded strings, inherited from an
+ * Elixir relay that no longer exists; they are now `join`/`leave`/`reply`.
+ * The v1 spellings are deleted, not aliased -- all three clients ship
+ * together and there is no third party to stay compatible with.
  */
 export const WS_EVENT = Object.freeze({
-  PhxJoin: "phx_join",
-  PhxLeave: "phx_leave",
+  /** Client -> server: attach to a room. Carries a `ref`; the server answers
+   * with a `Reply` echoing it. Was `phx_join`. */
+  Join: "join",
+  /** Client -> server: detach from a room. Was `phx_leave`. */
+  Leave: "leave",
+  /** Server -> client: the answer to a frame that carried a `ref`, with
+   * payload `{status: "ok" | "error", response: {...}}`. Was `phx_reply`. */
+  Reply: "reply",
   Heartbeat: "heartbeat",
   Message: "chat:message",
   MessageAck: "messageAck",

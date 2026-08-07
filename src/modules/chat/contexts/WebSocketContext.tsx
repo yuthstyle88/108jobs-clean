@@ -8,14 +8,15 @@
 import React, {createContext, useContext} from 'react';
 import type {UseWebSocketOptions, WebSocketAPI} from '@/modules/chat/hooks/useWebSocket';
 import {useWebSocket} from '@/modules/chat/hooks/useWebSocket';
-import {PhoenixSenderAdapter} from '@/modules/chat/adapters/PhoenixSenderAdapter';
+import {ChatSenderAdapter} from '@/modules/chat/adapters/ChatSenderAdapter';
+import {WS_EVENT} from '@/modules/chat/protocol/wireEvents';
 
 // ========================= Context Layer =======================
 interface WebSocketContextValue extends WebSocketAPI {
-  sender: PhoenixSenderAdapter | null;
-  // The raw phoenix.js Channel (adapter.channel) surfaced at top level so
-  // consumers like PhoenixChatBridgeProvider's pickChannel() can find it
-  // via ws.channel without reaching into ws.adapter.channel themselves.
+  sender: ChatSenderAdapter | null;
+  // The ChatChannel (adapter.channel) surfaced at top level so consumers
+  // like ChatBridgeProvider's pickChannel() can find it via ws.channel
+  // without reaching into ws.adapter.channel themselves.
   channel?: any;
 }
 
@@ -31,7 +32,7 @@ export const WebSocketProvider: React.FC<React.PropsWithChildren<{ options?: Use
   const value = React.useMemo(() => {
     const anyWs: any = ws as any;
     const adapter: any = anyWs?.adapter ?? null;
-    // Raw phoenix.js Channel (has real .on()/.off()/.push()), as opposed to
+    // The ChatChannel (has real .on()/.off()/.push()), as opposed to
     // `adapter` itself which is the WebSocket-style wrapper built by
     // getChannelAdapter (single-slot onopen/onmessage/... callbacks plus
     // fire-and-forget send/emit -- no .on()).
@@ -59,7 +60,7 @@ export const WebSocketProvider: React.FC<React.PropsWithChildren<{ options?: Use
     };
 
     // Message sender (single source of truth for sending + optimistic emit + ack handling)
-    const sender = adapter ? new PhoenixSenderAdapter(adapter) : null;
+    const sender = adapter ? new ChatSenderAdapter(adapter) : null;
     // Return the original ws enriched with normalized fields.
     // Cast to any to avoid narrowing issues if WebSocketAPI doesn’t yet declare these fields.
     return {
@@ -98,8 +99,10 @@ export const WebSocketProvider: React.FC<React.PropsWithChildren<{ options?: Use
         void anyWs.join({ roomId, senderId });
         __joinedOnce.add(key);
       } else if (adapter && typeof adapter.emit === 'function') {
-        // Phoenix wire format expects payload nesting
-        void adapter.emit('phx_join', { topic: roomId, payload: { sender_id: senderId } });
+        // wire v2: the adapter puts the room in the envelope's `room` field,
+        // so the payload carries only what the join itself needs -- no topic
+        // string, and no second `payload` nesting level.
+        void adapter.emit(WS_EVENT.Join, { roomId, senderId });
         __joinedOnce.add(key);
       }
     } catch (e) {
@@ -123,5 +126,5 @@ export function useWebSocketContext(): WebSocketContextValue {
 }
 
 // Notes:
-// - The real connection logic (Phoenix adapter, events, retry, etc.) lives in `@/hooks/useWebSocket`.
+// - The real connection logic (socket adapter, events, retry, etc.) lives in `@/hooks/useWebSocket`.
 // - This file now only exposes a Context/providers wrapper around that hook.

@@ -1,8 +1,9 @@
 import {dbg} from "@/modules/chat/utils/helpers";
 import {SendMessageDeps} from "@/modules/chat/types";
+import {WS_EVENT} from "@/modules/chat/protocol/wireEvents";
 
-let __phxRef = 0;
-const nextRef = () => String(++__phxRef);
+let __wireRef = 0;
+const nextRef = () => String(++__wireRef);
 
 export function wsSend(socket: any, obj: any) {
     if (!socket) return false;
@@ -10,9 +11,9 @@ export function wsSend(socket: any, obj: any) {
     const payload = obj?.payload ?? obj;
     const frame = { event, payload };
     try {
-        // 1) Phoenix Channel API (channel.push(event, payload))
+        // 1) ChatChannel API (channel.push(event, payload))
         if (typeof socket.push === 'function') {
-            dbg('wsSend → phoenix.push', frame);
+            dbg('wsSend → channel.push', frame);
             socket.push(event, payload);
             return true;
         }
@@ -29,16 +30,19 @@ export function wsSend(socket: any, obj: any) {
                 dbg('wsSend → raw ws not open', { readyState: socket.readyState });
                 return false;
             }
-            // If payload hints at Phoenix topic, send Phoenix wire frame; otherwise send JSON {event,payload}
-            const topic = payload?.roomTopic ?? (payload?.roomId ? `room:${payload.roomId}` : null);
-            if (topic) {
-                const phxFrame = [null, nextRef(), String(topic), String(event), payload ?? {}];
-                dbg('wsSend → raw ws (phoenix frame)', { phxFrame });
-                socket.send(JSON.stringify(phxFrame));
-            } else {
-                dbg('wsSend → raw ws (json)', frame);
-                socket.send(JSON.stringify(frame));
-            }
+            // wire v2: one object envelope, always. `room` is the bare room id
+            // and is simply omitted when there isn't one -- under the old
+            // five-slot array a missing field had to be a null placeholder or
+            // everything after it shifted. `ref` correlates the server's reply.
+            const room = payload?.roomId ? String(payload.roomId) : null;
+            const wireFrame: Record<string, unknown> = {
+                ref: nextRef(),
+                event: String(event),
+                payload: payload ?? {},
+            };
+            if (room) wireFrame.room = room;
+            dbg('wsSend → raw ws (wire v2)', { wireFrame });
+            socket.send(JSON.stringify(wireFrame));
             return true;
         }
         // 4) postMessage (BroadcastChannel/Worker/ServiceWorker)
@@ -62,7 +66,7 @@ export function wsSend(socket: any, obj: any) {
 }
 
 /**
- * Wait for a phx_reply ack (see WS_EVENT.AckConfirm's counterpart on the
+ * Wait for a `reply` ack (see WS_EVENT.AckConfirm's counterpart on the
  * inbound side) that matches the given message id.
  * Uses onAny/onMessage if available; otherwise resolves false after timeout.
  */
@@ -71,7 +75,8 @@ export function waitForAck(deps: SendMessageDeps, clientId: string, timeoutMs = 
     let settled = false;
     let unsubs: Array<() => void> = [];
 
-    // Phoenix protocol acknowledges messages with `phx_reply` event containing status 'ok' or 'error'
+    // wire v2 answers a ref-carrying frame with a `reply` event whose payload
+    // is {status: 'ok' | 'error', response}. Same two statuses phx_reply had.
     const transport: any = (deps as any)?.adapter || (deps as any)?.sender;
 
     const cleanup = () => {
@@ -111,7 +116,7 @@ export function waitForAck(deps: SendMessageDeps, clientId: string, timeoutMs = 
           const ev = packet?.event;
           const payload = packet?.payload ?? packet;
           dbg('waitForAck addMessageListener event', { ev, payload });
-          if (ev !== 'phx_reply') return;
+          if (ev !== WS_EVENT.Reply) return;
           const status = payload?.status;
           const response = payload?.response;
           const id = response?.id ?? response?.message?.id ?? response?.msgRefId;

@@ -3,7 +3,7 @@ import React, {createContext, useContext, useEffect, useMemo, useRef} from "reac
 import {useChatStore} from "@/modules/chat/store/chatStore";
 import {useNetworkStore} from "@/store/networkStore";
 import {useWebSocketContext} from "@/modules/chat/contexts/WebSocketContext";
-import {PhoenixSenderAdapter} from "@/modules/chat/adapters/PhoenixSenderAdapter";
+import {ChatSenderAdapter} from "@/modules/chat/adapters/ChatSenderAdapter";
 import {type ChatStorePort, ResendManager} from "@/modules/chat/services/ResendManager";
 import {GlobalAckMatcher} from "@/modules/chat/utils/AckMatcher";
 import {isBrowser} from "@/utils/browser";
@@ -80,8 +80,9 @@ function pickChannel(ws: any, roomId?: string) {
     const list = ws.channels || ws._channels || ws.__channels__;
     if(Array.isArray(list) && list.length) {
         if(roomId) {
-            const topic = `room:${roomId}`;
-            const byRoom = list.find((c: any) => String(c?.topic || "") === topic || String(c?.topic || "").includes(roomId));
+            // A ChatChannel is addressed by its bare `room` -- there is no
+            // `room:`-prefixed topic string to reconstruct any more.
+            const byRoom = list.find((c: any) => String(c?.room || "") === String(roomId));
             if(byRoom) return byRoom;
         }
         return list[0];
@@ -98,20 +99,20 @@ interface WebSocketProviderProps {
 
 // ----- Chat Services Context (for optional consumers) -----
 export type ChatServices = {
-    sender: PhoenixSenderAdapter | null;
+    sender: ChatSenderAdapter | null;
     resend: ResendManager | null;
 };
 const ChatServicesContext = createContext<ChatServices>({sender: null, resend: null});
 export const useChatServices = () => useContext(ChatServicesContext);
 
 /**
- * PhoenixChatBridgeProvider (new design)
+ * ChatBridgeProvider (new design)
  * -------------------------------------
  * - ประกอบ sender/resend/ack matcher ตามดีไซน์ใหม่
  * - ไม่ setSender ตรงใน store อีกต่อไป
  * - ใช้ AckMatcher จับคู่ clientId ↔ serverId แล้ว promote ใน store
  */
-export const PhoenixChatBridgeProvider: React.FC<WebSocketProviderProps> = ({children, roomId}) => {
+export const ChatBridgeProvider: React.FC<WebSocketProviderProps> = ({children, roomId}) => {
     const ws = useWebSocketContext?.() as any;
     const store = useChatStore();
     const setOnline = useNetworkStore(s => s.setOnline);
@@ -132,7 +133,7 @@ export const PhoenixChatBridgeProvider: React.FC<WebSocketProviderProps> = ({chi
         wiredWsRef.current = ch;
 
         // Build sender bound to channel
-        const sender = new PhoenixSenderAdapter(ch);
+        const sender = new ChatSenderAdapter(ch);
 
         // Map store to ChatStorePort (抓เฉพาะที่ ResendManager ใช้)
         const port: ChatStorePort = {

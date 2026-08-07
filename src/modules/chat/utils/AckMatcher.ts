@@ -6,7 +6,7 @@
  * ใช้สำหรับจับคู่ข้อความที่ client ส่งออก (pending) กับข้อความที่ได้รับกลับจาก server
  * เพื่ออัปเดตสถานะจาก pending → sent (หรือ failed)
  *
- * ออกแบบให้ใช้งานในระบบ Phoenix/Realtime ที่อาจส่งซ้ำหรือมี delay
+ * ออกแบบให้ใช้งานในระบบ realtime ที่อาจส่งซ้ำหรือมี delay
  * มีระบบเก็บ clientId และ serverId mapping พร้อม timeout cleanup
  */
 

@@ -12,7 +12,7 @@
  * - ใช้ mutex ป้องกันการทำงานซ้อน
  */
 
-import type {PhoenixSenderAdapter, SendDraft} from '../adapters/PhoenixSenderAdapter'
+import type {ChatSenderAdapter, SendDraft} from '../adapters/ChatSenderAdapter'
 import {ChatMessageModel} from "@/modules/chat/types";
 
 
@@ -41,7 +41,7 @@ export class ResendManager {
 
     constructor(
         private readonly store: ChatStorePort,
-        private readonly sender: PhoenixSenderAdapter,
+        private readonly sender: ChatSenderAdapter,
     ) {
     }
 

@@ -11,7 +11,7 @@ export interface MessagePayload {
 }
 /**
  * Canonical typing detail for `chat:typing` events.
- * - roomId: room identifier (same as topic without the `room:` prefix)
+ * - roomId: room identifier (the bare id the wire's `room` field carries)
  * - senderId: local user id of the typist
  * - typing: true when typing starts, false when stops
  * - createdAt: optional ISO timestamp when the event was generated (server/client)
@@ -25,17 +25,19 @@ export interface ChatTypingDetail {
 export const TYPING_EVENT_NAMES = ['chat:typing'];
 
 export const EVENTS = [
-    'phxReply',
+    'reply',
     'forward',
     'historyPage',
 ];
 
-export type PhoenixEvent =
+/**
+ * Every event name this frontend may put on, or match against, the wire.
+ * `WsEventValue` covers the protocol proper (including v2's `join`/`leave`/
+ * `reply`, which replaced the `phx_*` names the Elixir relay imposed); the
+ * extra members are this app's own non-protocol frames.
+ */
+export type ChatWireEvent =
   | WsEventValue
-  | "phxJoin"
-  | "phxLeave"
-  | "phxReply"
-  | "phxError"
   | "forward"
   | "historyPage";
 
@@ -45,8 +47,8 @@ export type ChatMessageModel = ChatMessage & {
 
 export type WebSocketStatus = 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error';
 
-export interface PhoenixPacket<T = any> {
-    event: PhoenixEvent;
+export interface ChatPacket<T = any> {
+    event: ChatWireEvent;
     payload?: T;
 }
 

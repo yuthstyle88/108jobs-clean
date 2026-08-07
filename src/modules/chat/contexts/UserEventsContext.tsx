@@ -30,8 +30,11 @@ export const UserEventsProvider: React.FC<React.PropsWithChildren> = ({children}
         return {
             token,
             senderId: Number(userId),
-            roomId: String(userId), // roomId isn't used by our custom topicBuilder but required by type
-            topicBuilder: (uid: string) => `user:${uid}:events`,
+            // This channel is addressed by a namespace of its own rather than
+            // a chat room id, so it overrides roomBuilder; roomId is still
+            // required by the type and rides along in event payloads.
+            roomId: String(userId),
+            roomBuilder: (uid: string) => `user:${uid}:events`,
             autoConnect: true,
             debug: process.env.NODE_ENV === 'development',
         };

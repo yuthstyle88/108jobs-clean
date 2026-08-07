@@ -7,12 +7,25 @@ import { WS_EVENT } from "@/modules/chat/protocol/wireEvents";
 // instead of silently drifting (the exact failure mode that caused real,
 // silently-dropped-message bugs before api-108jobs PR #132).
 describe("WS_EVENT matches the backend's ChatEvent::as_str() exactly", () => {
-  it("PhxJoin is the real phoenix.js wire format", () => {
-    expect(WS_EVENT.PhxJoin).toBe("phx_join");
+  it("Join replaced phx_join", () => {
+    expect(WS_EVENT.Join).toBe("join");
   });
 
-  it("PhxLeave is the real phoenix.js wire format", () => {
-    expect(WS_EVENT.PhxLeave).toBe("phx_leave");
+  it("Leave replaced phx_leave", () => {
+    expect(WS_EVENT.Leave).toBe("leave");
+  });
+
+  it("Reply replaced phx_reply", () => {
+    expect(WS_EVENT.Reply).toBe("reply");
+  });
+
+  // The v1 spellings are deleted, not deprecated: there is no third party to
+  // stay compatible with, and an alias left lying around is how a protocol
+  // quietly stays forked. Assert on the values too, since a stray `phx_join`
+  // under some other key would be just as wrong as the old key surviving.
+  it("carries no phx_* name under any key", () => {
+    expect(Object.values(WS_EVENT).filter((v) => v.startsWith("phx"))).toEqual([]);
+    expect(Object.keys(WS_EVENT).filter((k) => k.startsWith("Phx"))).toEqual([]);
   });
 
   it("Heartbeat", () => {

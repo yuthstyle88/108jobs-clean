@@ -5,7 +5,7 @@ import ChatRoomView from "@/modules/chat/components/ChatRoomView";
 import {UserService} from "@/services";
 import {RoomNotFound} from "@/components/RoomNotFound";
 import {useRoomsStore} from "@/modules/chat/store/roomsStore";
-import {PhoenixChatBridgeProvider} from "@/modules/chat/contexts/PhoenixChatBridgeProvider";
+import {ChatBridgeProvider} from "@/modules/chat/contexts/ChatBridgeProvider";
 import {useUserStore} from "@/store/useUserStore";
 import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import LoadingBlur from "@/components/Common/Loading/LoadingBlur";
@@ -50,13 +50,13 @@ export default function MessageClient({roomId: rawRoomId}: { roomId: string }) {
     }
 
     return (
-        <PhoenixChatBridgeProvider isLoggedIn={isLoggedIn} roomId={roomId}>
+        <ChatBridgeProvider isLoggedIn={isLoggedIn} roomId={roomId}>
             <ChatRoomView
                 post={room.post}
                 partner={partner}
                 roomId={roomId}
                 localUser={user!}
             />
-        </PhoenixChatBridgeProvider>
+        </ChatBridgeProvider>
     );
 }

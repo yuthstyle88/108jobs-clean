@@ -5,8 +5,8 @@ import {
     handleIncomingPayload,
     isChatMessageLike,
     isValidIncomingChatPayload,
-    normalizePhoenixEnvelope,
-    unwrapPhoenixFrame,
+    normalizeChatEnvelope,
+    unwrapChatFrame,
 } from "@/modules/chat/utils/chatSocketUtils";
 import {emitChatTyping,} from "@/modules/chat/events/index";
 import type {ChatMessage} from "108jobs-client";
@@ -209,7 +209,7 @@ export function createHandleWSMessage(deps: HandlerDeps) {
     return async (event: any) => {
         let payload: any;
         try {
-            payload = unwrapPhoenixFrame(event);
+            payload = unwrapChatFrame(event);
             if (!payload?.data) return;
 
             const evt = payload.data.event;
@@ -225,7 +225,7 @@ export function createHandleWSMessage(deps: HandlerDeps) {
                 }
             }
 
-            const env: NormalizedEnvelope = normalizePhoenixEnvelope(payload.data, roomId);
+            const env: NormalizedEnvelope = normalizeChatEnvelope(payload.data, roomId);
 
             handlePeerActivity(payload);
 
@@ -256,7 +256,7 @@ export function createHandleWSMessage(deps: HandlerDeps) {
         } catch (e) {
             cleanupFetch(setIsFetching, fetchTimeoutRef, fetchResolveRef);
             try {
-                broadcastToListeners(payload ?? unwrapPhoenixFrame(event));
+                broadcastToListeners(payload ?? unwrapChatFrame(event));
             } catch {
             }
         }
