@@ -19,6 +19,7 @@ import {REQUEST_STATE} from "@/services/HttpService";
 import {TopupGuide} from "@/modules/admin/components/TopupGuide";
 import {useTranslation} from "react-i18next";
 import {useDebounce} from "@/hooks/utils/useDebounce";
+import {formatMinor} from "@/utils/format/money";
 
 const TopUpCoins = () => {
     const {t} = useTranslation();
@@ -77,7 +78,7 @@ const TopUpCoins = () => {
 
         const payload: AdminTopUpWallet = {
             targetUserId: selectedTransfer.localUser.id,
-            qrId: selectedTransfer.topUpRequest.qrId,
+            paymentIntentId: selectedTransfer.topUpRequest.paymentIntentId,
             reason: "Admin top-up from payment",
         };
 
@@ -88,7 +89,7 @@ const TopUpCoins = () => {
                 return;
             }
             toast.success(t("topupCoins.toast.success", {
-                amount: selectedTransfer.topUpRequest.amount.toLocaleString(),
+                amount: formatMinor(selectedTransfer.topUpRequest.amountMinor),
                 email: selectedTransfer.localUser.email,
             }));
             refetch();
@@ -178,8 +179,8 @@ const TopUpCoins = () => {
                                 type="number"
                                 placeholder={t("topupCoins.filters.placeholderMin")}
                                 className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-primary"
-                                value={filters.amountMin ?? ""}
-                                onChange={(e) => handleFilterChange("amountMin", e.target.value ? Number(e.target.value) : undefined)}
+                                value={filters.amountMinMinor !== undefined ? filters.amountMinMinor / 100 : ""}
+                                onChange={(e) => handleFilterChange("amountMinMinor", e.target.value ? Number(e.target.value) * 100 : undefined)}
                             />
                         </div>
 
@@ -191,8 +192,8 @@ const TopUpCoins = () => {
                                 type="number"
                                 placeholder={t("topupCoins.filters.placeholderMax")}
                                 className="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-primary"
-                                value={filters.amountMax ?? ""}
-                                onChange={(e) => handleFilterChange("amountMax", e.target.value ? Number(e.target.value) : undefined)}
+                                value={filters.amountMaxMinor !== undefined ? filters.amountMaxMinor / 100 : ""}
+                                onChange={(e) => handleFilterChange("amountMaxMinor", e.target.value ? Number(e.target.value) * 100 : undefined)}
                             />
                         </div>
 
@@ -246,10 +247,10 @@ const TopUpCoins = () => {
                                                     {item.localUser.email}
                                                 </h4>
                                                 {getStatusBadge(wt.status, wt.transferred)}
-                                                {wt.qrId && (
+                                                {wt.paymentIntentId && (
                                                     <Badge variant="secondary" className="text-xs">
                                                         <Hash className="w-3 h-3 mr-1"/>
-                                                        {wt.qrId}
+                                                        {wt.paymentIntentId}
                                                     </Badge>
                                                 )}
                                             </div>
@@ -272,7 +273,7 @@ const TopUpCoins = () => {
                                     <div className="flex items-center gap-4 mt-4 sm:mt-0">
                                         <div className="text-right">
                                             <div className="text-xl font-bold text-success">
-                                                +{wt.amount.toLocaleString()}
+                                                +{wt.amountCoin.toLocaleString()}
                                             </div>
                                             <div className="text-xs text-muted-foreground">
                                                 {t("topupCoins.list.coins")}
@@ -317,8 +318,8 @@ const TopUpCoins = () => {
                             ? {
                                 userName: selectedTransfer.localUser.email || "Unknown",
                                 reason: "User paid via QR",
-                                amount: selectedTransfer.topUpRequest.amount,
-                                paymentCode: selectedTransfer.topUpRequest.qrId || undefined,
+                                amount: selectedTransfer.topUpRequest.amountMinor / 100,
+                                paymentCode: selectedTransfer.topUpRequest.paymentIntentId || undefined,
                                 date: format(new Date(selectedTransfer.topUpRequest.createdAt), "dd MMM yyyy, HH:mm"),
                             }
                             : null

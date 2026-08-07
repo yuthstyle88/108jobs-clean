@@ -2,9 +2,10 @@ import {TopUpStatus} from "./TopUpStatus";
 import {PaginationCursor} from "./PaginationCursor";
 
 export type ListTopUpRequestQuery = {
-    amountMin?: number;
-    amountMax?: number;
-    /** Optional filter by status (Pending, Success) */
+    /** Filter bounds in MINOR units, matching the stored column. */
+    amountMinMinor?: number;
+    amountMaxMinor?: number;
+    /** Optional filter by status (Pending, Success, Expired) */
     status?: TopUpStatus;
     /** Optional filter by year of createdAt */
     year?: number;
