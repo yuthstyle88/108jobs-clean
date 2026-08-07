@@ -6,6 +6,7 @@ import {useHttpGet} from "@/hooks/api/http/useHttpGet";
 import {useMemo, useState} from "react";
 import {CategoryNodeView, ListTopUpRequestQuery, TopUpRequestView} from "108jobs-client";
 import {format} from "date-fns";
+import {formatMinor} from "@/utils/format/money";
 
 const TopUpHistory = () => {
     const {t} = useTranslation();
@@ -13,8 +14,8 @@ const TopUpHistory = () => {
     // Filters state
     const [filters, setFilters] = useState<ListTopUpRequestQuery>({
         status: undefined,
-        amountMin: undefined,
-        amountMax: undefined,
+        amountMinMinor: undefined,
+        amountMaxMinor: undefined,
         limit: 5,
     });
 
@@ -156,9 +157,9 @@ const TopUpHistory = () => {
                             type="number"
                             placeholder={t("e.g. 1000")}
                             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder-gray-400 text-base"
-                            value={filters.amountMin ?? ""}
+                            value={filters.amountMinMinor !== undefined ? filters.amountMinMinor / 100 : ""}
                             onChange={(e) =>
-                                handleFilterChange("amountMin", e.target.value ? Number(e.target.value) : undefined)
+                                handleFilterChange("amountMinMinor", e.target.value ? Number(e.target.value) * 100 : undefined)
                             }
                         />
                     </div>
@@ -172,9 +173,9 @@ const TopUpHistory = () => {
                             type="number"
                             placeholder={t("e.g. 50000")}
                             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all placeholder-gray-400 text-base"
-                            value={filters.amountMax ?? ""}
+                            value={filters.amountMaxMinor !== undefined ? filters.amountMaxMinor / 100 : ""}
                             onChange={(e) =>
-                                handleFilterChange("amountMax", e.target.value ? Number(e.target.value) : undefined)
+                                handleFilterChange("amountMaxMinor", e.target.value ? Number(e.target.value) * 100 : undefined)
                             }
                         />
                     </div>
@@ -327,7 +328,7 @@ const TopUpHistory = () => {
                                 >
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <code className="text-sm font-mono text-primary bg-gray-100 px-2 py-1 rounded">
-                                            {item.topUpRequest.qrId}
+                                            {item.topUpRequest.paymentIntentId}
                                         </code>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-700">
@@ -335,7 +336,7 @@ const TopUpHistory = () => {
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className="text-sm font-semibold text-gray-900">
-                                            {item.topUpRequest.amount.toLocaleString()}
+                                            {formatMinor(item.topUpRequest.amountMinor)}
                                         </span>{" "}
                                         <span className="text-xs text-gray-500 uppercase">
                                             {/* TODO: source currency code from a currencies lookup once

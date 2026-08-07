@@ -2,15 +2,20 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCoins, faTimes} from "@fortawesome/free-solid-svg-icons";
 import {useEffect, useRef, useState} from "react";
 import {useTranslation} from "react-i18next";
-import {callHttp, isSuccess, REQUEST_STATE} from "@/services/HttpService";
-import type {ScbQrCodeResponse, ScbTokenResponse} from "108jobs-client";
+import {QRCodeCanvas} from "qrcode.react";
+import {callHttp, isSuccess} from "@/services/HttpService";
+import {type TopUpResponse, TopUpStatus} from "108jobs-client";
 import LoadingMultiCircle from "@/components/Common/Loading/LoadingMultiCircle";
 
 interface TopUpModalProps {
     isModalOpen: boolean;
     setIsModalOpen: (open: boolean) => void;
+    /** Baht, as typed into the coin page. Converted to satang on the wire. */
     selectedAmount: number | null;
 }
+
+/** How often to ask the server whether the money arrived. */
+const POLL_INTERVAL_MS = 10_000;
 
 const TopUpModal = ({
                         isModalOpen,
@@ -18,11 +23,14 @@ const TopUpModal = ({
                         selectedAmount,
                     }: TopUpModalProps) => {
     const {t} = useTranslation();
-    const [qrImage, setQrImage] = useState<string | null>(null);
+    // An EMVCo payload string, not an image. The Payment-Platform returns the
+    // payload and this component draws the QR; SCB used to return a ready-made
+    // base64 PNG, which is why this used to be `qrImage`.
+    const [qrPayload, setQrPayload] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [countdown, setCountdown] = useState<number>(300);
-    const [qrId, setQrId] = useState<string | null>(null);
+    const [countdown, setCountdown] = useState<number>(0);
+    const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
     const [paymentStatus, setPaymentStatus] = useState<"pending" | "success" | "failed">("pending");
     const lastAmountRef = useRef<number | null>(null);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -37,14 +45,14 @@ const TopUpModal = ({
         return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
     };
 
-    // QR code generation
+    // Open the top-up: one call now returns both the QR and the deadline.
     useEffect(() => {
         if (!canRequest) {
-            setQrImage(null);
+            setQrPayload(null);
             setError(null);
             setLoading(false);
             setPaymentStatus("pending");
-            setQrId(null);
+            setPaymentIntentId(null);
             if (timerRef.current) {
                 clearInterval(timerRef.current);
                 timerRef.current = null;
@@ -56,7 +64,7 @@ const TopUpModal = ({
             return;
         }
 
-        if (qrImage && lastAmountRef.current === selectedAmount) return;
+        if (qrPayload && lastAmountRef.current === selectedAmount) return;
 
         let cancelled = false;
 
@@ -64,60 +72,65 @@ const TopUpModal = ({
             try {
                 setLoading(true);
                 setError(null);
-                setQrImage(null);
+                setQrPayload(null);
                 setPaymentStatus("pending");
-                setCountdown(300);
-                setQrId(null);
+                setPaymentIntentId(null);
 
-                const invoice = String(Math.floor(Date.now() / 1000));
-                const body: Record<string, unknown> = {
-                    qrType: "CS",
-                    amount: String(selectedAmount ?? 0),
-                    invoice,
-                };
-                const qrRes = await callHttp("createScbQrCode", {body});
-                if (!isSuccess<ScbQrCodeResponse>(qrRes)) {
-                    throw new Error((qrRes as any).err?.message || "Failed to create QR code");
+                // Satang on the wire. The server bounds this against its own
+                // configured min/max and decides everything else about the
+                // payment — the old endpoint let the client dictate the whole
+                // bank QR body, amount included.
+                const amountMinor = Math.round((selectedAmount ?? 0) * 100);
+                const res = await callHttp("createTopUp", {amountMinor});
+                if (!isSuccess<TopUpResponse>(res)) {
+                    throw new Error((res as any).err?.message || "Failed to open the top-up");
                 }
+                if (cancelled) return;
 
-                const qrcodeId = qrRes.data?.data?.qrcodeId ?? null;
-                if (!qrcodeId) {
-                    setError("QR code ID not provided by the server");
+                const topUp = res.data;
+                if (!topUp?.paymentIntentId || !topUp?.qrPayload) {
+                    setError("qrIdMissing");
+                    setPaymentStatus("failed");
                     setLoading(false);
                     return;
                 }
-                setQrId(qrcodeId);
 
-                const raw = qrRes.data?.data?.qrImage;
-                const img = typeof raw === "string"
-                    ? (raw.startsWith("data:image") ? raw : `data:image/png;base64,${raw}`)
-                    : null;
-                if (!cancelled) {
-                    setQrImage(img);
-                    lastAmountRef.current = selectedAmount ?? null;
+                setPaymentIntentId(topUp.paymentIntentId);
+                setQrPayload(topUp.qrPayload);
+                lastAmountRef.current = selectedAmount ?? null;
 
-                    // Start countdown timer
-                    timerRef.current = setInterval(() => {
-                        setCountdown((prev) => {
-                            if (prev <= 1) {
-                                if (timerRef.current) {
-                                    clearInterval(timerRef.current);
-                                    timerRef.current = null;
-                                }
-                                if (apiCheckRef.current) {
-                                    clearInterval(apiCheckRef.current);
-                                    apiCheckRef.current = null;
-                                }
-                                setPaymentStatus("failed");
-                                setError("stillDoNotPayYet");
-                                return 0;
+                // The deadline is the server's, read off the row it just wrote,
+                // so the countdown cannot disagree with when the QR actually
+                // lapses. It used to be a hardcoded 300 on each side.
+                const secondsLeft = Math.max(
+                    0,
+                    Math.floor((new Date(topUp.expiresAt).getTime() - Date.now()) / 1000),
+                );
+                setCountdown(secondsLeft);
+
+                timerRef.current = setInterval(() => {
+                    setCountdown((prev) => {
+                        if (prev <= 1) {
+                            if (timerRef.current) {
+                                clearInterval(timerRef.current);
+                                timerRef.current = null;
                             }
-                            return prev - 1;
-                        });
-                    }, 1000);
-                }
+                            if (apiCheckRef.current) {
+                                clearInterval(apiCheckRef.current);
+                                apiCheckRef.current = null;
+                            }
+                            setPaymentStatus("failed");
+                            setError("stillDoNotPayYet");
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
             } catch (e: any) {
-                if (!cancelled) setError(e?.message || "Unexpected error");
+                if (!cancelled) {
+                    setError(e?.message || "Unexpected error");
+                    setPaymentStatus("failed");
+                }
             } finally {
                 if (!cancelled) setLoading(false);
             }
@@ -136,35 +149,42 @@ const TopUpModal = ({
         };
     }, [canRequest, selectedAmount, isModalOpen]);
 
-    // QR status checking with dynamic frequency
+    // Poll for payment. The server answers with a status, so there is nothing
+    // left to infer -- the old code guessed from a bank code (`0 || 200 ||
+    // 1000`) and treated any successful HTTP response as payment.
     useEffect(() => {
-        if (!qrId || paymentStatus !== "pending") return;
+        if (!paymentIntentId || paymentStatus !== "pending") return;
 
-        const checkQrStatus = async () => {
-            try {
-                const inquiry = await callHttp("inquireScbQrCode", { qrId });
-                if (inquiry.state === REQUEST_STATE.SUCCESS) {
-                    if (timerRef.current) {
-                        clearInterval(timerRef.current);
-                        timerRef.current = null;
-                    }
-                    if (apiCheckRef.current) {
-                        clearInterval(apiCheckRef.current);
-                        apiCheckRef.current = null;
-                    }
-                    setPaymentStatus("success");
-                }
-            } catch (e: any) {
-                console.error(`QR status check failed for qrId ${qrId}:`, e.message);
+        const stopTimers = () => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
+            if (apiCheckRef.current) {
+                clearInterval(apiCheckRef.current);
+                apiCheckRef.current = null;
             }
         };
 
-        // run once immediately
-        checkQrStatus();
+        const checkStatus = async () => {
+            try {
+                const res = await callHttp("getTopUpStatus", paymentIntentId);
+                if (!isSuccess<TopUpResponse>(res)) return;
+                if (res.data?.status === TopUpStatus.Success) {
+                    stopTimers();
+                    setPaymentStatus("success");
+                } else if (res.data?.status === TopUpStatus.Expired) {
+                    stopTimers();
+                    setError("stillDoNotPayYet");
+                    setPaymentStatus("failed");
+                }
+            } catch (e: any) {
+                console.error(`Top-up status check failed for ${paymentIntentId}:`, e?.message);
+            }
+        };
 
-        // decide interval time dynamically
-        const intervalTime = countdown <= 5 ? 1000 : 10000;
-        apiCheckRef.current = setInterval(checkQrStatus, intervalTime);
+        checkStatus();
+        apiCheckRef.current = setInterval(checkStatus, POLL_INTERVAL_MS);
 
         return () => {
             if (apiCheckRef.current) {
@@ -172,14 +192,7 @@ const TopUpModal = ({
                 apiCheckRef.current = null;
             }
         };
-    }, [qrId, paymentStatus, countdown]);
-
-    // Log qrId updates for debugging
-    useEffect(() => {
-        if (qrId !== null) {
-            console.log(`qrId updated to: ${qrId}`);
-        }
-    }, [qrId]);
+    }, [paymentIntentId, paymentStatus]);
 
     if (!isModalOpen) return null;
 
@@ -215,7 +228,7 @@ const TopUpModal = ({
                     </div>
 
                     {/* Countdown Timer */}
-                    {paymentStatus === "pending" && qrImage && (
+                    {paymentStatus === "pending" && qrPayload && (
                         <div className="text-center text-gray-700 text-sm font-medium">
                             Time remaining: {formatTime(countdown)}
                         </div>
@@ -242,14 +255,15 @@ const TopUpModal = ({
                                         <LoadingMultiCircle/>
                                     </div>
                                 )}
-                                {error && (
-                                    <div className="text-sm text-red-600 text-center">
-
+                                {!loading && qrPayload && (
+                                    <div className="flex justify-center bg-white rounded-lg shadow p-4">
+                                        <QRCodeCanvas
+                                            value={qrPayload}
+                                            size={224}
+                                            level="M"
+                                            aria-label="PromptPay QR code"
+                                        />
                                     </div>
-                                )}
-                                {!loading && !error && qrImage && (
-                                    <img src={qrImage} alt="SCB QR Code"
-                                         className="w-full h-56 object-contain bg-white rounded-lg shadow"/>
                                 )}
                             </>
                         )}

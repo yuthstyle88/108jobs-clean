@@ -202,6 +202,7 @@ export type {WorkflowStatus} from "./types/WorkflowStatus";
 export type {Workflow} from "./types/Workflow";
 export type {WorkFlowOperationResponse} from "./types/WorkFlowOperationResponse";
 export type {TopUpRequestId} from "./types/TopUpRequestId";
+export {TopUpStatus} from "./types/TopUpStatus";
 export type {TopUpRequest} from "./types/TopUpRequest";
 export type {TopUpRequestView} from "./types/TopUpRequestView";
 export type {StartWorkflowForm} from "./types/StartWorkflowForm";
@@ -220,10 +221,7 @@ export type {ListUserReviewsResponse} from "./types/ListUserReviewsResponse";
 export type {SubmitUserReviewForm} from "./types/SubmitUserReviewForm";
 export type {SubmitUserReviewResponse} from "./types/SubmitUserReviewResponse";
 export type {SubmitWithdrawRequest} from "./types/SubmitWithdrawRequest";
-export type {ScbStatus, ScbTokenData, ScbTokenResponse} from "./types/ScbTokenResponse";
-export type {
-    ScbQrCodeBody, ScbQrCodeRequest, ScbQrCodeStatus, ScbQrCodeData, ScbQrCodeResponse
-} from "./types/ScbQrCode";
+export type {CreateTopUpRequest, TopUpResponse} from "./types/TopUp";
 export type {VehicleType} from "./types/VehicleType";
 export type {RiderVerificationStatus} from "./types/RiderVerificationStatus";
 export type {WithdrawRequest} from "./types/WithdrawRequest";

@@ -1,3 +1,22 @@
+/**
+ * Render an amount held in MINOR units (satang) as baht.
+ *
+ * The wire carries integers so money never rides on a float: `10000` is
+ * ฿100.00. Only the display end divides, and it divides here rather than in
+ * each component, so no screen can quietly drop the hundredths.
+ */
+export function formatMinor(amountMinor: number | undefined | null): string {
+  if (amountMinor === undefined || amountMinor === null || isNaN(amountMinor)) return "฿0.00";
+
+  return new Intl.NumberFormat('th-TH',
+    {
+      style: 'currency',
+      currency: 'THB',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amountMinor / 100);
+}
+
 export function formatThaiBaht(amount: string | number): string {
   const num = typeof amount === 'string' ? Number(amount) : amount;
 
