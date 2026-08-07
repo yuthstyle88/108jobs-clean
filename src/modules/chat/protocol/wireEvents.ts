@@ -10,13 +10,31 @@
  * for cross-component signaling within this frontend, not the WebSocket
  * wire protocol.
  *
- * Wire protocol v2 (see docs/superpowers/specs/2026-08-07-chat-wire-v2.md):
- * every value below is byte-identical to what it was under v1 EXCEPT the
- * three that were never ours to name. `phx_join`/`phx_leave`/`phx_reply`
- * were the `phoenix` npm client's own hardcoded strings, inherited from an
- * Elixir relay that no longer exists; they are now `join`/`leave`/`reply`.
- * The v1 spellings are deleted, not aliased -- all three clients ship
- * together and there is no third party to stay compatible with.
+ * Wire protocol v2 (see docs/superpowers/specs/2026-08-07-chat-wire-v2.md).
+ * Two groups of names changed:
+ *
+ * 1. The three that were never ours. `phx_join`/`phx_leave`/`phx_reply` were
+ *    the `phoenix` npm client's own hardcoded strings, inherited from an
+ *    Elixir relay that no longer exists; they are now `join`/`leave`/`reply`.
+ *
+ * 2. The colon-prefixed ones. `chat:message`, `sync:pending`, `typing:start`
+ *    and friends are prefix-free in v2 -- `message`, `syncPending`,
+ *    `typingStart`. The prefix was a Phoenix topic-namespacing habit, not
+ *    information: every frame already names its room in the envelope's
+ *    `room` field, so the prefix said a second time, in a less reliable
+ *    place, what the envelope already said.
+ *
+ * The v1 spellings are deleted, not aliased -- all three clients (this app,
+ * api-108jobs and the Flutter widget) ship together and there is no third
+ * party to stay compatible with.
+ *
+ * Names carried over from v1 untouched: messageAck, messageNack, ackConfirm,
+ * readUpTo, globalOnline, globalOffline, heartbeat.
+ *
+ * These strings are matched EXACTLY, never case-insensitively. Half of them
+ * are camelCase now, so a `.toLowerCase()` before comparing -- which this
+ * module's callers used to do while every name was lowercase-safe -- would
+ * silently match nothing.
  */
 export const WS_EVENT = Object.freeze({
   /** Client -> server: attach to a room. Carries a `ref`; the server answers
@@ -28,7 +46,7 @@ export const WS_EVENT = Object.freeze({
    * payload `{status: "ok" | "error", response: {...}}`. Was `phx_reply`. */
   Reply: "reply",
   Heartbeat: "heartbeat",
-  Message: "chat:message",
+  Message: "message",
   MessageAck: "messageAck",
   /** Server-to-client only: a sent message failed to make it into the
    * durable buffer backing persistence. Carries the same `clientId` shape
@@ -37,14 +55,14 @@ export const WS_EVENT = Object.freeze({
    * crates/ws/src/broker/bridge_message.rs, add_messages_to_room). */
   MessageNack: "messageNack",
   AckConfirm: "ackConfirm",
-  SyncPending: "sync:pending",
+  SyncPending: "syncPending",
   ReadUpTo: "readUpTo",
-  ActiveRooms: "chat:activeRooms",
-  Typing: "chat:typing",
-  TypingStart: "typing:start",
-  TypingStop: "typing:stop",
-  Update: "chat:update",
-  ChatsSignal: "chats:signal",
+  ActiveRooms: "activeRooms",
+  Typing: "typing",
+  TypingStart: "typingStart",
+  TypingStop: "typingStop",
+  Update: "update",
+  ChatsSignal: "chatsSignal",
   GlobalOnline: "globalOnline",
   GlobalOffline: "globalOffline",
 } as const);

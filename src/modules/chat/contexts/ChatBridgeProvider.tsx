@@ -246,7 +246,7 @@ export const ChatBridgeProvider: React.FC<WebSocketProviderProps> = ({children, 
         };
 
         try {
-            ch.on("chat:message", toAck);
+            ch.on(WS_EVENT.Message, toAck);
         } catch {
         }
         try {
@@ -255,7 +255,7 @@ export const ChatBridgeProvider: React.FC<WebSocketProviderProps> = ({children, 
         }
         return () => {
             try {
-                ch.off?.("chat:message", toAck);
+                ch.off?.(WS_EVENT.Message, toAck);
             } catch {
             }
             try {

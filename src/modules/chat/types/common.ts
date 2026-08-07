@@ -1,5 +1,5 @@
 import {ChatMessage, LocalUserId} from "108jobs-client";
-import type { WsEventValue } from "@/modules/chat/protocol/wireEvents";
+import { WS_EVENT, type WsEventValue } from "@/modules/chat/protocol/wireEvents";
 
 export type WsMessageSender = (data: MessagePayload) => void | Promise<void>;
 
@@ -10,7 +10,7 @@ export interface MessagePayload {
     id?: string;
 }
 /**
- * Canonical typing detail for `chat:typing` events.
+ * Canonical typing detail for `typing` events.
  * - roomId: room identifier (the bare id the wire's `room` field carries)
  * - senderId: local user id of the typist
  * - typing: true when typing starts, false when stops
@@ -22,7 +22,7 @@ export interface ChatTypingDetail {
     typing: boolean;
     createdAt?: string;
 }
-export const TYPING_EVENT_NAMES = ['chat:typing'];
+export const TYPING_EVENT_NAMES = [WS_EVENT.Typing];
 
 export const EVENTS = [
     'reply',

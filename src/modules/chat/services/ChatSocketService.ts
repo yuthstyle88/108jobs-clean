@@ -390,13 +390,22 @@ export interface RealtimeChannelAdapter {
  * prefix died with the array envelope) and `roomId` is the chat room id the
  * event payloads carry. They are the same string for chat, and differ for
  * the per-user event channel, which addresses `user:<id>:events`.
+ *
+ * `joinOnConnect: false` opens the socket without sending a `join`. The
+ * per-user event channel uses it: the server keeps no join registry, and
+ * decides whether to deliver a user-scoped frame by parsing the id out of
+ * the topic and comparing it to the session's authenticated user
+ * (`PhoenixSession::should_deliver` in api-108jobs' chat_realtime crate).
+ * Joining that channel would be a frame the server has nothing to do with.
  */
 export function getChannelAdapter(
   token: string,
   room: string,
   roomId: string,
-  senderId: number
+  senderId: number,
+  opts: { joinOnConnect?: boolean } = {}
 ): RealtimeChannelAdapter {
+  const { joinOnConnect = true } = opts;
   const url = buildChatWsUrl(token);
   const socket = new ChatSocket(url);
   const ch = new ChatChannel(socket, room);
@@ -493,7 +502,7 @@ export function getChannelAdapter(
         sseqHello: sseqNext ? { next: sseqNext } : undefined,
       });
     } catch (e) {
-      if (DEV) console.warn("[chat-ws] sync:pending failed", e);
+      if (DEV) console.warn("[chat-ws] syncPending failed", e);
     }
   };
 
@@ -546,6 +555,14 @@ export function getChannelAdapter(
   // this client was in, so re-joining is what makes transport reconnect
   // transparent to everything above.
   socket.onOpen = () => {
+    if (!joinOnConnect) {
+      // Nothing to wait for, so the socket being open IS readiness here.
+      if (readyState !== 1) {
+        readyState = 1;
+        adapter.onopen?.();
+      }
+      return;
+    }
     try {
       ch.join({ roomId, senderId })
         .receive("ok", () => {

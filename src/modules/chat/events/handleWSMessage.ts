@@ -122,11 +122,11 @@ export function createHandleWSMessage(deps: HandlerDeps) {
     const handleAckProtocol = (rawEvt: string, payload: any) => {
         try {
             // NOTE: this branch is currently unreachable. api-108jobs sends its
-            // ack-reminder response under the wire string "sync:pending" (see
+            // ack-reminder response under the wire string "syncPending" (see
             // AnyIncomingEvent::SyncPending in bridge_message.rs), never a
             // distinct "ackReminder" string -- so this rich per-clientId
             // reconciliation (chatOutbox.markPending + chatChannel.ackConfirm)
-            // never runs; the `evt === 'sync:pending'` branch below handles
+            // never runs; the `evt === WS_EVENT.SyncPending` branch below handles
             // the real inbound event instead, via the simpler handleSyncPending()
             // (which does not read this payload's clientIds). Deliberately left
             // unwired rather than fixed here -- see the design spec's "Finding"
@@ -215,7 +215,7 @@ export function createHandleWSMessage(deps: HandlerDeps) {
             const evt = payload.data.event;
 
             // 0) Pre-processing
-            if (evt === 'chat:message' && !isValidIncomingChatPayload(payload)) {
+            if (evt === WS_EVENT.Message && !isValidIncomingChatPayload(payload)) {
                 try {
                     const store = useRoomsStore.getState();
                     if (typeof store.bumpRoomToTop === 'function') {

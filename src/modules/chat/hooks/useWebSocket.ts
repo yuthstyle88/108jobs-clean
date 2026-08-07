@@ -30,6 +30,11 @@ export interface UseWebSocketOptions {
      * identity (v2 sends the bare room id); the per-user event channel
      * overrides it with `user:<id>:events`. Was `topicBuilder`. */
     roomBuilder?: (roomId: string) => string;
+    /** Whether to send a `join` once the socket opens. Default true. The
+     * per-user event channel sets it false: the server keeps no join
+     * registry and gates user-scoped delivery on the id in the topic, so a
+     * join there is a frame nobody reads. */
+    joinOnConnect?: boolean;
 
     // callbacks ระดับ socket (ดิบ)
     onOpen?: () => void;
@@ -43,7 +48,7 @@ export interface UseWebSocketOptions {
     onReconnectFailed?: () => void;
     onInactivityTimeout?: () => void;    // callback when inactivity timeout triggers
     // แผนที่ event → handler (ยืดหยุ่นกว่า onNewMessage/onTyping แบบ fix ชื่อ)
-    eventHandlers?: Record<string, (payload: any) => void>; // e.g. {'chat:message': fn, 'chat:typing': fn}
+    eventHandlers?: Record<string, (payload: any) => void>; // e.g. {message: fn, typing: fn}
 
     debug?: boolean;
 }
@@ -101,6 +106,7 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
         // went out with the Phoenix channel envelope. Consumers that speak to
         // a different namespace (the per-user event channel) still override it.
         roomBuilder = (roomId: string) => roomId,
+        joinOnConnect = true,
         onOpen,
         onClose,
         onError,
@@ -228,12 +234,12 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
                 setStatus('connecting');
                 if (room !== nextRoom) setRoom(nextRoom);
 
-                const adapter = getChannelAdapter(token, nextRoom, roomId, Number(senderId) ?? 0);
+                const adapter = getChannelAdapter(token, nextRoom, roomId, Number(senderId) ?? 0, {joinOnConnect});
                 adapterRef.current = adapter;
                 bindAdapterHandlers(adapter);
             }
         }, delay);
-    }, [autoReconnect, maxReconnectAttempts, reconnectInterval, token, roomId, senderId, roomBuilder, room, onReconnecting, onReconnectFailed, clearReconnectTimer]);
+    }, [autoReconnect, maxReconnectAttempts, reconnectInterval, token, roomId, senderId, roomBuilder, joinOnConnect, room, onReconnecting, onReconnectFailed, clearReconnectTimer]);
 
     const bindAdapterHandlers = useCallback((adapter: any) => {
         if (!adapter) return;
@@ -336,12 +342,12 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
                     const payload = (parsed && (parsed.payload ?? parsed.data)) as any;
                     if (evName) {
                         // specific convenience callbacks
-                        if (evName === 'chat:message') {
+                        if (evName === WS_EVENT.Message) {
                             try {
                                 onNewMessage?.(payload);
                             } catch {
                             }
-                        } else if (evName === 'chat:typing') {
+                        } else if (evName === WS_EVENT.Typing) {
                             try {
                                 onTyping?.(payload);
                             } catch {
@@ -394,10 +400,10 @@ export function useWebSocket(options: Partial<UseWebSocketOptions> = {}): WebSoc
 
         setStatus('connecting');
         if (room !== nextRoom) setRoom(nextRoom);
-        const adapter = getChannelAdapter(token, nextRoom, roomId, Number(senderId) ?? 0);
+        const adapter = getChannelAdapter(token, nextRoom, roomId, Number(senderId) ?? 0, {joinOnConnect});
         adapterRef.current = adapter;
         bindAdapterHandlers(adapter);
-    }, [token, roomId, senderId, autoConnect, roomBuilder, bindAdapterHandlers, status, room]);
+    }, [token, roomId, senderId, autoConnect, roomBuilder, joinOnConnect, bindAdapterHandlers, status, room]);
 
     const disconnect = useCallback(() => {
         const a = adapterRef.current;

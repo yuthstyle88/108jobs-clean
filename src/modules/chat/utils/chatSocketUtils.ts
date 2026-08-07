@@ -23,7 +23,7 @@ import {WS_EVENT} from "@/modules/chat/protocol/wireEvents";
 export type NormalizedEnvelope =
 // history page event
     { event: 'history_page'; results: ChatMessageView[]; prevPage?: string; nextPage?: string }
-    // single message event (e.g., chat:message)
+    // single message event (e.g., `message`)
     | {
     event: string;
     roomId: string;
@@ -85,13 +85,18 @@ export function normalizeChatEnvelope(
 
     // 2) If it is an `IncomingEventLike`, normalize events
     if (isIncomingEventLike(payload)) {
+        // Matched exactly, never case-folded. This used to lowercase the
+        // inbound event first, which was harmless only because every v1 name
+        // was already lowercase (`chat:message`, `sync:pending`). Half the v2
+        // names are camelCase (`typingStart`, `syncPending`), so folding case
+        // here would compare "typingstart" against "typingStart" and quietly
+        // match nothing -- a frame silently dropped, with no error anywhere.
         const ev = payload.event;
-        const evLower = ev.toLowerCase();
         const rid = payload.roomId || payload.room || fallbackRoomId || '';
         const p: ServerMessageModel | undefined = payload.payload;
 
-        // --- chat:message ---
-        if (evLower === 'chat:message') {
+        // --- message ---
+        if (ev === WS_EVENT.Message) {
             if (!p || !p.content || !p.senderId) {
                 return {event: ev, roomId: rid};
             }
@@ -108,7 +113,7 @@ export function normalizeChatEnvelope(
             };
 
             return {
-                event: 'chat:message',
+                event: WS_EVENT.Message,
                 roomId: rid,
                 message: msg,
                 room: {id: rid} as ChatRoom,
@@ -117,7 +122,7 @@ export function normalizeChatEnvelope(
         }
 
         // --- typing events ---
-        if (['chat:typing', 'typing:start', 'typing:stop'].includes(evLower)) {
+        if (([WS_EVENT.Typing, WS_EVENT.TypingStart, WS_EVENT.TypingStop] as string[]).includes(ev)) {
             return {
                 event: ev,
                 roomId: rid,
@@ -127,7 +132,7 @@ export function normalizeChatEnvelope(
         }
 
         // --- update events ---
-        if (evLower === WS_EVENT.Update) {
+        if (ev === WS_EVENT.Update) {
             return {
                 event: ev,
                 roomId: rid,
@@ -241,7 +246,9 @@ export async function handleIncomingPayload(
 ): Promise<ChatMessage[]> {
     try {
         const env = normalizeChatEnvelope(payload, ctx.roomId);
-        const eventName = String(env.event || '').toLowerCase();
+        // Exact match, for the same reason as in normalizeChatEnvelope: half
+        // the v2 event names are camelCase and would not survive case-folding.
+        const eventName = String(env.event || '');
 
         const mapOne = async (raw: any): Promise<ChatMessage | null> => {
             // prefer explicit message node if present
@@ -294,7 +301,7 @@ export async function handleIncomingPayload(
         }
 
         // NEW MESSAGE (canonical)
-        if (eventName === 'chat:message') {
+        if (eventName === WS_EVENT.Message) {
             const mapped = await mapOne(env);
             return mapped ? [mapped] : [];
         }

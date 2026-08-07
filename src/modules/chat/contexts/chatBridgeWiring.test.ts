@@ -197,7 +197,7 @@ describe("Chat bridge channel wiring (Bug A regression)", () => {
     expect(latestServices.sender).not.toBeNull();
 
     await act(async () => {
-      await latestServices.sender!.sendMessage("chat:message", {
+      await latestServices.sender!.sendMessage("message", {
         id: "client-send-1",
         roomId: ROOM_ID,
         senderId: SENDER_ID,

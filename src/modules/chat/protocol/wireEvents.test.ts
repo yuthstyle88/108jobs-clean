@@ -33,7 +33,7 @@ describe("WS_EVENT matches the backend's ChatEvent::as_str() exactly", () => {
   });
 
   it("Message", () => {
-    expect(WS_EVENT.Message).toBe("chat:message");
+    expect(WS_EVENT.Message).toBe("message");
   });
 
   it("MessageAck (inbound only, server->client)", () => {
@@ -49,7 +49,7 @@ describe("WS_EVENT matches the backend's ChatEvent::as_str() exactly", () => {
   });
 
   it("SyncPending", () => {
-    expect(WS_EVENT.SyncPending).toBe("sync:pending");
+    expect(WS_EVENT.SyncPending).toBe("syncPending");
   });
 
   it("ReadUpTo matches the backend's canonical outgoing string", () => {
@@ -57,27 +57,27 @@ describe("WS_EVENT matches the backend's ChatEvent::as_str() exactly", () => {
   });
 
   it("ActiveRooms", () => {
-    expect(WS_EVENT.ActiveRooms).toBe("chat:activeRooms");
+    expect(WS_EVENT.ActiveRooms).toBe("activeRooms");
   });
 
   it("Typing", () => {
-    expect(WS_EVENT.Typing).toBe("chat:typing");
+    expect(WS_EVENT.Typing).toBe("typing");
   });
 
   it("TypingStart", () => {
-    expect(WS_EVENT.TypingStart).toBe("typing:start");
+    expect(WS_EVENT.TypingStart).toBe("typingStart");
   });
 
   it("TypingStop", () => {
-    expect(WS_EVENT.TypingStop).toBe("typing:stop");
+    expect(WS_EVENT.TypingStop).toBe("typingStop");
   });
 
   it("Update", () => {
-    expect(WS_EVENT.Update).toBe("chat:update");
+    expect(WS_EVENT.Update).toBe("update");
   });
 
   it("ChatsSignal", () => {
-    expect(WS_EVENT.ChatsSignal).toBe("chats:signal");
+    expect(WS_EVENT.ChatsSignal).toBe("chatsSignal");
   });
 
   it("GlobalOnline", () => {

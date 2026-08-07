@@ -30,7 +30,7 @@ describe("ChatSenderAdapter.sendMessage (Bug B: duplicate channel.push)", () => 
     const channel = makeFakeChatChannel();
     const adapter = new ChatSenderAdapter(channel as any);
 
-    const result = await adapter.sendMessage("chat:message", {
+    const result = await adapter.sendMessage("message", {
       id: "client-1",
       roomId: "room-1",
       senderId: 1,
@@ -60,7 +60,7 @@ describe("ChatSenderAdapter.sendMessage (Bug B: duplicate channel.push)", () => 
     const push = vi.fn(() => pushObj);
     const adapter = new ChatSenderAdapter({ push } as any);
 
-    const result = await adapter.sendMessage("chat:message", {
+    const result = await adapter.sendMessage("message", {
       id: "client-2",
       roomId: "room-1",
       senderId: 1,
@@ -78,7 +78,7 @@ describe("ChatSenderAdapter.sendMessage (Bug B: duplicate channel.push)", () => 
     const push = vi.fn(() => ({} as any)); // push() succeeds but result has no .receive
     const adapter = new ChatSenderAdapter({ push } as any);
 
-    const result = await adapter.sendMessage("chat:message", {
+    const result = await adapter.sendMessage("message", {
       id: "client-3",
       roomId: "room-1",
       senderId: 1,

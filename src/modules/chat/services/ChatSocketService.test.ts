@@ -141,8 +141,8 @@ describe("chat socket speaks wire v2", () => {
     const ws = FakeWebSocket.last!;
     ws.open();
 
-    const push = adapter.channel!.push("chat:message", { id: "client-1" });
-    const frame = ws.frameFor("chat:message")!;
+    const push = adapter.channel!.push("message", { id: "client-1" });
+    const frame = ws.frameFor("message")!;
     expect(frame.room).toBe(ROOM);
     expect(frame.payload).toMatchObject({ id: "client-1" });
 
@@ -164,8 +164,8 @@ describe("chat socket speaks wire v2", () => {
     const ws = FakeWebSocket.last!;
     ws.open();
 
-    const push = adapter.channel!.push("chat:message", { id: "client-2" });
-    const frame = ws.frameFor("chat:message")!;
+    const push = adapter.channel!.push("message", { id: "client-2" });
+    const frame = ws.frameFor("message")!;
 
     const ok = vi.fn();
     const err = vi.fn();
@@ -190,8 +190,8 @@ describe("chat socket speaks wire v2", () => {
     const ws = FakeWebSocket.last!;
     ws.open();
 
-    const push = adapter.channel!.push("chat:message", { id: "client-3" });
-    const frame = ws.frameFor("chat:message")!;
+    const push = adapter.channel!.push("message", { id: "client-3" });
+    const frame = ws.frameFor("message")!;
 
     ws.deliver({
       ref: frame.ref,
@@ -223,11 +223,11 @@ describe("chat socket speaks wire v2", () => {
     const ws = FakeWebSocket.last!;
 
     // Socket not open yet: nothing may reach the wire, and nothing may be lost.
-    adapter.channel!.push("chat:message", { id: "queued-1" });
+    adapter.channel!.push("message", { id: "queued-1" });
     expect(ws.sent).toEqual([]);
 
     ws.open();
-    expect(ws.frameFor("chat:message")?.payload).toMatchObject({ id: "queued-1" });
+    expect(ws.frameFor("message")?.payload).toMatchObject({ id: "queued-1" });
   });
 
   it("forwards a server push to onmessage, and swallows protocol-only frames", () => {
@@ -300,6 +300,27 @@ describe("chat socket speaks wire v2", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("sends no join when joinOnConnect is false, and is ready as soon as the socket opens", () => {
+    // The per-user event channel (`user:<id>:events`). The server keeps no
+    // join registry: it decides whether a user-scoped frame belongs to this
+    // session by parsing the id out of the topic and comparing it to the
+    // authenticated user (PhoenixSession::should_deliver in api-108jobs), so
+    // a join here is a frame nobody reads -- and waiting for a reply to one
+    // would leave the channel permanently "connecting".
+    const adapter = getChannelAdapter("jwt", "user:7:events", "7", SENDER, {
+      joinOnConnect: false,
+    });
+    const ws = FakeWebSocket.last!;
+    const onopen = vi.fn();
+    adapter.onopen = onopen;
+
+    ws.open();
+
+    expect(ws.frameFor("join")).toBeUndefined();
+    expect(onopen).toHaveBeenCalledTimes(1);
+    expect(adapter.readyState).toBe(1);
   });
 
   it("sends `leave` on close", () => {
