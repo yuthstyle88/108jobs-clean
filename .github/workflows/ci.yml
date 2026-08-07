@@ -1,9 +1,32 @@
-name: CI
+name: CI (manual only)
 
+# This repo is a downstream mirror of 108-Plaza/108jobs-web. Code arrives here
+# only after it has already merged there, and the org repo runs this same suite
+# -- lint, typecheck, vitest, Playwright -- as a required gate on every PR. So
+# every automatic run here re-tested a commit that was green before it arrived:
+# duplicated work whose verdict nobody reads, and a second red X to explain
+# whenever the two fleets disagree about something unrelated to the code.
+#
+# It was close to free while this repo was public, because GitHub-hosted
+# minutes are unmetered on public repos. The repo is going private, and the
+# jobs below run on `ubuntu-latest`, so from that moment every bridge push
+# would start billing the personal account for a re-test of already-merged
+# code. Hence: no `push`, no `pull_request`.
+#
+# `workflow_dispatch` stays. The suite is worth keeping runnable by hand for
+# the case this mirror ever diverges from upstream and someone needs to know
+# whether this side stands on its own. A manual click is a deliberate decision
+# to spend the minutes, which is the difference that matters.
+#
+# The runner labels stay `ubuntu-latest` on purpose. Upstream pins
+# `[self-hosted, Linux, X64]` and enforces it with a job that fails on any
+# `ubuntu-*` label, precisely so a sync from this mirror cannot quietly move
+# the org's builds onto billed hosted runners. That guard is about which
+# workflow governs the ORG repo; here there is no self-hosted pool to reach,
+# and a manual run needs a runner that actually exists. This file is not
+# synced upstream (see the `bridge:` commit that established that), so the
+# labels cannot travel.
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch: {}
 
 concurrency:
