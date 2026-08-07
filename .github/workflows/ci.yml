@@ -11,9 +11,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # The fleet runs on self-hosted runners only. This job is the enforcement:
+  # a GitHub-hosted label reintroduced by a copy-paste (or by a sync from the
+  # personal mirror, which pins its own pool) fails CI instead of quietly
+  # billing hosted minutes on a private repo. Same guard as api-108jobs.
+  # ---------------------------------------------------------------------------
+  runners:
+    name: self-hosted only
+    runs-on: [self-hosted, Linux, X64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No GitHub-hosted runners
+        run: |
+          set -euo pipefail
+          if grep -rnE '^[[:space:]]*runs-on:.*(ubuntu|windows|macos)-' .github/workflows/; then
+            echo "::error::CI in this repo runs on self-hosted runners only." \
+                 "Use 'runs-on: [self-hosted, Linux, X64]'."
+            exit 1
+          fi
+          echo "every workflow pins a self-hosted runner"
+
   lint-typecheck-test:
     name: Lint, typecheck, unit tests
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     steps:
       - uses: actions/checkout@v4
 
@@ -21,10 +43,14 @@ jobs:
         with:
           version: 8.15.4
 
+      # No `cache: pnpm` — actions/cache is a tax on a self-hosted runner, not
+      # a saving: the store already persists on the box between runs, so the
+      # cache step only adds an upload/download of it to GitHub, and its restore
+      # has been observed to hang outright on this fleet (see pos108-admin's
+      # ci.yml, which dropped it for the same reason).
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
 
       # src/lib/108jobs-client is a standalone package (own package.json/
       # pnpm-lock.yaml/node_modules, not a pnpm workspace member) that the
@@ -73,7 +99,7 @@ jobs:
 
   e2e:
     name: Playwright E2E
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     steps:
       - uses: actions/checkout@v4
 
@@ -81,10 +107,10 @@ jobs:
         with:
           version: 8.15.4
 
+      # No `cache: pnpm` — see the lint job.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
 
       # See the equivalent step in the lint-typecheck-test job -- same reason,
       # and likewise a real gate (no continue-on-error).
@@ -94,14 +120,38 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # No `--with-deps`: that runs apt-get on the runner, which needs sudo and
+      # mutates a machine shared with every other repo in the fleet. The system
+      # libraries are installed on the box already -- pos108-admin's e2e job
+      # runs Playwright here with the same bare `install chromium`.
+      - name: Install Playwright browsers
+        run: npx playwright install chromium
+
+      # The runner is a persistent machine, so a crashed or cancelled earlier
+      # run can leave the Playwright webServer holding port 3001 and this run
+      # aborts with "http://localhost:3001 is already used". Free it first.
+      # (concurrency: above only cancels runs on the SAME ref -- two different
+      # PRs land on the same box and would otherwise collide.)
+      - name: Free port 3001
+        run: |
+          (command -v fuser >/dev/null 2>&1 && fuser -k 3001/tcp) || true
+          (command -v lsof  >/dev/null 2>&1 && lsof -ti tcp:3001 | xargs -r kill -9) || true
+          npx --yes kill-port 3001 || true
+
       # playwright.config.ts's webServer boots its own `npm run dev` instance
       # (port 3001) and tests/utils/auth.ts mocks the backend API via
       # page.route -- no separately-running backend or secrets are needed.
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
       - name: E2E tests
         run: npx playwright test
+
+      # Leave the box clean even when the suite failed or was cancelled, so the
+      # next run does not inherit a stuck webServer.
+      - name: Free port 3001 (cleanup)
+        if: ${{ always() }}
+        run: |
+          (command -v fuser >/dev/null 2>&1 && fuser -k 3001/tcp) || true
+          (command -v lsof  >/dev/null 2>&1 && lsof -ti tcp:3001 | xargs -r kill -9) || true
+          npx --yes kill-port 3001 || true
 
       - name: Upload Playwright report
         if: failure()
