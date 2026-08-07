@@ -48,9 +48,17 @@ jobs:
       - name: Point pnpm at a shared store
         run: echo "npm_config_store_dir=$HOME/.pnpm-store" >> "$GITHUB_ENV"
 
+      # No `version:` here on purpose. The input is optional, and when it is
+      # omitted the action reads the version out of the `packageManager` field
+      # of `package_json_file` (which defaults to the root package.json) -- so
+      # package.json is the one place the root pnpm version is written. A pin
+      # repeated here and in the e2e job below is a pin that will eventually
+      # disagree with package.json, and the failure mode of that disagreement
+      # is a lockfile silently discarded as "not compatible" rather than a
+      # clean error. Same reason the sub-package steps below take their version
+      # from their own package.json.
       - uses: pnpm/action-setup@v4
         with:
-          version: 8.15.4
           # `dest` defaults to `~/setup-pnpm`, and this box runs several runner
           # processes under one $HOME — so two jobs of the same workflow install
           # pnpm into the very same directory at the very same moment. The
@@ -92,15 +100,21 @@ jobs:
       # this package) -- that build error is now avoided at the source by
       # excluding test files from the package's build tsconfig, so nothing
       # here needs vitest.
-      # This sub-package pins its OWN pnpm version (10.13.1, vs. the root's
-      # 8.15.4) via its package.json's packageManager field -- its lockfile
-      # (lockfileVersion '9.0') is unreadable by the job-wide pnpm 8.15.4
-      # from pnpm/action-setup above, which silently discards it as "not
-      # compatible" and then fails as if no lockfile existed at all. Invoke
-      # its own pinned version via corepack instead of the job's pnpm on PATH.
+      # This sub-package pins its OWN pnpm version (pnpm 10, vs. the root's
+      # pnpm 8) via its package.json's packageManager field -- its lockfile
+      # (lockfileVersion '9.0') is unreadable by the job-wide pnpm from
+      # pnpm/action-setup above, which silently discards it as "not
+      # compatible" and then fails as if no lockfile existed at all. So it
+      # must NOT use the job's pnpm on PATH.
+      #
+      # Bare `corepack pnpm` (no @version) resolves packageManager from the
+      # nearest package.json, which `working-directory` makes the sub-package's
+      # own -- so the version lives only in that file. Spelling it out here
+      # instead would put the same number in three steps across two jobs, each
+      # free to drift from the package.json that actually governs the lockfile.
       - name: Install 108jobs-client sub-package dependencies
         working-directory: src/lib/108jobs-client
-        run: corepack pnpm@10.13.1 install --frozen-lockfile
+        run: corepack pnpm install --frozen-lockfile
 
       # The sub-package owns a vitest suite (src/http.test.ts) asserting the
       # generated client's identity-platform method surface. The root vitest
@@ -109,7 +123,7 @@ jobs:
       # pinned pnpm/vitest (installed by the step above).
       - name: Test 108jobs-client sub-package
         working-directory: src/lib/108jobs-client
-        run: corepack pnpm@10.13.1 run test
+        run: corepack pnpm run test
 
       - run: pnpm install --frozen-lockfile
 
@@ -132,9 +146,9 @@ jobs:
       - name: Point pnpm at a shared store
         run: echo "npm_config_store_dir=$HOME/.pnpm-store" >> "$GITHUB_ENV"
 
+      # No `version:` — read from package.json's packageManager. See the lint job.
       - uses: pnpm/action-setup@v4
         with:
-          version: 8.15.4
           dest: ${{ runner.temp }}/setup-pnpm
 
       # No `cache: pnpm` — see the lint job.
@@ -146,7 +160,7 @@ jobs:
       # and likewise a real gate (no continue-on-error).
       - name: Install 108jobs-client sub-package dependencies
         working-directory: src/lib/108jobs-client
-        run: corepack pnpm@10.13.1 install --frozen-lockfile
+        run: corepack pnpm install --frozen-lockfile
 
       - run: pnpm install --frozen-lockfile
 
