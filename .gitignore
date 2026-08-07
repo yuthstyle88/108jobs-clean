@@ -6,6 +6,13 @@
 .pnp.js
 .yarn/install-state.gz
 
+# This repo is pnpm-only: package.json pins `packageManager: pnpm`, and CI
+# installs with `pnpm install --frozen-lockfile`. A package-lock.json used to be
+# tracked alongside pnpm-lock.yaml; nothing ever read it, so it drifted silently
+# and described a dependency tree CI had never resolved. Ignore it so a stray
+# local `npm install` cannot put it back.
+/package-lock.json
+
 # testing
 /coverage
 
