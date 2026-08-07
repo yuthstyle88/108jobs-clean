@@ -39,9 +39,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Keep the package store off the throwaway directory below and on a
+      # stable path, so isolating the installer does not also mean
+      # re-downloading every dependency on every job. The store is
+      # content-addressed and built for concurrent use by many projects at
+      # once, so sharing it between jobs is safe in a way that sharing the
+      # installer directory is not.
+      - name: Point pnpm at a shared store
+        run: echo "npm_config_store_dir=$HOME/.pnpm-store" >> "$GITHUB_ENV"
+
       - uses: pnpm/action-setup@v4
         with:
           version: 8.15.4
+          # `dest` defaults to `~/setup-pnpm`, and this box runs several runner
+          # processes under one $HOME — so two jobs of the same workflow install
+          # pnpm into the very same directory at the very same moment. The
+          # action wipes `dest` before writing it, which is exactly as bad as it
+          # sounds. Observed three times on 2026-08-07, three different faces of
+          # one race: `ENOTEMPTY: rmdir '/home/yuth/setup-pnpm'`, `ENOENT:
+          # process.cwd failed ... the current working directory was likely
+          # removed`, and a `copyfile` from a store path that had just been
+          # deleted underneath it.
+          #
+          # Every one of them passed on a re-run with no code change, which is
+          # the real damage: it teaches everyone to re-run a red check
+          # reflexively, and one day that will wave through a true failure.
+          # `RUNNER_TEMP` is per-job and wiped between jobs, so the two can no
+          # longer see each other's directory at all.
+          dest: ${{ runner.temp }}/setup-pnpm
 
       # No `cache: pnpm` — actions/cache is a tax on a self-hosted runner, not
       # a saving: the store already persists on the box between runs, so the
@@ -103,9 +128,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # See the lint job for both of these.
+      - name: Point pnpm at a shared store
+        run: echo "npm_config_store_dir=$HOME/.pnpm-store" >> "$GITHUB_ENV"
+
       - uses: pnpm/action-setup@v4
         with:
           version: 8.15.4
+          dest: ${{ runner.temp }}/setup-pnpm
 
       # No `cache: pnpm` — see the lint job.
       - uses: actions/setup-node@v4
