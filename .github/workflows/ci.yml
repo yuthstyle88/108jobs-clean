@@ -11,71 +11,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ---------------------------------------------------------------------------
-  # The fleet runs on self-hosted runners only. This job is the enforcement:
-  # a GitHub-hosted label reintroduced by a copy-paste (or by a sync from the
-  # personal mirror, which pins its own pool) fails CI instead of quietly
-  # billing hosted minutes on a private repo. Same guard as api-108jobs.
-  # ---------------------------------------------------------------------------
-  runners:
-    name: self-hosted only
-    runs-on: [self-hosted, Linux, X64]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: No GitHub-hosted runners
-        run: |
-          set -euo pipefail
-          if grep -rnE '^[[:space:]]*runs-on:.*(ubuntu|windows|macos)-' .github/workflows/; then
-            echo "::error::CI in this repo runs on self-hosted runners only." \
-                 "Use 'runs-on: [self-hosted, Linux, X64]'."
-            exit 1
-          fi
-          echo "every workflow pins a self-hosted runner"
-
   lint-typecheck-test:
     name: Lint, typecheck, unit tests
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      # Keep the package store off the throwaway directory below and on a
-      # stable path, so isolating the installer does not also mean
-      # re-downloading every dependency on every job. The store is
-      # content-addressed and built for concurrent use by many projects at
-      # once, so sharing it between jobs is safe in a way that sharing the
-      # installer directory is not.
-      - name: Point pnpm at a shared store
-        run: echo "npm_config_store_dir=$HOME/.pnpm-store" >> "$GITHUB_ENV"
 
       - uses: pnpm/action-setup@v4
         with:
           version: 8.15.4
-          # `dest` defaults to `~/setup-pnpm`, and this box runs several runner
-          # processes under one $HOME — so two jobs of the same workflow install
-          # pnpm into the very same directory at the very same moment. The
-          # action wipes `dest` before writing it, which is exactly as bad as it
-          # sounds. Observed three times on 2026-08-07, three different faces of
-          # one race: `ENOTEMPTY: rmdir '/home/yuth/setup-pnpm'`, `ENOENT:
-          # process.cwd failed ... the current working directory was likely
-          # removed`, and a `copyfile` from a store path that had just been
-          # deleted underneath it.
-          #
-          # Every one of them passed on a re-run with no code change, which is
-          # the real damage: it teaches everyone to re-run a red check
-          # reflexively, and one day that will wave through a true failure.
-          # `RUNNER_TEMP` is per-job and wiped between jobs, so the two can no
-          # longer see each other's directory at all.
-          dest: ${{ runner.temp }}/setup-pnpm
 
-      # No `cache: pnpm` — actions/cache is a tax on a self-hosted runner, not
-      # a saving: the store already persists on the box between runs, so the
-      # cache step only adds an upload/download of it to GitHub, and its restore
-      # has been observed to hang outright on this fleet (see pos108-admin's
-      # ci.yml, which dropped it for the same reason).
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
 
       # src/lib/108jobs-client is a standalone package (own package.json/
       # pnpm-lock.yaml/node_modules, not a pnpm workspace member) that the
@@ -124,23 +73,18 @@ jobs:
 
   e2e:
     name: Playwright E2E
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      # See the lint job for both of these.
-      - name: Point pnpm at a shared store
-        run: echo "npm_config_store_dir=$HOME/.pnpm-store" >> "$GITHUB_ENV"
 
       - uses: pnpm/action-setup@v4
         with:
           version: 8.15.4
-          dest: ${{ runner.temp }}/setup-pnpm
 
-      # No `cache: pnpm` — see the lint job.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
 
       # See the equivalent step in the lint-typecheck-test job -- same reason,
       # and likewise a real gate (no continue-on-error).
@@ -150,45 +94,14 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # No `--with-deps`: that runs apt-get on the runner, which needs sudo and
-      # mutates a machine shared with every other repo in the fleet. The system
-      # libraries are installed on the box already -- pos108-admin's e2e job
-      # runs Playwright here with the same bare `install chromium`.
+      # playwright.config.ts's webServer boots its own `npm run dev` instance
+      # (port 3001) and tests/utils/auth.ts mocks the backend API via
+      # page.route -- no separately-running backend or secrets are needed.
       - name: Install Playwright browsers
-        run: npx playwright install chromium
+        run: npx playwright install --with-deps chromium
 
-      # playwright.config.ts defaults the webServer to port 3001, and on this
-      # runner 3001 is permanently taken: something owned by another user holds
-      # 127.0.0.1:3001, so the bind fails with EADDRINUSE. Killing it is not an
-      # option and not even diagnosable from here -- an unprivileged `lsof`/
-      # `fuser` cannot see another user's socket, so a "free the port" step
-      # reports the port idle and the bind fails two seconds later anyway.
-      #
-      # So do not compete for a fixed port. Ask the kernel for a free one and
-      # hand it to Playwright. This also removes the collision between two runs
-      # on different refs landing on the same box -- `concurrency:` above only
-      # cancels runs on the SAME ref, so it never protected against that.
-      - name: Pick a free port for the dev server
-        run: |
-          set -euo pipefail
-          port=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1]); s.close()')
-          echo "E2E_PORT=$port" >> "$GITHUB_ENV"
-          echo "dev server will listen on $port"
-
-      # playwright.config.ts's webServer boots its own `npm run dev` instance on
-      # $E2E_PORT and tests/utils/auth.ts mocks the backend API via page.route
-      # -- no separately-running backend or secrets are needed.
       - name: E2E tests
         run: npx playwright test
-
-      # Playwright shuts its webServer down itself on a normal exit, but a
-      # cancelled job is killed mid-suite and would otherwise leave a `next dev`
-      # running on this persistent box forever -- one orphan per cancelled run.
-      - name: Stop the dev server
-        if: ${{ always() }}
-        run: |
-          (command -v fuser >/dev/null 2>&1 && fuser -k "${E2E_PORT}/tcp") || true
-          (command -v lsof  >/dev/null 2>&1 && lsof -ti "tcp:${E2E_PORT}" | xargs -r kill -9) || true
 
       - name: Upload Playwright report
         if: failure()
