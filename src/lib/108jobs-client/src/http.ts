@@ -151,8 +151,7 @@ import type {ChatHistoryQuery} from "./types/ChatHistoryQuery";
 import type {ChatMessagesResponse} from "./types/ChatMessagesResponse";
 import type {Billing} from "./types/Billing";
 import type {GetBillingByRoomQuery} from "./types/GetBillingByRoomQuery";
-import type {ScbQrCodeRequest, ScbQrCodeResponse} from "./types/ScbQrCode";
-import type {ScbQrInquiryRequest, ScbQrInquiryResponse} from "./types/ScbQrInquiry";
+import type {CreateTopUpRequest, TopUpResponse} from "./types/TopUp";
 import type {BillingId} from "./types/BillingId";
 import type {LastReadQuery} from "./types/LastReadQuery";
 import type {LastReadResponse} from "./types/LastReadResponse";
@@ -1930,37 +1929,44 @@ export class Api108Jobs extends Controller {
     }
 
     /**
-     * @summary Create SCB QR Code.
+     * @summary Open a wallet top-up and mint its QR.
+     *
+     * Replaces `POST /scb/qrcode/create`, which took a whole bank QR body from
+     * the client. The server now owns every field but the amount, and answers
+     * with an EMVCo payload to render rather than a ready-made image.
      */
     @Security("bearerAuth")
-    @Post("/scb/qrcode/create")
-    @Tags("SCB")
-    async createScbQrCode(
-        @Body() form: ScbQrCodeRequest,
+    @Post("/payments/top-up")
+    @Tags("TopUpRequests")
+    async createTopUp(
+        @Body() form: CreateTopUpRequest,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<ScbQrCodeRequest, ScbQrCodeResponse>(
+        return this.#wrapper<CreateTopUpRequest, TopUpResponse>(
             HttpType.Post,
-            "/scb/qrcode/create",
+            "/payments/top-up",
             form,
             options,
         );
     }
 
     /**
-     * @summary Inquire SCB QR Code transaction status.
+     * @summary Ask whether a top-up has been paid.
+     *
+     * Replaces `POST /scb/inquire`. Read `status` — the old endpoint reported a
+     * bank status code that callers had to guess at (`0 || 200 || 1000`).
      */
     @Security("bearerAuth")
-    @Post("/scb/inquire")
-    @Tags("SCB")
-    async inquireScbQrCode(
-        @Body() form: ScbQrInquiryRequest,
+    @Get("/payments/top-up/{paymentIntentId}")
+    @Tags("TopUpRequests")
+    async getTopUpStatus(
+        @Path() paymentIntentId: string,
         @Inject() options?: RequestOptions,
     ) {
-        return this.#wrapper<ScbQrInquiryRequest, ScbQrInquiryResponse>(
-            HttpType.Post,
-            "/scb/inquire",
-            form,
+        return this.#wrapper<object, TopUpResponse>(
+            HttpType.Get,
+            `/payments/top-up/${paymentIntentId}`,
+            {},
             options,
         );
     }
