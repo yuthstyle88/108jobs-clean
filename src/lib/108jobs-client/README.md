@@ -1,64 +1,54 @@
-<div align="center">
+# 108jobs-client
 
-![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/LemmyNet/lemmy-js-client.svg)
-[![GitHub issues](https://img.shields.io/github/issues-raw/LemmyNet/lemmy-js-client.svg)](https://github.com/LemmyNet/lemmy-js-client/issues)
-[![License](https://img.shields.io/github/license/LemmyNet/lemmy-js-client.svg)](LICENSE)
-![GitHub stars](https://img.shields.io/github/stars/LemmyNet/lemmy-js-client?style=social)
+A TypeScript HTTP client and type system for the [108jobs
+API](https://github.com/108-Plaza/api-108jobs).
 
-</div>
+This package is vendored into `108jobs-web` at `src/lib/108jobs-client` and
+consumed through a `file:` dependency. It is not published to npm.
 
-# lemmy-js-client
+## Where it came from
 
-A javascript / typescript http client and type system for [Lemmy](https://github.com/LemmyNet/lemmy).
-
-## Installation
-
-`pnpm install lemmy-js-client`
+It began as a fork of
+[lemmy-js-client](https://github.com/LemmyNet/lemmy-js-client) — that is why
+`CHANGELOG.md` records other people's releases up to the fork point, and why
+some type names still read like Lemmy's. The API it speaks to is 108jobs's
+own; the Lemmy lineage is history rather than a dependency, and nothing here
+talks to a Lemmy instance.
 
 ## Usage
 
-### HTTP Client
-
-[LemmyHttp docs](https://join-lemmy.org/docs/contributors/04-api.html)
-
 ```ts
-import { LemmyHttp, Login } from "lemmy-js-client";
+import { Api108Jobs } from "108jobs-client";
 
-// Build the client
-const baseUrl = "https://lemmy.ml";
-const client: LemmyHttp = new LemmyHttp(baseUrl);
+// The base URL goes without the version — the client appends `/api/vX` itself.
+const client = new Api108Jobs("https://api.108jobs.com");
 
-// Build the login form
-const loginForm: Login = {
-  username_or_email: "my_name",
-  password: "my_pass",
-};
-
-// Login and set the client headers with your jwt
-const { jwt } = await client.login(loginForm);
-client.setHeaders({ Authorization: `Bearer ${jwt}` });
-
-// Fetch top posts for the day
-const getPostsForm: GetPosts = {
-  sort: "TopDay",
-  type_: "Local",
-};
-const posts = await client.getPosts(getPostsForm);
+// Bearer tokens are Identity-Platform's, not this API's: 108jobs verifies
+// them, it does not issue them. See `docs/` in api-108jobs for the split.
+client.setHeaders({ Authorization: `Bearer ${accessToken}` });
 ```
+
+In the app itself, prefer the wrapper in `src/lib/api/` over constructing this
+directly — it is where the ISO-fetch and error handling live.
 
 ## Development
 
-Use `pnpm add` to develop and test changes locally:
+The package builds itself: `pnpm build` (tsc) and `pnpm test` (vitest). Its
+`prepare` script runs the build, which the root install triggers.
 
-`pnpm add path/to/lemmy-js-client`
+It has its **own** `package.json`, lockfile and `node_modules` — it is not a
+workspace member — and it pins its own pnpm version, which differs from the
+root's. Install its dependencies with `corepack pnpm install --frozen-lockfile`
+from this directory rather than the pnpm on `PATH`; the root's pnpm cannot read
+this lockfile and discards it silently. The two CI jobs in
+`.github/workflows/ci.yml` do exactly that, and the reason is written out
+there.
 
 ## OpenAPI
 
-To generate OpenAPI docs, run `pnpm tsoa`
+`pnpm tsoa` generates:
 
-This creates two files:
+- `tsoa_build/swagger.json` — the OpenAPI document.
+- `redoc-static.html` — a rendered copy of it.
 
-- `redoc-static.html` - A static html rendering of the OpenAPI docs.
-- `tsoa_build/swagger.json` - An OpenAPI / Swagger json file.
-
-To contribute, check out the [tsoa docs](https://tsoa-category.github.io/docs/).
+Servers listed in that document come from `tsoa.json`.
