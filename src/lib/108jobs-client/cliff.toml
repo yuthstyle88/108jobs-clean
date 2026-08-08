@@ -1,9 +1,13 @@
 # git-cliff ~ configuration file
 # https://git-cliff.org/docs/configuration
 
+# The repo this client actually lives in. It said LemmyNet/lemmy-js-client,
+# left over from the fork, which meant `scripts/generate_changelog.sh` would
+# turn this repo's commits into a changelog whose every PR link pointed at
+# somebody else's project.
 [remote.github]
-owner = "LemmyNet"
-repo = "lemmy-js-client"
+owner = "108-Plaza"
+repo = "108jobs-web"
 # token = ""
 
 [changelog]
