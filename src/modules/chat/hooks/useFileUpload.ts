@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import { REQUEST_STATE } from '@/services/HttpService';
 import { useHttpPost } from '@/hooks/api/http/useHttpPost';
+import { madGatewayUrl, uploadToMad, type MediaVisibility } from '@/services/media/madUpload';
 
 export type UploadedFile = { fileUrl: string; fileType: string; fileName: string } | null;
 
@@ -10,10 +11,25 @@ export type UploadedFile = { fileUrl: string; fileType: string; fileName: string
 interface UseFileUploadProps {
     setError: (msg: string | null) => void;
     t: (k: string) => string | undefined;
+    /**
+     * Who may read what gets uploaded. Defaults to `private`, which is the safe
+     * direction to be wrong in: a private asset withheld from someone who
+     * should have seen it is a bug report; a public one shown to someone who
+     * should not have is a disclosure.
+     *
+     * Chat attachments are addressed to the people in one room and take the
+     * default. Portfolio images are shown on public profiles and must say so —
+     * this hook serves both, which is why the choice is a parameter and not a
+     * constant.
+     *
+     * Ignored entirely on the legacy `/account/files` path, which has no such
+     * concept and serves everything it stores from one route.
+     */
+    visibility?: MediaVisibility;
 }
 
 export const useFileUpload = (opts: UseFileUploadProps) => {
-    const { setError, t } = opts;
+    const { setError, t, visibility = 'private' } = opts;
     const [selectedFile, setSelectedFile] = useState<UploadedFile>(null);
     const [isDeletingFile, setIsDeletingFile] = useState<boolean>(false);
 
@@ -39,20 +55,34 @@ export const useFileUpload = (opts: UseFileUploadProps) => {
 
                 setError(null);
 
-                // Pass file as UploadImage interface
-                const res = await uploadFile({ image: file });
-                if (res.state !== REQUEST_STATE.SUCCESS) {
-                    const msg = t('upload.error') || 'Failed to upload file';
-                    setError(msg);
-                    return null;
-                }
+                // MAD when `.env` names a gateway, `/account/files` otherwise.
+                // The key is unset in every environment today, so this branch
+                // is the legacy one until somebody deploys MAD and sets it —
+                // which is what makes the cutover safe to land ahead of time.
+                let uploaded: UploadedFile;
+                if (madGatewayUrl()) {
+                    const asset = await uploadToMad(file, visibility);
+                    uploaded = {
+                        fileUrl: asset.url,
+                        fileType: asset.mimeType || fileType,
+                        fileName: asset.filename,
+                    };
+                } else {
+                    // Pass file as UploadImage interface
+                    const res = await uploadFile({ image: file });
+                    if (res.state !== REQUEST_STATE.SUCCESS) {
+                        const msg = t('upload.error') || 'Failed to upload file';
+                        setError(msg);
+                        return null;
+                    }
 
-                const data: any = res.data;
-                const uploaded: UploadedFile = {
-                    fileUrl: String(data?.url || ''),
-                    fileType,
-                    fileName: String(data?.filename || file.name || 'file'),
-                };
+                    const data: any = res.data;
+                    uploaded = {
+                        fileUrl: String(data?.url || ''),
+                        fileType,
+                        fileName: String(data?.filename || file.name || 'file'),
+                    };
+                }
 
                 if (!uploaded.fileUrl) {
                     setError(t('upload.error') || 'Failed to upload file');
@@ -68,7 +98,7 @@ export const useFileUpload = (opts: UseFileUploadProps) => {
                 return null;
             }
         },
-        [setError, t, uploadFile],
+        [setError, t, uploadFile, visibility],
     );
 
     const handleRemoveSelectedFile = useCallback(

@@ -46,6 +46,12 @@ export const usePortfolioImagesForm = ({
     } = useFileUpload({
         setError: setUploadError,
         t,
+        // Public, not the hook's default. A portfolio image is shown on a
+        // profile page to whoever opens it, including a visitor with no
+        // session — a private asset here renders as a broken image for exactly
+        // the audience a portfolio exists for. This is the only upload on the
+        // web that is not addressed to specific people.
+        visibility: 'public',
     });
 
     // Modal state for image picker
