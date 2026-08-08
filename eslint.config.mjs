@@ -12,8 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Ignore vendored library code from root lint to avoid noise.
-    "src/lib/lemmy-js-client/**",
+    // Vendored library code, ignored from the root lint to avoid noise.
     // src/lib/108jobs-client is a standalone sub-package with its own
     // package.json/tsconfig/build pipeline (already excluded from the root
     // tsconfig.json and vitest.config.ts for the same reason) -- its dist/
